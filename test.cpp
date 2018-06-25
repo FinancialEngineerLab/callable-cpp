@@ -31,7 +31,7 @@ int main( void )
   dividends.emplace_back( 23.5, 3. );
 
   beagle::pricer_ptr_t bscfeop = beagle::Pricer::formBlackScholesClosedFormEuropeanOptionPricer( 100., .03, .3, dividends );
-  beagle::option_ptr_t euroOption = beagle::Option::createEuropeanOption( 5., 200., beagle::Payoff::call() );
+  beagle::option_ptr_t euroOption = beagle::Option::createEuropeanOption( 5., 100., beagle::Payoff::call() );
   double value = bscfeop->optionValue( euroOption );
 
   std::cout << value << std::endl;

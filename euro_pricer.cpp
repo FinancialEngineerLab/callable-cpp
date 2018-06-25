@@ -25,7 +25,7 @@ namespace beagle
     {
       m_AdjustedSpot = m_Spot;
       m_AdjustedStrike = strike;
-        
+
       if (m_Dividends.empty())
         return;
       else
@@ -115,13 +115,12 @@ namespace beagle
       calculateAdjustedSpotAndStrike( expiry, strike );
 
       double discounting = std::exp( - m_Rate * expiry );
-      double forward = m_AdjustedSpot / discounting;
-      double result = util::bsCall( m_AdjustedStrike, forward, expiry, m_Volatility ) * discounting;
+      double result = util::bsCall( m_AdjustedStrike, m_AdjustedSpot / discounting, expiry, m_Volatility ) * discounting;
 
       if (option->payoff()->isCall())
         return result;
       else
-        return (result - forward + m_AdjustedStrike) * discounting;
+        return result - m_AdjustedSpot + m_AdjustedStrike * discounting;
     }
   }
 
