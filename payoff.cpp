@@ -1,5 +1,5 @@
 #include "payoff.hpp"
-#include <cmath>
+#include <algorithm>
 
 namespace beagle
 {
@@ -17,7 +17,7 @@ namespace beagle
       virtual double intrinsicValue( double spot,
                                      double strike ) const override
       {
-        return std::max( spot - strike, 0 );
+        return std::max( spot - strike, 0. );
       }
       virtual bool isCall( void ) const
       {
@@ -40,7 +40,7 @@ namespace beagle
       virtual double intrinsicValue( double spot,
                                      double strike ) const override
       {
-        return std::max( strike - spot, 0 );
+        return std::max( strike - spot, 0. );
       }
       virtual bool isCall( void ) const
       {

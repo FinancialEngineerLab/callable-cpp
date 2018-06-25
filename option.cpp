@@ -50,7 +50,7 @@ namespace beagle
     return m_Strike;
   }
 
-  double Option::payoff( void ) const
+  const payoff_ptr_t& Option::payoff( void ) const
   {
     return m_Payoff;
   }
