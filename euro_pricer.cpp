@@ -21,10 +21,12 @@ namespace beagle
 
     void
     BlackScholesClosedFormEuropeanOptionPricer::calculateAdjustedSpotAndStrike( double expiry,
-                                                                                double strike ) const
+                                                                                double strike,
+                                                                                double& adjustedSpot,
+                                                                                double& adjustedStrike  ) const
     {
-      m_AdjustedSpot = m_Spot;
-      m_AdjustedStrike = strike;
+      adjustedSpot = m_Spot;
+      adjustedStrike = strike;
 
       if (m_Dividends.empty())
         return;
@@ -70,8 +72,8 @@ namespace beagle
             double aI = - discountingExDivTimeI * numeratorA / denominator;
             double bI = expRateT * discountingExDivTimeI * numeratorB / denominator;
 
-            m_AdjustedSpot += aI * divAmountI;
-            m_AdjustedStrike += bI * divAmountI;
+            adjustedSpot += aI * divAmountI;
+            adjustedStrike += bI * divAmountI;
 
             for (discrete_dividend_schedule_t::size_type j = i; j < numDivs; ++j)
             {
@@ -96,8 +98,8 @@ namespace beagle
                 if (i == j)
                   aIJ /= 2.;
 
-                m_AdjustedSpot += aIJ * divAmountI * divAmountJ;
-                m_AdjustedStrike += expRateT * aIJ * divAmountI * divAmountJ;
+                adjustedSpot += aIJ * divAmountI * divAmountJ;
+                adjustedStrike += expRateT * aIJ * divAmountI * divAmountJ;
               }
             }
           }
@@ -116,15 +118,17 @@ namespace beagle
       double expiry = option->expiry();
       double strike = option->strike();
 
-      calculateAdjustedSpotAndStrike( expiry, strike );
+      double adjustedSpot;
+      double adjustedStrike;
+      calculateAdjustedSpotAndStrike( expiry, strike, adjustedSpot, adjustedStrike );
 
       double discounting = std::exp( - m_Rate * expiry );
-      double result = util::bsCall( m_AdjustedStrike, m_AdjustedSpot / discounting, expiry, m_Volatility ) * discounting;
+      double result = util::bsCall( adjustedStrike, adjustedSpot / discounting, expiry, m_Volatility ) * discounting;
 
       if (option->payoff()->isCall())
         return result;
       else
-        return result - m_AdjustedSpot + m_AdjustedStrike * discounting;
+        return result - adjustedSpot + adjustedStrike * discounting;
     }
   }
 

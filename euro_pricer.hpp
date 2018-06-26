@@ -18,15 +18,14 @@ namespace beagle
       virtual double optionValue( const beagle::option_ptr_t& option ) const override;
     private:
       void calculateAdjustedSpotAndStrike( double expiry,
-                                           double strike ) const;
+                                           double strike,
+                                           double& adjustedSpot,
+                                           double& adjustedStrike ) const;
     private:
       double m_Spot;
       double m_Rate;
       double m_Volatility;
       beagle::discrete_dividend_schedule_t m_Dividends;
-
-      mutable double m_AdjustedSpot;
-      mutable double m_AdjustedStrike;
     };
   }
 }
