@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 #include "option.hpp"
+#include "real_2d_function.hpp"
 
 namespace beagle
 {
@@ -22,10 +23,10 @@ namespace beagle
                                                                         double rate,
                                                                         double volatility,
                                                                         const discrete_dividend_schedule_t& dividends );
-    static pricer_ptr_t formBlackScholesBackwardPDEOptionPricer( double spot,
-                                                                 double rate,
-                                                                 double volatility,
-                                                                 const discrete_dividend_schedule_t& dividends );
+    static pricer_ptr_t formOneDimensionalBackwardPDEOptionPricer( double spot,
+                                                                   double rate,
+                                                                   const real_2d_function_ptr_t& volatility,
+                                                                   const discrete_dividend_schedule_t& dividends );
   };
 }
 

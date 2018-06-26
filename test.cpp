@@ -32,7 +32,7 @@ int main( void )
 
   try
   {  
-    beagle::pricer_ptr_t bscfeop = beagle::Pricer::formBlackScholesBackwardPDEOptionPricer( 100., .03, .3, dividends );
+    beagle::pricer_ptr_t bscfeop = beagle::Pricer::formBlackScholesClosedFormEuropeanOptionPricer( 100., .03, .3, dividends );
     beagle::option_ptr_t euroOption = beagle::Option::createEuropeanOption( 5., 100., beagle::Payoff::call() );
     double value = bscfeop->optionValue( euroOption );
     std::cout << value << std::endl;

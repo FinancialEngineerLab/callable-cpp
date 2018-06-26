@@ -5,10 +5,10 @@ namespace beagle
 
   namespace impl
   {
-    BlackScholesBackwardPDEOptionPricer::BlackScholesBackwardPDEOptionPricer(
+    OneDimensionalBackwardPDEOptionPricer::OneDimensionalBackwardPDEOptionPricer(
                                                    double spot,
                                                    double rate,
-                                                   double volatility,
+                                                   const real_2d_function_ptr_t& volatility,
                                                    const beagle::discrete_dividend_schedule_t& dividends ) :
       m_Spot( spot ),
       m_Rate( rate ),
@@ -16,22 +16,22 @@ namespace beagle
       m_Dividends( dividends )
     { }
 
-    BlackScholesBackwardPDEOptionPricer::~BlackScholesBackwardPDEOptionPricer( void )
+    OneDimensionalBackwardPDEOptionPricer::~OneDimensionalBackwardPDEOptionPricer( void )
     { }
 
     double
-    BlackScholesBackwardPDEOptionPricer::optionValue( const option_ptr_t& option ) const
+    OneDimensionalBackwardPDEOptionPricer::optionValue( const option_ptr_t& option ) const
     {
       return 0.0;
     }
   }
 
   beagle::pricer_ptr_t
-  Pricer::formBlackScholesBackwardPDEOptionPricer( double spot,
-                                                   double rate,
-                                                   double volatility,
-                                                   const beagle::discrete_dividend_schedule_t& dividends )
+  Pricer::formOneDimensionalBackwardPDEOptionPricer( double spot,
+                                                     double rate,
+                                                     const real_2d_function_ptr_t& volatility,
+                                                     const beagle::discrete_dividend_schedule_t& dividends )
   {
-    return std::make_shared<impl::BlackScholesBackwardPDEOptionPricer>( spot, rate, volatility, dividends );
+    return std::make_shared<impl::OneDimensionalBackwardPDEOptionPricer>( spot, rate, volatility, dividends );
   }
 }

@@ -7,19 +7,19 @@ namespace beagle
 {
   namespace impl
   {
-    struct BlackScholesBackwardPDEOptionPricer : public Pricer
+    struct OneDimensionalBackwardPDEOptionPricer : public Pricer
     {
-      BlackScholesBackwardPDEOptionPricer( double spot,
-                                           double rate,
-                                           double volatility,
-                                           const beagle::discrete_dividend_schedule_t& dividends );
-      ~BlackScholesBackwardPDEOptionPricer( void );
+      OneDimensionalBackwardPDEOptionPricer( double spot,
+                                             double rate,
+                                             const real_2d_function_ptr_t& volatility,
+                                             const beagle::discrete_dividend_schedule_t& dividends );
+      ~OneDimensionalBackwardPDEOptionPricer( void );
     public:
       virtual double optionValue( const beagle::option_ptr_t& option ) const override;
     private:
       double m_Spot;
       double m_Rate;
-      double m_Volatility;
+      real_2d_function_ptr_t m_Volatility;
       beagle::discrete_dividend_schedule_t m_Dividends;
     };
   }
