@@ -109,6 +109,10 @@ namespace beagle
     double
     BlackScholesClosedFormEuropeanOptionPricer::optionValue( const beagle::option_ptr_t& option ) const
     {
+      auto pE = dynamic_cast<beagle::mixins::European*>( option.get() );
+      if (!pE)
+        throw(std::string("Cannot valuate an option with non-European exercise style in closed form!"));
+
       double expiry = option->expiry();
       double strike = option->strike();
 

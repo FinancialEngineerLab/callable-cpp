@@ -30,10 +30,17 @@ int main( void )
   dividends.emplace_back( 22.5, 3. );
   dividends.emplace_back( 23.5, 3. );
 
-  beagle::pricer_ptr_t bscfeop = beagle::Pricer::formBlackScholesClosedFormEuropeanOptionPricer( 100., .03, .3, dividends );
-  beagle::option_ptr_t euroOption = beagle::Option::createEuropeanOption( 5., 100., beagle::Payoff::call() );
-  double value = bscfeop->optionValue( euroOption );
+  try
+  {  
+    beagle::pricer_ptr_t bscfeop = beagle::Pricer::formBlackScholesBackwardPDEOptionPricer( 100., .03, .3, dividends );
+    beagle::option_ptr_t euroOption = beagle::Option::createEuropeanOption( 5., 100., beagle::Payoff::call() );
+    double value = bscfeop->optionValue( euroOption );
+    std::cout << value << std::endl;
+  }
+  catch (const std::string& what)
+  {
+    std::cout << "A valuation error has occurred -- " << what << std::endl;
+  }
 
-  std::cout << value << std::endl;
   return 0;
 }

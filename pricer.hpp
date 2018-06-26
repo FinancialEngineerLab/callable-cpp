@@ -22,6 +22,10 @@ namespace beagle
                                                                         double rate,
                                                                         double volatility,
                                                                         const discrete_dividend_schedule_t& dividends );
+    static pricer_ptr_t formBlackScholesBackwardPDEOptionPricer( double spot,
+                                                                 double rate,
+                                                                 double volatility,
+                                                                 const discrete_dividend_schedule_t& dividends );
   };
 }
 
