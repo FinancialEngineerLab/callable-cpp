@@ -1,7 +1,7 @@
 #ifndef UTIL_HPP
 #define UTIL_HPP
 
-#include <cmath>
+#include "fwd_decl.hpp"
 
 namespace beagle
 {
@@ -20,6 +20,11 @@ namespace beagle
                    double forward,
                    double expiry,
                    double vol );
+
+    void tridiagonalSolve( beagle::dbl_vec_t& rhs,
+                       beagle::dbl_vec_t& diag,
+                       beagle::dbl_vec_t& upper,
+                       beagle::dbl_vec_t& lower );
   }
 }
 

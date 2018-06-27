@@ -20,12 +20,15 @@ namespace beagle
                                                                           double volatility,
                                                                           const discrete_dividend_schedule_t& dividends );
       static beagle::pricer_ptr_t formOneDimensionalBackwardPDEOptionPricer(
-                                                                    double spot,
+                                                                     double spot,
                                                                      double rate,
                                                                      const beagle::real_2d_function_ptr_t& volatility,
+                                                                     int stepsPerAnnum,
+                                                                     int stepsLogSpot,
+                                                                     double numStdev,
                                                                      const beagle::discrete_dividend_schedule_t& dividends,
                                                                      const beagle::dividend_policy_ptr_t& policy,
-                                                                     int stepsPerAnnum );
+                                                                     const beagle::interp_builder_ptr_t& interp );
     };
   }
 }

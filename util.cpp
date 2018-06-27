@@ -41,5 +41,26 @@ namespace beagle
 
       return forward * standardNormal( dOne ) * std::sqrt( expiry );
     }
+
+    void tridiagonalSolve( beagle::dbl_vec_t& rhs,
+                           beagle::dbl_vec_t& diag,
+                           beagle::dbl_vec_t& upper,
+                           beagle::dbl_vec_t& lower )
+    {
+      int size = rhs.size();
+      for (int i = 0; i < size - 1; ++i)
+      {
+        diag[i+1] -= lower[i+1] / diag[i] * upper[i];
+        rhs[i+1] -= lower[i+1] / diag[i] * rhs[i];
+      }
+
+      rhs[size-1] /= diag[size-1];
+
+      for (int i = 0; i < size - 1; ++i)
+      {
+        int j = size - 2 - i;
+        rhs[j] = (rhs[j] - upper[j] * rhs[j+1]) / diag[j];
+      }
+    }
   }
 }
