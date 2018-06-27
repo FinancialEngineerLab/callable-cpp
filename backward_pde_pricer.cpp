@@ -4,6 +4,8 @@
 #include "payoff.hpp"
 #include "util.hpp"
 
+#include <iostream>
+
 namespace beagle
 {
   namespace valuation
@@ -67,17 +69,18 @@ namespace beagle
         double deltaX = logSpots[1] - logSpots[0];
         double deltaXSquared = deltaX * deltaX;
 
-        beagle::dbl_vec_t diag(logSpotSize);
-        beagle::dbl_vec_t lower(logSpotSize);
-        beagle::dbl_vec_t upper(logSpotSize);
+        beagle::dbl_vec_t diag(logSpotSize-2);
+        beagle::dbl_vec_t lower(logSpotSize-2);
+        beagle::dbl_vec_t upper(logSpotSize-2);
+        beagle::dbl_vec_t rhs(optionValues.begin()+1, optionValues.end()-1);
 
         for (int i=timeSteps-1; i>0; --i)
         {
           double thisTime = times[i-1];
           double deltaT = times[i] - thisTime;
-          for (int j=1; j<logSpotSize-1; ++j)
+          for (int j=0; j<logSpotSize-2; ++j)
           {
-            double vol = m_Volatility->value(thisTime, spots[j]);
+            double vol = m_Volatility->value(thisTime, spots[j+1]);
             double volOverDeltaX = vol / deltaX;
             double volOverDeltaXSquared = volOverDeltaX * volOverDeltaX;
             double mu = m_Rate - .5 * vol * vol;
@@ -87,18 +90,18 @@ namespace beagle
             lower[j] =   deltaT * .5 * (muOverDeltaX - volOverDeltaXSquared);
           }
 
-          beagle::util::tridiagonalSolve( optionValues, diag, upper, lower );
-
           two_dbl_t boundaryValues = boundaryCondition( payoff,
                                                         std::make_pair(spots.front(), spots.back()),
                                                         strike,
                                                         expiry - thisTime,
                                                         isAmerican );
-          optionValues[0]             = boundaryValues.first;
-          optionValues[logSpotSize-1] = boundaryValues.second;
+          rhs[0]             -= deltaT * lower[0] * boundaryValues.first;
+          rhs[logSpotSize-3] -= deltaT * upper[logSpotSize-3] * boundaryValues.second;
+
+          beagle::util::tridiagonalSolve( rhs, diag, upper, lower );
         }
 
-        return optionValues[m_StepsLogSpot/2];
+        return rhs[rhs.size()/2];
       }
 
       void
