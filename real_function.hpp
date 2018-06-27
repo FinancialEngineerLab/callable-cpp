@@ -2,13 +2,14 @@
 #define REAL_FUNCTION_HPP
 
 #include <memory>
-#include "interpolation_builder.hpp"
+#include <vector>
 
 namespace beagle
 {
 
   struct RealFunction;
   using real_function_ptr_t = std::shared_ptr<RealFunction>;
+  using dbl_vec_t = std::vector<double>;
 
   struct RealFunction
   {

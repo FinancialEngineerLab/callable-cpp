@@ -20,7 +20,7 @@ namespace beagle
     public:
       virtual double optionValue( const beagle::option_ptr_t& option ) const override;
     private:
-      using dbl_vec_t = std::vector<double>
+      using dbl_vec_t = std::vector<double>;
       using int_vec_t = std::vector<int>;
       void formLatticeForBackwardValuation( dbl_vec_t& times,
                                             dbl_vec_t&  ) const;

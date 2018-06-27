@@ -45,19 +45,19 @@ namespace beagle
           while (it != itEnd)
           {
             if (arg < *it)
-            {
-              double xLeft = *(it - 1);
-              double xRight = *it;
-              double yLeft = *(jt - 1);
-              double yRight = *jt;
-              return yLeft + (arg - xLeft) / (xRight - xLeft) * (yRight - yLeft);
-            }
+              break;
             else
             {
               ++it;
               ++jt;
             }
           }
+
+          double xLeft = *(it - 1);
+          double xRight = *it;
+          double yLeft = *(jt - 1);
+          double yRight = *jt;
+          return yLeft + (arg - xLeft) / (xRight - xLeft) * (yRight - yLeft);
         }
       }
     private:

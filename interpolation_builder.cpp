@@ -26,7 +26,7 @@ namespace beagle
   InterpolationBuilder::~InterpolationBuilder( void )
   { }
 
-  beagle::real_function_ptr_t
+  interp_builder_ptr_t
   InterpolationBuilder::linearWithFlatExtrapolation( void )
   {
     return std::make_shared<impl::LinearWithFlatExtrapolationInterpolationBuilder>();
