@@ -1,34 +1,37 @@
 #include "interpolation_builder.hpp"
+#include "real_function.hpp"
 
 namespace beagle
 {
-
-  namespace impl
+  namespace math
   {
-    struct LinearWithFlatExtrapolationInterpolationBuilder : public InterpolationBuilder
+    namespace impl
     {
-      LinearWithFlatExtrapolationInterpolationBuilder( void )
-      { }
-      virtual ~LinearWithFlatExtrapolationInterpolationBuilder( void )
-      { }
-    public:
-      virtual beagle::real_function_ptr_t formFunction( const dbl_vec_t& xValues,
-                                                        const dbl_vec_t& yValues ) const override
+      struct LinearWithFlatExtrapolationInterpolationBuilder : public InterpolationBuilder
       {
-        return beagle::RealFunction::createLinearWithFlatExtrapolationInterpolatedFunction( xValues, yValues );
-      }
-    };
-  }
+        LinearWithFlatExtrapolationInterpolationBuilder( void )
+        { }
+        virtual ~LinearWithFlatExtrapolationInterpolationBuilder( void )
+        { }
+      public:
+        virtual beagle::real_function_ptr_t formFunction( const dbl_vec_t& xValues,
+                                                          const dbl_vec_t& yValues ) const override
+        {
+          return beagle::math::RealFunction::createLinearWithFlatExtrapolationInterpolatedFunction( xValues, yValues );
+        }
+      };
+    }
 
-  InterpolationBuilder::InterpolationBuilder( void )
-  { }
+    InterpolationBuilder::InterpolationBuilder( void )
+    { }
 
-  InterpolationBuilder::~InterpolationBuilder( void )
-  { }
+    InterpolationBuilder::~InterpolationBuilder( void )
+    { }
 
-  interp_builder_ptr_t
-  InterpolationBuilder::linearWithFlatExtrapolation( void )
-  {
-    return std::make_shared<impl::LinearWithFlatExtrapolationInterpolationBuilder>();
+    beagle::interp_builder_ptr_t
+    InterpolationBuilder::linearWithFlatExtrapolation( void )
+    {
+      return std::make_shared<impl::LinearWithFlatExtrapolationInterpolationBuilder>();
+    }
   }
 }

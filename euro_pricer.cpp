@@ -1,143 +1,148 @@
 #include "euro_pricer.hpp"
 #include "util.hpp"
+#include "option.hpp"
+#include "payoff.hpp"
 
 namespace beagle
 {
-  namespace impl
+  namespace valuation
   {
-    BlackScholesClosedFormEuropeanOptionPricer::BlackScholesClosedFormEuropeanOptionPricer(
-                                                    double spot,
-                                                    double rate,
-                                                    double volatility,
-                                                    const discrete_dividend_schedule_t& dividends ) :
-      m_Spot( spot ),
-      m_Rate( rate ),
-      m_Volatility( volatility ),
-      m_Dividends( dividends )
-    { }
-
-    BlackScholesClosedFormEuropeanOptionPricer::~BlackScholesClosedFormEuropeanOptionPricer( void )
-    { }
-
-    void
-    BlackScholesClosedFormEuropeanOptionPricer::calculateAdjustedSpotAndStrike( double expiry,
-                                                                                double strike,
-                                                                                double& adjustedSpot,
-                                                                                double& adjustedStrike  ) const
+    namespace impl
     {
-      adjustedSpot = m_Spot;
-      adjustedStrike = strike;
+      BlackScholesClosedFormEuropeanOptionPricer::BlackScholesClosedFormEuropeanOptionPricer(
+                                                      double spot,
+                                                      double rate,
+                                                      double volatility,
+                                                      const beagle::discrete_dividend_schedule_t& dividends ) :
+        m_Spot( spot ),
+        m_Rate( rate ),
+        m_Volatility( volatility ),
+        m_Dividends( dividends )
+      { }
 
-      if (m_Dividends.empty())
-        return;
-      else
+      BlackScholesClosedFormEuropeanOptionPricer::~BlackScholesClosedFormEuropeanOptionPricer( void )
+      { }
+
+      void
+      BlackScholesClosedFormEuropeanOptionPricer::calculateAdjustedSpotAndStrike( double expiry,
+                                                                                  double strike,
+                                                                                  double& adjustedSpot,
+                                                                                  double& adjustedStrike  ) const
       {
-        double expRateT = std::exp( m_Rate * expiry );
-        double rootT = std::sqrt( expiry );
-        double sigmaRootT = m_Volatility * rootT;
-        double dOne = std::log( m_Spot * expRateT / strike ) / sigmaRootT + .5 * sigmaRootT;
-        double dTwo = dOne - sigmaRootT;
+        adjustedSpot = m_Spot;
+        adjustedStrike = strike;
 
-        double nDOne = util::cumulativeStandardNormal(dOne);
-        double nDTwo = util::cumulativeStandardNormal(dTwo);
-        double denominator = nDOne - nDTwo;
-
-        double phiDOne = util::standardNormal(dOne);
-        double phiDTwo = util::standardNormal(dTwo);
-        double phiDiff = phiDOne - phiDTwo;
-        double crossDiff = phiDOne * nDTwo - phiDTwo * nDOne;
-
-        double gamma = m_Spot * sigmaRootT * phiDOne * denominator * denominator * denominator;
-        double a = - crossDiff * crossDiff;
-        double b = phiDiff * crossDiff;
-        double c = - phiDiff * phiDiff;
-        double d = phiDOne * denominator * denominator;
-
-        auto numDivs = m_Dividends.size();
-        for (discrete_dividend_schedule_t::size_type i = 0U; i < numDivs; ++i)
+        if (m_Dividends.empty())
+          return;
+        else
         {
-          double exDivTimeI = m_Dividends[i].first;
-          double divAmountI = m_Dividends[i].second;
+          double expRateT = std::exp( m_Rate * expiry );
+          double rootT = std::sqrt( expiry );
+          double sigmaRootT = m_Volatility * rootT;
+          double dOne = std::log( m_Spot * expRateT / strike ) / sigmaRootT + .5 * sigmaRootT;
+          double dTwo = dOne - sigmaRootT;
 
-          if (exDivTimeI <= expiry)
+          double nDOne = util::cumulativeStandardNormal(dOne);
+          double nDTwo = util::cumulativeStandardNormal(dTwo);
+          double denominator = nDOne - nDTwo;
+
+          double phiDOne = util::standardNormal(dOne);
+          double phiDTwo = util::standardNormal(dTwo);
+          double phiDiff = phiDOne - phiDTwo;
+          double crossDiff = phiDOne * nDTwo - phiDTwo * nDOne;
+
+          double gamma = m_Spot * sigmaRootT * phiDOne * denominator * denominator * denominator;
+          double a = - crossDiff * crossDiff;
+          double b = phiDiff * crossDiff;
+          double c = - phiDiff * phiDiff;
+          double d = phiDOne * denominator * denominator;
+
+          auto numDivs = m_Dividends.size();
+          for (discrete_dividend_schedule_t::size_type i = 0U; i < numDivs; ++i)
           {
-            /// First order term
-            double discountingExDivTimeI = std::exp( - m_Rate * exDivTimeI );
-            double dI = dOne - m_Volatility * exDivTimeI / rootT;
-            double nDI = util::cumulativeStandardNormal(dI);
+            double exDivTimeI = m_Dividends[i].first;
+            double divAmountI = m_Dividends[i].second;
 
-            double numeratorA =  nDI - nDTwo;
-            double numeratorB = denominator - numeratorA;
-
-            double aI = - discountingExDivTimeI * numeratorA / denominator;
-            double bI = expRateT * discountingExDivTimeI * numeratorB / denominator;
-
-            adjustedSpot += aI * divAmountI;
-            adjustedStrike += bI * divAmountI;
-
-            for (discrete_dividend_schedule_t::size_type j = i; j < numDivs; ++j)
+            if (exDivTimeI <= expiry)
             {
-              double exDivTimeJ = m_Dividends[j].first;
-              double divAmountJ = m_Dividends[j].second;
+              /// First order term
+              double discountingExDivTimeI = std::exp( - m_Rate * exDivTimeI );
+              double dI = dOne - m_Volatility * exDivTimeI / rootT;
+              double nDI = util::cumulativeStandardNormal(dI);
 
-              if (exDivTimeJ <= expiry)
+              double numeratorA =  nDI - nDTwo;
+              double numeratorB = denominator - numeratorA;
+
+              double aI = - discountingExDivTimeI * numeratorA / denominator;
+              double bI = expRateT * discountingExDivTimeI * numeratorB / denominator;
+
+              adjustedSpot += aI * divAmountI;
+              adjustedStrike += bI * divAmountI;
+
+              for (discrete_dividend_schedule_t::size_type j = i; j < numDivs; ++j)
               {
-                double discountingExDivTimeJ = std::exp( - m_Rate * exDivTimeJ );
-                double dJ = dOne - m_Volatility * exDivTimeJ / rootT;
-                double nDJ = util::cumulativeStandardNormal(dJ);
+                double exDivTimeJ = m_Dividends[j].first;
+                double divAmountJ = m_Dividends[j].second;
 
-                double aIJ = a + b * (nDI + nDJ) + c * nDI * nDJ;
+                if (exDivTimeJ <= expiry)
+                {
+                  double discountingExDivTimeJ = std::exp( - m_Rate * exDivTimeJ );
+                  double dJ = dOne - m_Volatility * exDivTimeJ / rootT;
+                  double nDJ = util::cumulativeStandardNormal(dJ);
 
-                double dIJ = dOne - m_Volatility * (exDivTimeI + exDivTimeJ) / rootT;
-                double phiDIJ = util::standardNormal(dIJ);
-                aIJ += d * std::exp(m_Volatility*m_Volatility*exDivTimeI) * phiDIJ;
+                  double aIJ = a + b * (nDI + nDJ) + c * nDI * nDJ;
 
-                aIJ /= gamma;
-                aIJ *= std::exp( -m_Rate * (exDivTimeI + exDivTimeJ));
+                  double dIJ = dOne - m_Volatility * (exDivTimeI + exDivTimeJ) / rootT;
+                  double phiDIJ = util::standardNormal(dIJ);
+                  aIJ += d * std::exp(m_Volatility*m_Volatility*exDivTimeI) * phiDIJ;
 
-                if (i == j)
-                  aIJ /= 2.;
+                  aIJ /= gamma;
+                  aIJ *= std::exp( -m_Rate * (exDivTimeI + exDivTimeJ));
 
-                adjustedSpot += aIJ * divAmountI * divAmountJ;
-                adjustedStrike += expRateT * aIJ * divAmountI * divAmountJ;
+                  if (i == j)
+                    aIJ /= 2.;
+
+                  adjustedSpot += aIJ * divAmountI * divAmountJ;
+                  adjustedStrike += expRateT * aIJ * divAmountI * divAmountJ;
+                }
               }
             }
           }
-        }
 
+        }
+      }
+
+      double
+      BlackScholesClosedFormEuropeanOptionPricer::optionValue( const beagle::option_ptr_t& option ) const
+      {
+        auto pE = dynamic_cast<beagle::option::mixins::European*>( option.get() );
+        if (!pE)
+          throw(std::string("Cannot valuate an option with non-European exercise style in closed form!"));
+
+        double expiry = option->expiry();
+        double strike = option->strike();
+
+        double adjustedSpot;
+        double adjustedStrike;
+        calculateAdjustedSpotAndStrike( expiry, strike, adjustedSpot, adjustedStrike );
+
+        double discounting = std::exp( - m_Rate * expiry );
+        double result = util::bsCall( adjustedStrike, adjustedSpot / discounting, expiry, m_Volatility ) * discounting;
+
+        if (option->payoff()->isCall())
+          return result;
+        else
+          return result - adjustedSpot + adjustedStrike * discounting;
       }
     }
 
-    double
-    BlackScholesClosedFormEuropeanOptionPricer::optionValue( const beagle::option_ptr_t& option ) const
+    beagle::pricer_ptr_t
+    Pricer::formBlackScholesClosedFormEuropeanOptionPricer( double spot,
+                                                            double rate,
+                                                            double volatility,
+                                                            const beagle::discrete_dividend_schedule_t& dividends )
     {
-      auto pE = dynamic_cast<beagle::mixins::European*>( option.get() );
-      if (!pE)
-        throw(std::string("Cannot valuate an option with non-European exercise style in closed form!"));
-
-      double expiry = option->expiry();
-      double strike = option->strike();
-
-      double adjustedSpot;
-      double adjustedStrike;
-      calculateAdjustedSpotAndStrike( expiry, strike, adjustedSpot, adjustedStrike );
-
-      double discounting = std::exp( - m_Rate * expiry );
-      double result = util::bsCall( adjustedStrike, adjustedSpot / discounting, expiry, m_Volatility ) * discounting;
-
-      if (option->payoff()->isCall())
-        return result;
-      else
-        return result - adjustedSpot + adjustedStrike * discounting;
+      return std::make_shared<impl::BlackScholesClosedFormEuropeanOptionPricer>( spot, rate, volatility, dividends );
     }
-  }
-
-  beagle::pricer_ptr_t
-  Pricer::formBlackScholesClosedFormEuropeanOptionPricer( double spot,
-                                                          double rate,
-                                                          double volatility,
-                                                          const beagle::discrete_dividend_schedule_t& dividends )
-  {
-    return std::make_shared<impl::BlackScholesClosedFormEuropeanOptionPricer>( spot, rate, volatility, dividends );
   }
 }

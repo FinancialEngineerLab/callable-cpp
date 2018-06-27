@@ -1,73 +1,74 @@
 #include "payoff.hpp"
-#include <algorithm>
 
 namespace beagle
 {
-
-  namespace impl
+  namespace option
   {
-    struct CallPayoff : public Payoff
+    namespace impl
     {
-      CallPayoff( void ) :
-        Payoff()
-      { }
-      virtual ~CallPayoff( void )
-      { }
-    public:
-      virtual double intrinsicValue( double spot,
-                                     double strike ) const override
+      struct CallPayoff : public Payoff
       {
-        return std::max( spot - strike, 0. );
-      }
-      virtual bool isCall( void ) const
-      {
-        return true;
-      }
-      virtual bool isPut( void ) const
-      {
-        return false;
-      }
-    };
+        CallPayoff( void ) :
+          Payoff()
+        { }
+        virtual ~CallPayoff( void )
+        { }
+      public:
+        virtual double intrinsicValue( double spot,
+                                       double strike ) const override
+        {
+          return std::max( spot - strike, 0. );
+        }
+        virtual bool isCall( void ) const
+        {
+          return true;
+        }
+        virtual bool isPut( void ) const
+        {
+          return false;
+        }
+      };
 
-    struct PutPayoff : public Payoff
+      struct PutPayoff : public Payoff
+      {
+        PutPayoff( void ) :
+          Payoff()
+        { }
+        virtual ~PutPayoff( void )
+        { }
+      public:
+        virtual double intrinsicValue( double spot,
+                                       double strike ) const override
+        {
+          return std::max( strike - spot, 0. );
+        }
+        virtual bool isCall( void ) const
+        {
+          return false;
+        }
+        virtual bool isPut( void ) const
+        {
+          return true;
+        }
+      };
+    }
+
+    Payoff::Payoff( void )
+    { }
+
+    Payoff::~Payoff( void )
+    { }
+
+    beagle::payoff_ptr_t
+    Payoff::call( void )
     {
-      PutPayoff( void ) :
-        Payoff()
-      { }
-      virtual ~PutPayoff( void )
-      { }
-    public:
-      virtual double intrinsicValue( double spot,
-                                     double strike ) const override
-      {
-        return std::max( strike - spot, 0. );
-      }
-      virtual bool isCall( void ) const
-      {
-        return false;
-      }
-      virtual bool isPut( void ) const
-      {
-        return true;
-      }
-    };
-  }
+      return std::make_shared<impl::CallPayoff>();
+    }
 
-  Payoff::Payoff( void )
-  { }
-
-  Payoff::~Payoff( void )
-  { }
-
-  payoff_ptr_t
-  Payoff::call( void )
-  {
-    return std::make_shared<impl::CallPayoff>();
-  }
-
-  payoff_ptr_t
-  Payoff::put( void )
-  {
-    return std::make_shared<impl::PutPayoff>();
+    beagle::payoff_ptr_t
+    Payoff::put( void )
+    {
+      return std::make_shared<impl::PutPayoff>();
+    }
   }
 }

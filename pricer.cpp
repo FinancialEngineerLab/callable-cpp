@@ -2,10 +2,12 @@
 
 namespace beagle
 {
+  namespace valuation
+  {
+    Pricer::Pricer( void )
+    { }
 
-  Pricer::Pricer( void )
-  { }
-
-  Pricer::~Pricer( void )
-  { }
+    Pricer::~Pricer( void )
+    { }
+  }
 }

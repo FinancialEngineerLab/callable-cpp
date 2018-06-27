@@ -2,38 +2,40 @@
 
 namespace beagle
 {
-
-  namespace impl
+  namespace math
   {
-    struct TwoDimConstantFunction : public RealTwoDimFunction
+    namespace impl
     {
-      TwoDimConstantFunction( double constant ) :
-        m_Const( constant )
-      { }
-      virtual ~TwoDimConstantFunction( void )
-      { }
-    public:
-      virtual double value( double argX,
-                            double argY ) const override
+      struct TwoDimConstantFunction : public RealTwoDimFunction
       {
-        return m_Const;
-      }
-    private:
-      double m_Const;
-    };
-  }
+        TwoDimConstantFunction( double constant ) :
+          m_Const( constant )
+        { }
+        virtual ~TwoDimConstantFunction( void )
+        { }
+      public:
+        virtual double value( double argX,
+                              double argY ) const override
+        {
+          return m_Const;
+        }
+      private:
+        double m_Const;
+      };
+    }
 
 
-  RealTwoDimFunction::RealTwoDimFunction( void )
-  { }
+    RealTwoDimFunction::RealTwoDimFunction( void )
+    { }
 
-  RealTwoDimFunction::~RealTwoDimFunction( void )
-  { }
+    RealTwoDimFunction::~RealTwoDimFunction( void )
+    { }
 
-  real_2d_function_ptr_t
-  RealTwoDimFunction::createTwoDimConstantFunction( double constant )
-  {
+    beagle::real_2d_function_ptr_t
+    RealTwoDimFunction::createTwoDimConstantFunction( double constant )
+    {
 
-    return std::make_shared<impl::TwoDimConstantFunction>( constant );
+      return std::make_shared<impl::TwoDimConstantFunction>( constant );
+    }
   }
 }

@@ -1,28 +1,25 @@
 #ifndef REAL_FUNCTION_HPP
 #define REAL_FUNCTION_HPP
 
-#include <memory>
-#include <vector>
+#include "fwd_decl.hpp"
 
 namespace beagle
 {
-
-  struct RealFunction;
-  using real_function_ptr_t = std::shared_ptr<RealFunction>;
-  using dbl_vec_t = std::vector<double>;
-
-  struct RealFunction
+  namespace math
   {
-    RealFunction( void );
-    virtual ~RealFunction( void );
-  public:
-    virtual double value( double arg ) const = 0;
-  public:
-    static real_function_ptr_t createConstantFunction( double constant );
-    static real_function_ptr_t createLinearWithFlatExtrapolationInterpolatedFunction( 
-                                                       const dbl_vec_t& xValues,
-                                                       const dbl_vec_t& yValues );
-  };
+    struct RealFunction
+    {
+      RealFunction( void );
+      virtual ~RealFunction( void );
+    public:
+      virtual double value( double arg ) const = 0;
+    public:
+      static beagle::real_function_ptr_t createConstantFunction( double constant );
+      static beagle::real_function_ptr_t createLinearWithFlatExtrapolationInterpolatedFunction(
+                                                         const beagle::dbl_vec_t& xValues,
+                                                         const beagle::dbl_vec_t& yValues );
+    };
+  }
 }
 
 

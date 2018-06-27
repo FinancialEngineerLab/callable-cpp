@@ -1,6 +1,7 @@
 #include <iostream>
 #include "pricer.hpp"
 #include "option.hpp"
+#include "payoff.hpp"
 
 int main( void )
 {
@@ -31,9 +32,9 @@ int main( void )
   dividends.emplace_back( 23.5, 3. );
 
   try
-  {  
-    beagle::pricer_ptr_t bscfeop = beagle::Pricer::formBlackScholesClosedFormEuropeanOptionPricer( 100., .03, .3, dividends );
-    beagle::option_ptr_t euroOption = beagle::Option::createEuropeanOption( 5., 100., beagle::Payoff::call() );
+  {
+    beagle::pricer_ptr_t bscfeop = beagle::valuation::Pricer::formBlackScholesClosedFormEuropeanOptionPricer( 100., .03, .3, dividends );
+    beagle::option_ptr_t euroOption = beagle::option::Option::createEuropeanOption( 5., 100., beagle::option::Payoff::call() );
     double value = bscfeop->optionValue( euroOption );
     std::cout << value << std::endl;
   }
