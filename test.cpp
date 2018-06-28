@@ -5,7 +5,6 @@
 #include "real_2d_function.hpp"
 #include "dividend_policy.hpp"
 #include "interpolation_builder.hpp"
-#include "backward_pde_pricer.hpp"
 #include "util.hpp"
 
 int main( void )
