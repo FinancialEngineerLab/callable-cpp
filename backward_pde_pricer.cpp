@@ -157,7 +157,7 @@ namespace beagle
 
         double forward = m_Spot * std::exp(m_Rate * expiry);
         double atmVol = m_Volatility->value( expiry, forward );
-        double logSpot = std::log( m_Spot ) + (m_Rate - .5 * atmVol * atmVol) * expiry;
+        double logSpot = std::log( m_Spot ); // + (m_Rate - .5 * atmVol * atmVol) * expiry;
         int mid = m_StepsLogSpot / 2;
         double logSpotStep = 2. * m_NumStdev * atmVol * std::sqrt(expiry) / m_StepsLogSpot;
         logSpots.resize(m_StepsLogSpot);

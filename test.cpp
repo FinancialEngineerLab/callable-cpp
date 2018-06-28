@@ -39,7 +39,7 @@ int main( void )
   try
   {
     beagle::pricer_ptr_t bscfeop = beagle::valuation::Pricer::formBlackScholesClosedFormEuropeanOptionPricer( 100., .03, .3, dividends );
-    beagle::option_ptr_t euroOption = beagle::option::Option::createEuropeanOption( 1., 100., beagle::option::Payoff::call() );
+    beagle::option_ptr_t euroOption = beagle::option::Option::createEuropeanOption( 1., 100.001, beagle::option::Payoff::call() );
     double value = bscfeop->optionValue( euroOption );
     std::cout << value << std::endl;
   }
@@ -88,13 +88,13 @@ int main( void )
     beagle::pricer_ptr_t bscfeop = beagle::valuation::Pricer::formOneDimensionalBackwardPDEOptionPricer( 100.,
                                                                                                          .03,
                                                                                                          beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(.3),
-                                                                                                         250,
-                                                                                                         501,
-                                                                                                         3,
+                                                                                                         1201,
+                                                                                                         1601,
+                                                                                                         5.5,
                                                                                                          dividends,
                                                                                                          beagle::valuation::DividendPolicy::liquidator(),
                                                                                                          beagle::math::InterpolationBuilder::linearWithFlatExtrapolation() );
-    beagle::option_ptr_t option = beagle::option::Option::createEuropeanOption( 1., 100., beagle::option::Payoff::call() );
+    beagle::option_ptr_t option = beagle::option::Option::createEuropeanOption( 1., 100.001, beagle::option::Payoff::call() );
     double value = bscfeop->optionValue( option );
     std::cout << value << std::endl;
   }
