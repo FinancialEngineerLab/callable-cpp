@@ -99,6 +99,14 @@ namespace beagle
           rhs[logSpotSize-3] -= deltaT * upper[logSpotSize-3] * boundaryValues.second;
 
           beagle::util::tridiagonalSolve( rhs, diag, upper, lower );
+
+          if (isAmerican)
+          {
+            for (int j=0; j<logSpotSize-2; ++j)
+            {
+              rhs[j] = std::max( payoff->intrinsicValue( spots[j+1], strike ), rhs[j] );
+            }
+          }
         }
 
         return rhs[rhs.size()/2];

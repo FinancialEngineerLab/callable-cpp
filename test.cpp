@@ -39,7 +39,7 @@ int main( void )
   try
   {
     beagle::pricer_ptr_t bscfeop = beagle::valuation::Pricer::formBlackScholesClosedFormEuropeanOptionPricer( 100., .03, .3, dividends );
-    beagle::option_ptr_t euroOption = beagle::option::Option::createEuropeanOption( 1., 100.001, beagle::option::Payoff::call() );
+    beagle::option_ptr_t euroOption = beagle::option::Option::createEuropeanOption( 5., 99.99, beagle::option::Payoff::put() );
     double value = bscfeop->optionValue( euroOption );
     std::cout << value << std::endl;
   }
@@ -47,41 +47,6 @@ int main( void )
   {
     std::cout << "A valuation error has occurred -- " << what << std::endl;
   }
-
-  // try
-  // {
-  //   beagle::valuation::impl::OneDimensionalBackwardPDEOptionPricer
-  //                              bscfeop = beagle::valuation::impl::OneDimensionalBackwardPDEOptionPricer( 100.,
-  //                                                                                                        .03,
-  //                                                                                                        beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(.3),
-  //                                                                                                        122,
-  //                                                                                                        501,
-  //                                                                                                        4.5,
-  //                                                                                                        dividends,
-  //                                                                                                        beagle::valuation::DividendPolicy::liquidator(),
-  //                                                                                                        beagle::math::InterpolationBuilder::linearWithFlatExtrapolation() );
-
-  //   beagle::dbl_vec_t times;
-  //   beagle::dbl_vec_t logSpots;
-  //   beagle::int_vec_t indices;
-  //   bscfeop.formLatticeForBackwardValuation( 1.4, times, logSpots, indices );
-
-  //   std::ofstream out("lattic.txt");
-  //   out << std::endl;
-  //   for (auto time : times)
-  //     out << time << std::endl;
-
-  //   out << std::endl;
-  //   for (auto time : logSpots)
-  //     out << time << std::endl;
-
-  //   out << std::endl;
-  //   for (auto time : indices)
-  //     out << time << std::endl;
-  // }
-  // catch (...)
-  // {
-  // }
 
   try
   {
@@ -94,7 +59,7 @@ int main( void )
                                                                                                          dividends,
                                                                                                          beagle::valuation::DividendPolicy::liquidator(),
                                                                                                          beagle::math::InterpolationBuilder::linearWithFlatExtrapolation() );
-    beagle::option_ptr_t option = beagle::option::Option::createEuropeanOption( 1., 100.001, beagle::option::Payoff::call() );
+    beagle::option_ptr_t option = beagle::option::Option::createAmericanOption( 5., 99.99, beagle::option::Payoff::put() );
     double value = bscfeop->optionValue( option );
     std::cout << value << std::endl;
   }
