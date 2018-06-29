@@ -7,7 +7,8 @@
 #include "real_function.hpp"
 #include "interpolation_builder.hpp"
 
-#include <iostream>
+// #include <fstream>
+// std::ofstream out("interpolation.txt");
 
 namespace beagle
 {
@@ -55,38 +56,41 @@ namespace beagle
           auto pA = dynamic_cast<beagle::option::mixins::American*>(option.get());
           bool isAmerican( pA != nullptr );
 
-          int logSpotSize = logSpots.size();
-          beagle::dbl_vec_t spots(logSpotSize);
-          std::transform( logSpots.cbegin(),
-                          logSpots.cend(),
+          int spotSize = logSpots.size() - 2;
+          beagle::dbl_vec_t spots(spotSize);
+          std::transform( logSpots.cbegin()+1,
+                          logSpots.cend()-1,
                           spots.begin(),
                           [](double arg) {return std::exp(arg);} );
 
           // calculate terminal value for backward induction
-          beagle::dbl_vec_t optionValues(logSpotSize);
+          beagle::dbl_vec_t optionValues(spotSize);
           std::transform( spots.cbegin(),
                           spots.cend(),
                           optionValues.begin(),
                           [&payoff, strike](double spot) {return payoff->intrinsicValue(spot, strike);}  );
 
+          two_dbl_t boundarySpots = std::make_pair( std::exp(logSpots.front()),
+                                                    std::exp(logSpots.back()) );
+
           int timeSteps = times.size();
           double deltaX = logSpots[1] - logSpots[0];
 
-          beagle::dbl_vec_t diag(logSpotSize-2);
-          beagle::dbl_vec_t lower(logSpotSize-2);
-          beagle::dbl_vec_t upper(logSpotSize-2);
-          beagle::dbl_vec_t rhs(optionValues.cbegin()+1, optionValues.cend()-1);
+          beagle::dbl_vec_t diag(spotSize);
+          beagle::dbl_vec_t lower(spotSize);
+          beagle::dbl_vec_t upper(spotSize);
+          beagle::dbl_vec_t rhs(optionValues.cbegin(), optionValues.cend());
 
-          auto it = m_Dividends.crbegin();
+          auto it = m_Dividends.begin() + exDividendIndices.size() - 1;
           auto jt = exDividendIndices.crbegin();
           auto jtEnd = exDividendIndices.crend();
           for (int i=timeSteps-1; i>0; --i)
           {
             double thisTime = times[i-1];
             double deltaT = times[i] - thisTime;
-            for (int j=0; j<logSpotSize-2; ++j)
+            for (int j=0; j<spotSize; ++j)
             {
-              double vol = m_Volatility->value(thisTime, spots[j+1]);
+              double vol = m_Volatility->value(thisTime, spots[j]);
               double volOverDeltaX = vol / deltaX;
               double volOverDeltaXSquared = volOverDeltaX * volOverDeltaX;
               double mu = m_Rate - .5 * vol * vol;
@@ -97,28 +101,32 @@ namespace beagle
             }
 
             two_dbl_t boundaryValues = boundaryCondition( payoff,
-                                                          std::make_pair(spots.front(), spots.back()),
+                                                          boundarySpots,
                                                           strike,
                                                           expiry - thisTime,
                                                           isAmerican );
-            rhs[0]             -= deltaT * lower[0] * boundaryValues.first;
-            rhs[logSpotSize-3] -= deltaT * upper[logSpotSize-3] * boundaryValues.second;
+            rhs[0]          -= deltaT * lower[0] * boundaryValues.first;
+            rhs[spotSize-1] -= deltaT * upper[spotSize-1] * boundaryValues.second;
 
             beagle::util::tridiagonalSolve( rhs, diag, upper, lower );
 
             if (isAmerican)
             {
-              for (int j=0; j<logSpotSize-2; ++j)
+              for (int j=0; j<spotSize; ++j)
               {
-                rhs[j] = std::max( payoff->intrinsicValue( spots[j+1], strike ), rhs[j] );
+                rhs[j] = std::max( payoff->intrinsicValue( spots[j], strike ), rhs[j] );
               }
             }
 
             /// Ex-dividend date
             if (jt != jtEnd && *jt == i)
             {
-              beagle::dbl_vec_t shiftedSpots(spots.cbegin()+1, spots.cend()-1);
-              beagle::real_function_ptr_t interpFunc = m_Interp->formFunction( shiftedSpots, rhs );
+              beagle::dbl_vec_t shiftedSpots(spots.cbegin(), spots.cend());
+              beagle::real_function_ptr_t interpFunc = m_Interp->formFunction( spots, rhs );
+
+              // out << spots.size() << " " << rhs.size() << std::endl;
+              // for (int k=0; k<spots.size(); ++k)
+              //   out  << spots[k] << " " << rhs[k] << std::endl;
 
               double dividendAmount = it->second;
               std::transform( shiftedSpots.cbegin(),
@@ -135,13 +143,17 @@ namespace beagle
                                 return interpFunc->value(spot);
                               } );
 
+              // out << std::endl << dividendAmount << std::endl;
+              // for (int k=0; k<shiftedSpots.size(); ++k)
+              //   out  << shiftedSpots[k] << " " << rhs[k] << std::endl;
+              // out << std::endl;
+
               ++jt;
-              ++it;
+              --it;
             }
           }
 
-          beagle::dbl_vec_t spotsForInterp(spots.cbegin()+1, spots.cend()-1);
-          beagle::real_function_ptr_t interpResult = m_Interp->formFunction( spotsForInterp, rhs );
+          beagle::real_function_ptr_t interpResult = m_Interp->formFunction( spots, rhs );
           return interpResult->value(m_Spot);
         }
       private:
@@ -185,11 +197,9 @@ namespace beagle
                   exDividendIndices.push_back(j);
                   ++it;
                 }
-                else
-                {
-                  times.push_back(time);
-                }
               }
+              
+              times.push_back(time);
             }
 
             times.shrink_to_fit();

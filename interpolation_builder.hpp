@@ -16,6 +16,7 @@ namespace beagle
                                                         const dbl_vec_t& yValues ) const = 0;
     public:
       static beagle::interp_builder_ptr_t linearWithFlatExtrapolation( void );
+      static beagle::interp_builder_ptr_t naturalCubicSplineWithFlatExtrapolation( void );
     };
   }
 }
