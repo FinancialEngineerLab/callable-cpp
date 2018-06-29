@@ -3,6 +3,11 @@
 #include "option.hpp"
 #include "payoff.hpp"
 #include "util.hpp"
+#include "dividend_policy.hpp"
+#include "real_function.hpp"
+#include "interpolation_builder.hpp"
+
+#include <iostream>
 
 namespace beagle
 {
@@ -47,6 +52,11 @@ namespace beagle
           beagle::int_vec_t exDividendIndices;
           formLatticeForBackwardValuation( expiry, times, logSpots, exDividendIndices );
 
+          std::cout << std::endl << "Ex-dividend dates are: \n";
+          for (auto i : exDividendIndices)
+            std::cout << i << " ";
+          std::cout << std::endl;
+
           auto pA = dynamic_cast<beagle::option::mixins::American*>(option.get());
           bool isAmerican( pA != nullptr );
 
@@ -71,8 +81,11 @@ namespace beagle
           beagle::dbl_vec_t diag(logSpotSize-2);
           beagle::dbl_vec_t lower(logSpotSize-2);
           beagle::dbl_vec_t upper(logSpotSize-2);
-          beagle::dbl_vec_t rhs(optionValues.begin()+1, optionValues.end()-1);
+          beagle::dbl_vec_t rhs(optionValues.cbegin()+1, optionValues.cend()-1);
 
+          auto it = m_Dividends.crbegin();
+          auto jt = exDividendIndices.crbegin();
+          auto jtEnd = exDividendIndices.crend();
           for (int i=timeSteps-1; i>0; --i)
           {
             double thisTime = times[i-1];
@@ -105,6 +118,33 @@ namespace beagle
               {
                 rhs[j] = std::max( payoff->intrinsicValue( spots[j+1], strike ), rhs[j] );
               }
+            }
+
+            /// Ex-dividend date
+            if (jt != jtEnd && *jt == i)
+            {
+              beagle::dbl_vec_t shiftedSpots(spots.cbegin()+1, spots.cend()-1);
+              beagle::real_function_ptr_t interpFunc = m_Interp->formFunction( shiftedSpots, rhs );
+
+              double dividendAmount = it->second;
+              std::transform( shiftedSpots.cbegin(),
+                              shiftedSpots.cend(),
+                              shiftedSpots.begin(),
+                              [this, dividendAmount](double spot) { 
+                                return m_Policy->exDividendStockPrice(spot, dividendAmount);
+                              } );
+
+              std::transform( shiftedSpots.cbegin(),
+                              shiftedSpots.cend(),
+                              rhs.begin(),
+                              [&interpFunc](double spot) { 
+                                return interpFunc->value(spot);
+                              } );
+
+              std::cout << i << std::endl;
+
+              ++jt;
+              ++it;
             }
           }
 
@@ -179,9 +219,9 @@ namespace beagle
           double minSpot = boundarySpots.first;
           double maxSpot = boundarySpots.second;
 
-          double adjustedStrike = strike;
-          if (!isAmerican)
-            adjustedStrike *= std::exp(-m_Rate * timeToExpiry);
+          double adjustedStrike = strike * std::exp(-m_Rate * timeToExpiry);
+          if (isAmerican && payoff->isPut())
+            adjustedStrike = strike;
 
           return std::make_pair( payoff->intrinsicValue( minSpot, adjustedStrike ),
                                  payoff->intrinsicValue( maxSpot, adjustedStrike ) );
