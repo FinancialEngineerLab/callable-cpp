@@ -15,7 +15,7 @@ int main( void )
   dividends.emplace_back(  2.5, 3. );
   dividends.emplace_back(  3.5, 3. );
   dividends.emplace_back(  4.5, 3. );
-  // dividends.emplace_back(  5.5, 3. );
+  dividends.emplace_back(  5.5, 3. );
   // dividends.emplace_back(  6.5, 3. );
   // dividends.emplace_back(  7.5, 3. );
   // dividends.emplace_back(  8.5, 3. );
@@ -38,7 +38,7 @@ int main( void )
   try
   {
     beagle::pricer_ptr_t bscfeop = beagle::valuation::Pricer::formBlackScholesClosedFormEuropeanOptionPricer( 100., .03, .3, dividends );
-    beagle::option_ptr_t euroOption = beagle::option::Option::createEuropeanOption( 5., 99.99, beagle::option::Payoff::call() );
+    beagle::option_ptr_t euroOption = beagle::option::Option::createEuropeanOption( 5., 125, beagle::option::Payoff::call() );
     double value = bscfeop->optionValue( euroOption );
     std::cout << value << std::endl;
   }
@@ -58,7 +58,7 @@ int main( void )
                                                                                                          dividends,
                                                                                                          beagle::valuation::DividendPolicy::liquidator(),
                                                                                                          beagle::math::InterpolationBuilder::linearWithFlatExtrapolation() );
-    beagle::option_ptr_t option = beagle::option::Option::createEuropeanOption( 5., 99.99, beagle::option::Payoff::call() );
+    beagle::option_ptr_t option = beagle::option::Option::createEuropeanOption( 5., 125, beagle::option::Payoff::call() );
     double value = bscfeop->optionValue( option );
     std::cout << value << std::endl;
   }

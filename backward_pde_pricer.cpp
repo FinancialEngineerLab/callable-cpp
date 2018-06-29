@@ -52,11 +52,6 @@ namespace beagle
           beagle::int_vec_t exDividendIndices;
           formLatticeForBackwardValuation( expiry, times, logSpots, exDividendIndices );
 
-          std::cout << std::endl << "Ex-dividend dates are: \n";
-          for (auto i : exDividendIndices)
-            std::cout << i << " ";
-          std::cout << std::endl;
-
           auto pA = dynamic_cast<beagle::option::mixins::American*>(option.get());
           bool isAmerican( pA != nullptr );
 
@@ -76,7 +71,6 @@ namespace beagle
 
           int timeSteps = times.size();
           double deltaX = logSpots[1] - logSpots[0];
-          double deltaXSquared = deltaX * deltaX;
 
           beagle::dbl_vec_t diag(logSpotSize-2);
           beagle::dbl_vec_t lower(logSpotSize-2);
@@ -141,14 +135,14 @@ namespace beagle
                                 return interpFunc->value(spot);
                               } );
 
-              std::cout << i << std::endl;
-
               ++jt;
               ++it;
             }
           }
 
-          return rhs[rhs.size()/2];
+          beagle::dbl_vec_t spotsForInterp(spots.cbegin()+1, spots.cend()-1);
+          beagle::real_function_ptr_t interpResult = m_Interp->formFunction( spotsForInterp, rhs );
+          return interpResult->value(m_Spot);
         }
       private:
         void formLatticeForBackwardValuation( double expiry,
