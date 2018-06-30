@@ -10,15 +10,16 @@
 int main( void )
 {
   beagle::discrete_dividend_schedule_t dividends;
-  dividends.emplace_back( 0.5, 3. );
-  dividends.emplace_back( 1.5, 3. );
-  dividends.emplace_back( 2.5, 3. );
-  dividends.emplace_back( 3.5, 3. );
-  dividends.emplace_back( 4.5, 3. );
-  // dividends.emplace_back( 5.5, 3. );
+  dividends.emplace_back( 0.5, 6.0 );
+  dividends.emplace_back( 1.5, 6.5 );
+  dividends.emplace_back( 2.5, 7.0 );
+  dividends.emplace_back( 3.5, 7.5 );
+  dividends.emplace_back( 4.5, 8.0 );
+  dividends.emplace_back( 5.5, 8.0 );
+  dividends.emplace_back( 6.5, 8.0 );
 
-  double expiry = 5.;
-  double strike = 100.;
+  double expiry = 7.;
+  double strike = 130.;
   beagle::payoff_ptr_t payoff = beagle::option::Payoff::call();
   beagle::option_ptr_t euroOption = beagle::option::Option::createEuropeanOption( expiry,
                                                                                   strike,
@@ -28,8 +29,8 @@ int main( void )
                                                                                   payoff );
 
   double spot = 100.;
-  double rate = .03;
-  double vol  = .3;
+  double rate = .06;
+  double vol  = .25;
 
   try
   {
@@ -38,8 +39,8 @@ int main( void )
                                                                spot,
                                                                rate,
                                                                beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(vol),
-                                                               901,
                                                                1501,
+                                                               1901,
                                                                7.5,
                                                                dividends,
                                                                beagle::valuation::DividendPolicy::liquidator(),
