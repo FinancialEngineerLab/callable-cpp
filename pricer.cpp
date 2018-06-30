@@ -9,5 +9,11 @@ namespace beagle
 
     Pricer::~Pricer( void )
     { }
+
+    namespace mixins
+    {
+      OptionValueCollectionProvider::~OptionValueCollectionProvider( void )
+      { }
+    }
   }
 }

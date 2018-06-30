@@ -16,19 +16,20 @@ namespace beagle
   {
     namespace impl
     {
-      struct OneDimensionalBackwardPDEOptionPricer : public Pricer
+      struct OneDimensionalForwardPDEEuropeanOptionPricer : public Pricer,
+                                                            public beagle::valuation::mixins::OptionValueCollectionProvider
       {
         using two_dbl_t = std::pair<double, double>;
 
-        OneDimensionalBackwardPDEOptionPricer( double spot,
-                                               double rate,
-                                               const beagle::real_2d_function_ptr_t& volatility,
-                                               int stepsPerAnnum,
-                                               int stepsLogSpot,
-                                               double numStdev,
-                                               const beagle::discrete_dividend_schedule_t& dividends,
-                                               const beagle::dividend_policy_ptr_t& policy,
-                                               const beagle::interp_builder_ptr_t& interp ) :
+        OneDimensionalForwardPDEEuropeanOptionPricer( double spot,
+                                                      double rate,
+                                                      const beagle::real_2d_function_ptr_t& volatility,
+                                                      int stepsPerAnnum,
+                                                      int stepsLogSpot,
+                                                      double numStdev,
+                                                      const beagle::discrete_dividend_schedule_t& dividends,
+                                                      const beagle::dividend_policy_ptr_t& policy,
+                                                      const beagle::interp_builder_ptr_t& interp ) :
           m_Spot( spot ),
           m_Rate( rate ),
           m_Volatility( volatility ),
@@ -39,94 +40,75 @@ namespace beagle
           m_Policy( policy ),
           m_Interp( interp )
         { }
-        ~OneDimensionalBackwardPDEOptionPricer( void )
+        ~OneDimensionalForwardPDEEuropeanOptionPricer( void )
         { }
       public:
-        virtual double optionValue( const beagle::option_ptr_t& option ) const override
+        virtual void optionValueCollection( double expiry,
+                                            const beagle::payoff_ptr_t& payoff,
+                                            beagle::dbl_vec_t& strikes,
+                                            beagle::dbl_vec_t& prices ) const override
         {
-          double expiry = option->expiry();
-          double strike = option->strike();
-          const beagle::payoff_ptr_t& payoff = option->payoff();
-
           beagle::dbl_vec_t times;
-          beagle::dbl_vec_t logSpots;
+          beagle::dbl_vec_t logStrikes;
           beagle::int_vec_t exDividendIndices;
-          formLatticeForBackwardValuation( expiry, times, logSpots, exDividendIndices );
+          formLatticeForBackwardValuation( expiry, times, logStrikes, exDividendIndices );
 
-          auto pA = dynamic_cast<beagle::option::mixins::American*>(option.get());
-          bool isAmerican( pA != nullptr );
-
-          int spotSize = logSpots.size() - 2;
-          beagle::dbl_vec_t spots(spotSize);
-          std::transform( logSpots.cbegin()+1,
-                          logSpots.cend()-1,
-                          spots.begin(),
+          int strikeSize = logStrikes.size() - 2;
+          strikes.resize( strikeSize );
+          std::transform( logStrikes.cbegin()+1,
+                          logStrikes.cend()-1,
+                          strikes.begin(),
                           [](double arg) {return std::exp(arg);} );
 
           // calculate terminal value for backward induction
-          beagle::dbl_vec_t optionValues(spotSize);
-          std::transform( spots.cbegin(),
-                          spots.cend(),
-                          optionValues.begin(),
-                          [&payoff, strike](double spot) {return payoff->intrinsicValue(spot, strike);}  );
+          prices.resize( strikeSize );
+          std::transform( strikes.cbegin(),
+                          strikes.cend(),
+                          prices.begin(),
+                          [&payoff, this](double strike) {return payoff->intrinsicValue(m_Spot, strike);}  );
 
-          two_dbl_t boundarySpots = std::make_pair( std::exp(logSpots.front()),
-                                                    std::exp(logSpots.back()) );
+          two_dbl_t boundaryStrikes = std::make_pair( std::exp(logStrikes.front()),
+                                                      std::exp(logStrikes.back()) );
 
           int timeSteps = times.size();
-          double deltaX = logSpots[1] - logSpots[0];
+          double deltaX = logStrikes[1] - logStrikes[0];
 
-          beagle::dbl_vec_t diag(spotSize);
-          beagle::dbl_vec_t lower(spotSize);
-          beagle::dbl_vec_t upper(spotSize);
-          beagle::dbl_vec_t rhs(optionValues.cbegin(), optionValues.cend());
+          beagle::dbl_vec_t diag(strikeSize);
+          beagle::dbl_vec_t lower(strikeSize);
+          beagle::dbl_vec_t upper(strikeSize);
 
-          auto it = m_Dividends.begin() + exDividendIndices.size() - 1;
-          auto jt = exDividendIndices.crbegin();
-          auto jtEnd = exDividendIndices.crend();
-          for (int i=timeSteps-1; i>0; --i)
+          auto it = m_Dividends.cbegin();
+          auto jt = exDividendIndices.cbegin();
+          auto jtEnd = exDividendIndices.cend();
+          for (int i=0; i<timeSteps-1; ++i)
           {
-            double thisTime = times[i-1];
-            double deltaT = times[i] - thisTime;
-            for (int j=0; j<spotSize; ++j)
+            double thisTime = times[i+1];
+            double deltaT = thisTime - times[i];
+            for (int j=0; j<strikeSize; ++j)
             {
               double vol = m_Volatility->value(thisTime, spots[j]);
               double volOverDeltaX = vol / deltaX;
               double volOverDeltaXSquared = volOverDeltaX * volOverDeltaX;
               double mu = m_Rate - .5 * vol * vol;
               double muOverDeltaX = mu / deltaX;
-              diag[j]  = 1. + deltaT * (volOverDeltaXSquared + m_Rate);
-              upper[j] = - deltaT * .5 * (muOverDeltaX + volOverDeltaXSquared);
-              lower[j] =   deltaT * .5 * (muOverDeltaX - volOverDeltaXSquared);
+              diag[j]  = 1. - deltaT * (volOverDeltaXSquared + m_Rate);
+              upper[j] =   deltaT * .5 * (muOverDeltaX + volOverDeltaXSquared);
+              lower[j] = - deltaT * .5 * (muOverDeltaX - volOverDeltaXSquared);
             }
 
             two_dbl_t boundaryValues = boundaryCondition( payoff,
-                                                          boundarySpots,
-                                                          strike,
-                                                          expiry - thisTime,
-                                                          isAmerican );
-            rhs[0]          -= deltaT * lower[0] * boundaryValues.first;
-            rhs[spotSize-1] -= deltaT * upper[spotSize-1] * boundaryValues.second;
+                                                          boundaryStrikes,
+                                                          expiry - thisTime );
+            prices[0]            -= deltaT * lower[0] * boundaryValues.first;
+            prices[strikeSize-1] -= deltaT * upper[strikeSize-1] * boundaryValues.second;
 
-            beagle::util::tridiagonalSolve( rhs, diag, upper, lower );
-
-            if (isAmerican)
-            {
-              for (int j=0; j<spotSize; ++j)
-              {
-                rhs[j] = std::max( payoff->intrinsicValue( spots[j], strike ), rhs[j] );
-              }
-            }
+            beagle::util::tridiagonalSolve( prices, diag, upper, lower );
 
             /// Ex-dividend date
             if (jt != jtEnd && *jt == i)
             {
-              beagle::dbl_vec_t shiftedSpots(spots.cbegin(), spots.cend());
-              beagle::real_function_ptr_t interpFunc = m_Interp->formFunction( spots, rhs );
-
-              // out << spots.size() << " " << rhs.size() << std::endl;
-              // for (int k=0; k<spots.size(); ++k)
-              //   out  << spots[k] << " " << rhs[k] << std::endl;
+              beagle::dbl_vec_t shiftedStrikes(strikes.cbegin(), strikes.cend());
+              beagle::real_function_ptr_t interpFunc = m_Interp->formFunction( strikes, prices );
 
               double dividendAmount = it->second;
               std::transform( shiftedSpots.cbegin(),
@@ -138,28 +120,31 @@ namespace beagle
 
               std::transform( shiftedSpots.cbegin(),
                               shiftedSpots.cend(),
-                              rhs.begin(),
+                              prices.begin(),
                               [&interpFunc](double spot) { 
                                 return interpFunc->value(spot);
                               } );
 
-              // out << std::endl << dividendAmount << std::endl;
-              // for (int k=0; k<shiftedSpots.size(); ++k)
-              //   out  << shiftedSpots[k] << " " << rhs[k] << std::endl;
-              // out << std::endl;
-
               ++jt;
-              --it;
+              ++it;
             }
           }
 
-          beagle::real_function_ptr_t interpResult = m_Interp->formFunction( spots, rhs );
-          return interpResult->value(m_Spot);
+        }
+        virtual double optionValue( const beagle::option_ptr_t& option ) const override
+        {
+          double expiry = option->expiry();
+          double strike = option->strike();
+          const beagle::payoff_ptr_t& payoff = option->payoff();
+
+          return 0.0;
+          // beagle::real_function_ptr_t interpResult = m_Interp->formFunction( spots, prices );
+          // return interpResult->value(m_Spot);
         }
       private:
         void formLatticeForBackwardValuation( double expiry,
                                               beagle::dbl_vec_t& times,
-                                              beagle::dbl_vec_t& logSpots,
+                                              beagle::dbl_vec_t& logStrikes,
                                               beagle::int_vec_t& exDividendIndices ) const
         {
           exDividendIndices.clear();
@@ -209,26 +194,21 @@ namespace beagle
           double atmVol = m_Volatility->value( expiry, forward );
           double logSpot = std::log( m_Spot ) + (m_Rate - .5 * atmVol * atmVol) * expiry;
           int mid = m_StepsLogSpot / 2;
-          double logSpotStep = 2. * m_NumStdev * atmVol * std::sqrt(expiry) / m_StepsLogSpot;
-          logSpots.resize(m_StepsLogSpot);
+          double logStrikestep = 2. * m_NumStdev * atmVol * std::sqrt(expiry) / m_StepsLogSpot;
+          logStrikes.resize(m_StepsLogSpot);
           for (int i=0; i<m_StepsLogSpot; ++i)
-            logSpots[i] = logSpot + (i-mid)*logSpotStep;
+            logStrikes[i] = logSpot + (i-mid)*logStrikestep;
         }
         two_dbl_t boundaryCondition( const beagle::payoff_ptr_t& payoff,
-                                     const two_dbl_t& boundarySpots,
-                                     double strike,
-                                     double timeToExpiry,
-                                     bool isAmerican ) const
+                                     const two_dbl_t& boundaryStrikes,
+                                     double timeToExpiry ) const
         {
-          double minSpot = boundarySpots.first;
-          double maxSpot = boundarySpots.second;
+          double minStrike = boundaryStrikes.first;
+          double maxStrike = boundaryStrikes.second;
 
-          double adjustedStrike = strike * std::exp(-m_Rate * timeToExpiry);
-          if (isAmerican && payoff->isPut())
-            adjustedStrike = strike;
-
-          return std::make_pair( payoff->intrinsicValue( minSpot, adjustedStrike ),
-                                 payoff->intrinsicValue( maxSpot, adjustedStrike ) );
+          double discounting = std::exp(-m_Rate * timeToExpiry);
+          return std::make_pair( payoff->intrinsicValue( m_Spot, minStrike * discounting ),
+                                 payoff->intrinsicValue( m_Spot, maxStrike * discounting ) );
         }
       private:
         double m_Spot;
@@ -244,25 +224,25 @@ namespace beagle
     }
 
     beagle::pricer_ptr_t
-    Pricer::formOneDimensionalBackwardPDEOptionPricer( double spot,
-                                                       double rate,
-                                                       const beagle::real_2d_function_ptr_t& volatility,
-                                                       int stepsPerAnnum,
-                                                       int stepsLogSpot,
-                                                       double numStdev,
-                                                       const beagle::discrete_dividend_schedule_t& dividends,
-                                                       const beagle::dividend_policy_ptr_t& policy,
-                                                       const beagle::interp_builder_ptr_t& interp )
+    Pricer::formOneDimensionalForwardPDEEuropeanOptionPricer( double spot,
+                                                              double rate,
+                                                              const beagle::real_2d_function_ptr_t& volatility,
+                                                              int stepsPerAnnum,
+                                                              int stepsLogSpot,
+                                                              double numStdev,
+                                                              const beagle::discrete_dividend_schedule_t& dividends,
+                                                              const beagle::dividend_policy_ptr_t& policy,
+                                                              const beagle::interp_builder_ptr_t& interp )
     {
-      return std::make_shared<impl::OneDimensionalBackwardPDEOptionPricer>( spot,
-                                                                            rate,
-                                                                            volatility,
-                                                                            stepsPerAnnum,
-                                                                            stepsLogSpot,
-                                                                            numStdev,
-                                                                            dividends,
-                                                                            policy,
-                                                                            interp );
+      return std::make_shared<impl::OneDimensionalForwardPDEEuropeanOptionPricer>( spot,
+                                                                                   rate,
+                                                                                   volatility,
+                                                                                   stepsPerAnnum,
+                                                                                   stepsLogSpot,
+                                                                                   numStdev,
+                                                                                   dividends,
+                                                                                   policy,
+                                                                                   interp );
     }
   }
 }

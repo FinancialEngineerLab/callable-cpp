@@ -79,7 +79,6 @@ namespace beagle
           beagle::dbl_vec_t diag(spotSize);
           beagle::dbl_vec_t lower(spotSize);
           beagle::dbl_vec_t upper(spotSize);
-          beagle::dbl_vec_t rhs(optionValues.cbegin(), optionValues.cend());
 
           auto it = m_Dividends.begin() + exDividendIndices.size() - 1;
           auto jt = exDividendIndices.crbegin();
@@ -105,16 +104,16 @@ namespace beagle
                                                           strike,
                                                           expiry - thisTime,
                                                           isAmerican );
-            rhs[0]          -= deltaT * lower[0] * boundaryValues.first;
-            rhs[spotSize-1] -= deltaT * upper[spotSize-1] * boundaryValues.second;
+            optionValues[0]          -= deltaT * lower[0] * boundaryValues.first;
+            optionValues[spotSize-1] -= deltaT * upper[spotSize-1] * boundaryValues.second;
 
-            beagle::util::tridiagonalSolve( rhs, diag, upper, lower );
+            beagle::util::tridiagonalSolve( optionValues, diag, upper, lower );
 
             if (isAmerican)
             {
               for (int j=0; j<spotSize; ++j)
               {
-                rhs[j] = std::max( payoff->intrinsicValue( spots[j], strike ), rhs[j] );
+                optionValues[j] = std::max( payoff->intrinsicValue( spots[j], strike ), optionValues[j] );
               }
             }
 
@@ -122,11 +121,11 @@ namespace beagle
             if (jt != jtEnd && *jt == i)
             {
               beagle::dbl_vec_t shiftedSpots(spots.cbegin(), spots.cend());
-              beagle::real_function_ptr_t interpFunc = m_Interp->formFunction( spots, rhs );
+              beagle::real_function_ptr_t interpFunc = m_Interp->formFunction( spots, optionValues );
 
-              // out << spots.size() << " " << rhs.size() << std::endl;
+              // out << spots.size() << " " << optionValues.size() << std::endl;
               // for (int k=0; k<spots.size(); ++k)
-              //   out  << spots[k] << " " << rhs[k] << std::endl;
+              //   out  << spots[k] << " " << optionValues[k] << std::endl;
 
               double dividendAmount = it->second;
               std::transform( shiftedSpots.cbegin(),
@@ -138,14 +137,14 @@ namespace beagle
 
               std::transform( shiftedSpots.cbegin(),
                               shiftedSpots.cend(),
-                              rhs.begin(),
+                              optionValues.begin(),
                               [&interpFunc](double spot) { 
                                 return interpFunc->value(spot);
                               } );
 
               // out << std::endl << dividendAmount << std::endl;
               // for (int k=0; k<shiftedSpots.size(); ++k)
-              //   out  << shiftedSpots[k] << " " << rhs[k] << std::endl;
+              //   out  << shiftedSpots[k] << " " << optionValues[k] << std::endl;
               // out << std::endl;
 
               ++jt;
@@ -153,7 +152,7 @@ namespace beagle
             }
           }
 
-          beagle::real_function_ptr_t interpResult = m_Interp->formFunction( spots, rhs );
+          beagle::real_function_ptr_t interpResult = m_Interp->formFunction( spots, optionValues );
           return interpResult->value(m_Spot);
         }
       private:
