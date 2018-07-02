@@ -98,11 +98,11 @@ namespace beagle
               double vol = m_Volatility->value(thisTime, strikes[j]);
               double volOverDeltaX = vol / deltaX;
               double volOverDeltaXSquared = volOverDeltaX * volOverDeltaX;
-              double mu = m_Rate - .5 * vol * vol;
+              double mu = m_Rate + .5 * vol * vol;
               double muOverDeltaX = mu / deltaX;
-              diag[j]  = 1. + deltaT * (volOverDeltaXSquared + m_Rate);
-              upper[j] = - deltaT * .5 * (muOverDeltaX + volOverDeltaXSquared);
-              lower[j] =   deltaT * .5 * (muOverDeltaX - volOverDeltaXSquared);
+              diag[j]  = 1. + deltaT * volOverDeltaXSquared;
+              upper[j] =   deltaT * .5 * (muOverDeltaX - volOverDeltaXSquared);
+              lower[j] = - deltaT * .5 * (muOverDeltaX + volOverDeltaXSquared);
             }
 
             two_dbl_t boundaryValues = boundaryCondition( payoff,
