@@ -118,33 +118,36 @@ namespace beagle
             beagle::util::tridiagonalSolve( prices, diag, upper, lower );
 
             /// Ex-dividend date
-            // if (jt != jtEnd && *jt == i)
-            // {
-            //   beagle::dbl_vec_t shiftedStrikes(strikes.cbegin(), strikes.cend());
+            if (jt != jtEnd && *jt == i)
+            {
+              beagle::real_function_ptr_t interpFunc = m_Interp->formFunction( strikes, prices );
+              beagle::dbl_vec_t shiftedStrikes(strikes.size());
 
-            //   double dividendAmount = it->second;
-            //   std::transform( shiftedStrikes.cbegin(),
-            //                   shiftedStrikes.cend(),
-            //                   shiftedStrikes.begin(),
-            //                   [this, dividendAmount](double strike) { 
-            //                     return m_Policy->exDividendStockPrice(spot, dividendAmount);
-            //                   } );
-            //   beagle::real_function_ptr_t interpFunc = m_Interp->formFunction( strikes, prices );
+              double dividendAmount = it->second;
+              std::transform( strikes.cbegin(),
+                              strikes.cend(),
+                              shiftedStrikes.begin(),
+                              [this, dividendAmount](double strike) { 
+                                return strike + m_Policy->dividendAmount(m_Spot, dividendAmount);
+                              } );
 
-            //   std::transform( shiftedSpots.cbegin(),
-            //                   shiftedSpots.cend(),
-            //                   prices.begin(),
-            //                   [&interpFunc](double spot) { 
-            //                     return interpFunc->value(spot);
-            //                   } );
+              std::transform( shiftedStrikes.cbegin(),
+                              shiftedStrikes.cend(),
+                              prices.begin(),
+                              [&interpFunc](double strike) { 
+                                return interpFunc->value(strike);
+                              } );
 
-            //   ++jt;
-            //   ++it;
-            // }
+              ++jt;
+              ++it;
+            }
           }
         }
         virtual double optionValue( const beagle::option_ptr_t& option ) const override
         {
+          if (auto pA = dynamic_cast<beagle::option::mixins::American*>(option.get()))
+            throw(std::string("Cannot price an American option with forward PDE European option pricer!"));
+
           double expiry = option->expiry();
           double strike = option->strike();
           const beagle::payoff_ptr_t& payoff = option->payoff();
@@ -209,7 +212,7 @@ namespace beagle
 
           double forward = m_Spot * std::exp(m_Rate * expiry);
           double atmVol = m_Volatility->value( expiry, forward );
-          double logSpot = std::log( m_Spot ); // + (m_Rate - .5 * atmVol * atmVol) * expiry;
+          double logSpot = std::log( m_Spot ) + (m_Rate - .5 * atmVol * atmVol) * expiry;
           int mid = m_StepsLogSpot / 2;
           double logStrikestep = 2. * m_NumStdev * atmVol * std::sqrt(expiry) / m_StepsLogSpot;
           logStrikes.resize(m_StepsLogSpot);

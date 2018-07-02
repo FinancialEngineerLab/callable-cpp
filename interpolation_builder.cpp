@@ -7,11 +7,11 @@ namespace beagle
   {
     namespace impl
     {
-      struct LinearWithFlatExtrapolationInterpolationBuilder : public InterpolationBuilder
+      struct LinearInterpolationBuilder : public InterpolationBuilder
       {
-        LinearWithFlatExtrapolationInterpolationBuilder( void )
+        LinearInterpolationBuilder( void )
         { }
-        virtual ~LinearWithFlatExtrapolationInterpolationBuilder( void )
+        virtual ~LinearInterpolationBuilder( void )
         { }
       public:
         virtual beagle::real_function_ptr_t formFunction( const dbl_vec_t& xValues,
@@ -21,17 +21,31 @@ namespace beagle
         }
       };
       
-      struct NaturalCubicSplineWithFlatExtrapolationInterpolationBuilder : public InterpolationBuilder
+      struct NaturalCubicSplineInterpolationBuilder : public InterpolationBuilder
       {
-        NaturalCubicSplineWithFlatExtrapolationInterpolationBuilder( void )
+        NaturalCubicSplineInterpolationBuilder( void )
         { }
-        virtual ~NaturalCubicSplineWithFlatExtrapolationInterpolationBuilder( void )
+        virtual ~NaturalCubicSplineInterpolationBuilder( void )
         { }
       public:
         virtual beagle::real_function_ptr_t formFunction( const dbl_vec_t& xValues,
                                                           const dbl_vec_t& yValues ) const override
         {
           return beagle::math::RealFunction::createNaturalCubicSplineWithFlatExtrapolationInterpolatedFunction( xValues, yValues );
+        }
+      };
+      
+      struct PiecewiseConstantRightInterpolationBuilder : public InterpolationBuilder
+      {
+        PiecewiseConstantRightInterpolationBuilder( void )
+        { }
+        virtual ~PiecewiseConstantRightInterpolationBuilder( void )
+        { }
+      public:
+        virtual beagle::real_function_ptr_t formFunction( const dbl_vec_t& xValues,
+                                                          const dbl_vec_t& yValues ) const override
+        {
+          return beagle::math::RealFunction::createPiecewiseConstantRightInterpolatedFunction( xValues, yValues );
         }
       };
     }
@@ -43,15 +57,21 @@ namespace beagle
     { }
 
     beagle::interp_builder_ptr_t
-    InterpolationBuilder::linearWithFlatExtrapolation( void )
+    InterpolationBuilder::linear( void )
     {
-      return std::make_shared<impl::LinearWithFlatExtrapolationInterpolationBuilder>();
+      return std::make_shared<impl::LinearInterpolationBuilder>();
     }
 
     beagle::interp_builder_ptr_t
-    InterpolationBuilder::naturalCubicSplineWithFlatExtrapolation( void )
+    InterpolationBuilder::naturalCubicSpline( void )
     {
-      return std::make_shared<impl::NaturalCubicSplineWithFlatExtrapolationInterpolationBuilder>();
+      return std::make_shared<impl::NaturalCubicSplineInterpolationBuilder>();
+    }
+
+    beagle::interp_builder_ptr_t
+    InterpolationBuilder::piecewiseConstantRight( void )
+    {
+      return std::make_shared<impl::PiecewiseConstantRightInterpolationBuilder>();
     }
   }
 }

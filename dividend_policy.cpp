@@ -13,10 +13,10 @@ namespace beagle
         virtual ~LiquidatorDividendPolicy( void )
         { }
       public:
-        virtual double exDividendStockPrice( double spot,
-                                             double dividend ) const override
+        virtual double dividendAmount( double spot,
+                                       double dividend ) const
         {
-          return spot > dividend ? spot - dividend : 0.;
+          return spot > dividend ? dividend : spot;
         }
       };
 
@@ -27,10 +27,10 @@ namespace beagle
         virtual ~SurvivorDividendPolicy( void )
         { }
       public:
-        virtual double exDividendStockPrice( double spot,
-                                             double dividend ) const override
+        virtual double dividendAmount( double spot,
+                                       double dividend ) const
         {
-          return spot > dividend ? spot - dividend : spot;
+          return spot > dividend ? dividend : 0.;
         }
       };
     }
@@ -40,6 +40,14 @@ namespace beagle
 
     DividendPolicy::~DividendPolicy( void )
     { }
+
+
+    double 
+    DividendPolicy::exDividendStockPrice( double spot,
+                                          double dividend ) const
+    {
+      return spot - dividendAmount( spot, dividend );
+    }
 
     beagle::dividend_policy_ptr_t
     DividendPolicy::liquidator( void )

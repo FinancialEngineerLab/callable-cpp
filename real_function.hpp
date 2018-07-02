@@ -21,6 +21,9 @@ namespace beagle
       static beagle::real_function_ptr_t createNaturalCubicSplineWithFlatExtrapolationInterpolatedFunction(
                                                          const beagle::dbl_vec_t& xValues,
                                                          const beagle::dbl_vec_t& yValues );
+      static beagle::real_function_ptr_t createPiecewiseConstantRightInterpolatedFunction(
+                                                         const beagle::dbl_vec_t& xValues,
+                                                         const beagle::dbl_vec_t& yValues );
     };
   }
 }
