@@ -20,7 +20,7 @@ int main( void )
 
   double expiry = 7.;
   double strike = 100.;
-  beagle::payoff_ptr_t payoff = beagle::option::Payoff::call();
+  beagle::payoff_ptr_t payoff = beagle::option::Payoff::put();
   beagle::option_ptr_t euroOption = beagle::option::Option::createEuropeanOption( expiry,
                                                                                   strike,
                                                                                   payoff );
@@ -49,8 +49,8 @@ int main( void )
                                                                spot,
                                                                rate,
                                                                beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(vol),
-                                                               11,
-                                                               61,
+                                                               1501,
+                                                               1901,
                                                                7.5,
                                                                dividends,
                                                                beagle::valuation::DividendPolicy::liquidator(),

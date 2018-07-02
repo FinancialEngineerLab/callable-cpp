@@ -72,9 +72,9 @@ namespace beagle
                           [](double arg) {return std::exp(arg);} );
           formInitialOptionValueCollection( payoff, strikes, prices );
 
-          for (auto price : prices)
-            out << price << " ";
-          out << std::endl;
+          // for (auto price : prices)
+          //   out << price << " ";
+          // out << std::endl;
 
           two_dbl_t boundaryStrikes = std::make_pair( std::exp(logStrikes.front()),
                                                       std::exp(logStrikes.back()) );
@@ -111,9 +111,9 @@ namespace beagle
             prices[0]            -= deltaT * lower[0] * boundaryValues.first;
             prices[strikeSize-1] -= deltaT * upper[strikeSize-1] * boundaryValues.second;
 
-            for (auto price : prices)
-              out << price << " ";
-            out << std::endl;
+            // for (auto price : prices)
+            //   out << price << " ";
+            // out << std::endl;
 
             beagle::util::tridiagonalSolve( prices, diag, upper, lower );
 
