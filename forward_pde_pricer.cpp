@@ -7,8 +7,8 @@
 #include "real_function.hpp"
 #include "interpolation_builder.hpp"
 
-// #include <fstream>
-// std::ofstream out("interpolation.txt");
+#include <fstream>
+std::ofstream out("interpolation.txt");
 
 namespace beagle
 {
@@ -72,6 +72,10 @@ namespace beagle
                           [](double arg) {return std::exp(arg);} );
           formInitialOptionValueCollection( payoff, strikes, prices );
 
+          for (auto price : prices)
+            out << price << " ";
+          out << std::endl;
+
           two_dbl_t boundaryStrikes = std::make_pair( std::exp(logStrikes.front()),
                                                       std::exp(logStrikes.back()) );
 
@@ -96,9 +100,9 @@ namespace beagle
               double volOverDeltaXSquared = volOverDeltaX * volOverDeltaX;
               double mu = m_Rate - .5 * vol * vol;
               double muOverDeltaX = mu / deltaX;
-              diag[j]  = 1. - deltaT * (volOverDeltaXSquared + m_Rate);
-              upper[j] =   deltaT * .5 * (muOverDeltaX + volOverDeltaXSquared);
-              lower[j] = - deltaT * .5 * (muOverDeltaX - volOverDeltaXSquared);
+              diag[j]  = 1. + deltaT * (volOverDeltaXSquared + m_Rate);
+              upper[j] = - deltaT * .5 * (muOverDeltaX + volOverDeltaXSquared);
+              lower[j] =   deltaT * .5 * (muOverDeltaX - volOverDeltaXSquared);
             }
 
             two_dbl_t boundaryValues = boundaryCondition( payoff,
@@ -106,6 +110,10 @@ namespace beagle
                                                           end - thisTime );
             prices[0]            -= deltaT * lower[0] * boundaryValues.first;
             prices[strikeSize-1] -= deltaT * upper[strikeSize-1] * boundaryValues.second;
+
+            for (auto price : prices)
+              out << price << " ";
+            out << std::endl;
 
             beagle::util::tridiagonalSolve( prices, diag, upper, lower );
 
@@ -134,7 +142,6 @@ namespace beagle
             //   ++it;
             // }
           }
-
         }
         virtual double optionValue( const beagle::option_ptr_t& option ) const override
         {
@@ -202,7 +209,7 @@ namespace beagle
 
           double forward = m_Spot * std::exp(m_Rate * expiry);
           double atmVol = m_Volatility->value( expiry, forward );
-          double logSpot = std::log( m_Spot ) + (m_Rate - .5 * atmVol * atmVol) * expiry;
+          double logSpot = std::log( m_Spot ); // + (m_Rate - .5 * atmVol * atmVol) * expiry;
           int mid = m_StepsLogSpot / 2;
           double logStrikestep = 2. * m_NumStdev * atmVol * std::sqrt(expiry) / m_StepsLogSpot;
           logStrikes.resize(m_StepsLogSpot);
