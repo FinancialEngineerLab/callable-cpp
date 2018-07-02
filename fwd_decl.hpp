@@ -42,6 +42,7 @@ namespace beagle
   using dividend_policy_ptr_t = std::shared_ptr<valuation::DividendPolicy>;
 
   using dbl_vec_t = std::vector<double>;
+  using dbl_vec_vec_t = std::vector<dbl_vec_t>;
   using int_vec_t = std::vector<int>;
   using discrete_dividend_schedule_t = std::vector< std::pair<double, double> >;
 }
