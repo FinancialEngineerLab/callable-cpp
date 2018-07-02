@@ -20,6 +20,7 @@ namespace beagle
     struct RealFunction;
     struct RealTwoDimFunction;
     struct InterpolationBuilder;
+    struct TwoDimInterpolationBuilder;
   }
 
   namespace valuation
@@ -35,6 +36,7 @@ namespace beagle
   using real_function_ptr_coll_t = std::vector<real_function_ptr_t>;
   using real_2d_function_ptr_t = std::shared_ptr<math::RealTwoDimFunction>;
   using interp_builder_ptr_t = std::shared_ptr<math::InterpolationBuilder>;
+  using interp_builder_2d_ptr_t = std::shared_ptr<math::TwoDimInterpolationBuilder>;
 
   using pricer_ptr_t = std::shared_ptr<valuation::Pricer>;
   using dividend_policy_ptr_t = std::shared_ptr<valuation::DividendPolicy>;
