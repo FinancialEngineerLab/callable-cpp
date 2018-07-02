@@ -45,9 +45,20 @@ int main( void )
                                                                dividends,
                                                                beagle::valuation::DividendPolicy::liquidator(),
                                                                beagle::math::InterpolationBuilder::linearWithFlatExtrapolation() );
-    std::cout << "European option price (CF) is: " << bscfeop->optionValue( euroOption ) << std::endl;
-    std::cout << "European option price (FD) is: " << odbpop->optionValue( euroOption ) << std::endl;
-    std::cout << "American option price (FD) is: " << odbpop->optionValue( amerOption ) << std::endl;
+    beagle::pricer_ptr_t odfpeop  = beagle::valuation::Pricer::formOneDimensionalForwardPDEEuropeanOptionPricer( 
+                                                               spot,
+                                                               rate,
+                                                               beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(vol),
+                                                               1501,
+                                                               1901,
+                                                               7.5,
+                                                               dividends,
+                                                               beagle::valuation::DividendPolicy::liquidator(),
+                                                               beagle::math::InterpolationBuilder::linearWithFlatExtrapolation() );
+    std::cout << "European option price (CF)   is: " << bscfeop->optionValue( euroOption ) << std::endl;
+    std::cout << "European option price (FD-B) is: " << odbpop->optionValue( euroOption ) << std::endl;
+    std::cout << "American option price (FD-B) is: " << odbpop->optionValue( amerOption ) << std::endl;
+    std::cout << "European option price (FD-F) is: " << odfpeop->optionValue( euroOption ) << std::endl;
   }
   catch (const std::string& what)
   {

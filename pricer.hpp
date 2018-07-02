@@ -47,7 +47,11 @@ namespace beagle
       {
         virtual ~OptionValueCollectionProvider( void );
       public:
-        virtual void optionValueCollection( double expiry,
+        virtual void formInitialOptionValueCollection( const beagle::payoff_ptr_t& payoff,
+                                                       const beagle::dbl_vec_t& strikes,
+                                                       beagle::dbl_vec_t& prices ) const = 0;
+        virtual void optionValueCollection( double start,
+                                            double end,
                                             const beagle::payoff_ptr_t& payoff,
                                             beagle::dbl_vec_t& strikes,
                                             beagle::dbl_vec_t& prices ) const = 0;
