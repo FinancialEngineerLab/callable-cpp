@@ -56,6 +56,26 @@ namespace beagle
                                             beagle::dbl_vec_t& strikes,
                                             beagle::dbl_vec_t& prices ) const = 0;
       };
+
+      struct FiniteDifference
+      {
+        virtual ~FiniteDifference( void );
+      public:
+        virtual void formTimeSteps( double start,
+                                    double end,
+                                    int stepsPerAnnum,
+                                    const beagle::discrete_dividend_schedule_t& dividends,
+                                    beagle::dbl_vec_t& times,
+                                    beagle::int_vec_t& exDividendIndices ) const;
+        virtual void formStateVariableSteps( double centralValue,
+                                             double rate,
+                                             double vol,
+                                             double expiry,
+                                             double numStdev,
+                                             int numSteps,
+                                             beagle::dbl_vec_t& logStateVariables,
+                                             beagle::dbl_vec_t& stateVariables ) const;
+      };
     }
   }
 }

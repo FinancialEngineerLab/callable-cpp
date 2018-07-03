@@ -16,6 +16,9 @@ namespace beagle
                             double argY ) const = 0;
     public:
       static beagle::real_2d_function_ptr_t createTwoDimConstantFunction( double constant );
+      static beagle::real_2d_function_ptr_t createPiecewiseConstantRightFunction(
+                                  const beagle::dbl_vec_t& params,
+                                  const beagle::real_function_ptr_coll_t& funcs );
     };
   }
 }

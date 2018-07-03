@@ -17,7 +17,8 @@ namespace beagle
     namespace impl
     {
       struct OneDimensionalForwardPDEEuropeanOptionPricer : public Pricer,
-                                                            public beagle::valuation::mixins::OptionValueCollectionProvider
+                                                            public beagle::valuation::mixins::OptionValueCollectionProvider,
+                                                            public beagle::valuation::mixins::FiniteDifference
       {
         using two_dbl_t = std::pair<double, double>;
 
@@ -60,16 +61,9 @@ namespace beagle
                                             beagle::dbl_vec_t& prices ) const override
         {
           beagle::dbl_vec_t times;
-          beagle::dbl_vec_t logStrikes;
           beagle::int_vec_t exDividendIndices;
-          formLatticeForBackwardValuation( start, end, times, logStrikes, exDividendIndices );
-
-          int strikeSize = logStrikes.size() - 2;
-          strikes.resize( strikeSize );
-          std::transform( logStrikes.cbegin()+1,
-                          logStrikes.cend()-1,
-                          strikes.begin(),
-                          [](double arg) {return std::exp(arg);} );
+          beagle::dbl_vec_t logStrikes;
+          formLatticeForBackwardValuation( start, end, times, exDividendIndices, logStrikes, strikes );
           formInitialOptionValueCollection( payoff, strikes, prices );
 
           // for (auto price : prices)
@@ -82,6 +76,7 @@ namespace beagle
           int timeSteps = times.size();
           double deltaX = logStrikes[1] - logStrikes[0];
 
+          int strikeSize = strikes.size();
           beagle::dbl_vec_t diag(strikeSize);
           beagle::dbl_vec_t lower(strikeSize);
           beagle::dbl_vec_t upper(strikeSize);
@@ -163,61 +158,16 @@ namespace beagle
         void formLatticeForBackwardValuation( double start,
                                               double end,
                                               beagle::dbl_vec_t& times,
+                                              beagle::int_vec_t& exDividendIndices,
                                               beagle::dbl_vec_t& logStrikes,
-                                              beagle::int_vec_t& exDividendIndices ) const
+                                              beagle::dbl_vec_t& strikes ) const
         {
-          exDividendIndices.clear();
+          formTimeSteps( start, end, m_StepsPerAnnum, m_Dividends, times, exDividendIndices );
 
           double expiry = end - start;
-          int numSteps = std::floor(expiry * m_StepsPerAnnum);
-          if (m_Dividends.empty())
-          {
-            times.resize(numSteps + 1);
-
-            for (int i=0; i<numSteps+1; ++i)
-              times[i] = start + i * expiry / numSteps;
-          }
-          else
-          {
-            times.reserve(numSteps + 1 + m_Dividends.size());
-
-            auto it = m_Dividends.cbegin();
-            auto itEnd = m_Dividends.cend();
-            for (int i=0, j=0; i<numSteps+1; ++i, ++j)
-            {
-              double time = start + i * expiry / numSteps;
-              if (it != itEnd)
-              {
-                if (it->first < time)
-                {
-                  times.push_back(it->first);
-                  exDividendIndices.push_back(j);
-                  ++j;
-                  times.push_back(time);
-                  ++it;
-                }
-                else if (it->first == time)
-                {
-                  times.push_back(it->first);
-                  exDividendIndices.push_back(j);
-                  ++it;
-                }
-              }
-              
-              times.push_back(time);
-            }
-
-            times.shrink_to_fit();
-          }
-
           double forward = m_Spot * std::exp(m_Rate * expiry);
           double atmVol = m_Volatility->value( expiry, forward );
-          double logSpot = std::log( m_Spot ) + (m_Rate - .5 * atmVol * atmVol) * expiry;
-          int mid = m_StepsLogSpot / 2;
-          double logStrikestep = 2. * m_NumStdev * atmVol * std::sqrt(expiry) / m_StepsLogSpot;
-          logStrikes.resize(m_StepsLogSpot);
-          for (int i=0; i<m_StepsLogSpot; ++i)
-            logStrikes[i] = logSpot + (i-mid)*logStrikestep;
+          formStateVariableSteps( m_Spot, m_Rate, atmVol, expiry, m_NumStdev, m_StepsLogSpot, logStrikes, strikes );
         }
         two_dbl_t boundaryCondition( const beagle::payoff_ptr_t& payoff,
                                      const two_dbl_t& boundaryStrikes,
