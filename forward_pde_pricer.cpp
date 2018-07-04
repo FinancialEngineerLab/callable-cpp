@@ -158,8 +158,8 @@ namespace beagle
 
           beagle::dbl_vec_t prices;
           formInitialOptionValueCollection( payoff, strikes, prices );
-          optionValueCollection( 0., expiry/2., payoff, logStrikes, strikes, prices );
-          optionValueCollection( expiry/2., expiry, payoff, logStrikes, strikes, prices );
+          optionValueCollection( 0., expiry, payoff, logStrikes, strikes, prices );
+          // optionValueCollection( expiry/2., expiry, payoff, logStrikes, strikes, prices );
 
           beagle::real_function_ptr_t interpResult = m_Interp->formFunction( strikes, prices );
           return interpResult->value(strike);
