@@ -152,6 +152,35 @@ namespace beagle
           beagle::real_function_ptr_t interpResult = m_Interp->formFunction( spots, optionValues );
           return interpResult->value(m_Spot);
         }
+      protected:
+        virtual int stepsPerAnnum( void ) const
+        {
+          return m_StepsPerAnnum;
+        }
+        virtual const beagle::discrete_dividend_schedule_t& dividends( void ) const
+        {
+          return m_Dividends;
+        }
+        virtual double spot( void ) const
+        {
+          return m_Spot;
+        }
+        virtual double rate( void ) const
+        {
+          return m_Rate;
+        }
+        virtual const beagle::real_2d_function_ptr_t& volatility( void ) const
+        {
+          return m_Volatility;
+        }
+        virtual int numberOfStandardDeviations( void ) const
+        {
+          return m_NumStdev;
+        }
+        virtual int numberOfStateVariableSteps( void ) const
+        {
+          return m_StepsLogSpot;
+        }
       private:
         void formLatticeForBackwardValuation( double expiry,
                                               beagle::dbl_vec_t& times,
@@ -159,11 +188,11 @@ namespace beagle
                                               beagle::dbl_vec_t& logSpots,
                                               beagle::dbl_vec_t& spots ) const
         {
-          formTimeSteps( 0., expiry, m_StepsPerAnnum, m_Dividends, times, exDividendIndices );
+          formTimeSteps( 0., expiry, times, exDividendIndices );
 
           double forward = m_Spot * std::exp(m_Rate * expiry);
           double atmVol = m_Volatility->value( expiry, forward );
-          formStateVariableSteps( m_Spot, m_Rate, atmVol, expiry, m_NumStdev, m_StepsLogSpot, logSpots, spots );
+          formStateVariableSteps( expiry, logSpots, spots );
         }
         two_dbl_t boundaryCondition( const beagle::payoff_ptr_t& payoff,
                                      const two_dbl_t& boundarySpots,

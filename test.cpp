@@ -20,7 +20,7 @@ int main( void )
 
   double expiry = 2.;
   double strike = 100.;
-  beagle::payoff_ptr_t payoff = beagle::option::Payoff::put();
+  beagle::payoff_ptr_t payoff = beagle::option::Payoff::call();
   beagle::option_ptr_t euroOption = beagle::option::Option::createEuropeanOption( expiry,
                                                                                   strike,
                                                                                   payoff );

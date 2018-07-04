@@ -1,4 +1,5 @@
 #include "pricer.hpp"
+#include "real_2d_function.hpp"
 
 namespace beagle
 {
@@ -21,16 +22,17 @@ namespace beagle
       void
       FiniteDifference::formTimeSteps( double start,
                                        double end,
-                                       int stepsPerAnnum,
-                                       const beagle::discrete_dividend_schedule_t& dividends,
                                        beagle::dbl_vec_t& times,
                                        beagle::int_vec_t& exDividendIndices ) const
       {
+        int steps = stepsPerAnnum();
+        const beagle::discrete_dividend_schedule_t& divs = dividends();
+
         exDividendIndices.clear();
 
         double expiry = end - start;
-        int numSteps = std::floor(expiry * stepsPerAnnum);
-        if (dividends.empty())
+        int numSteps = std::floor(expiry * steps);
+        if (divs.empty())
         {
           times.resize(numSteps + 1);
 
@@ -39,13 +41,13 @@ namespace beagle
         }
         else
         {
-          times.reserve(numSteps + 1 + dividends.size());
+          times.reserve(numSteps + 1 + divs.size());
 
-          auto it = dividends.cbegin();
+          auto it = divs.cbegin();
           if (it->first < start)
             ++it;
 
-          auto itEnd = dividends.cend();
+          auto itEnd = divs.cend();
           for (int i=0, j=0; i<numSteps+1; ++i, ++j)
           {
             double time = start + i * expiry / numSteps;
@@ -75,21 +77,25 @@ namespace beagle
       }
 
       void
-      FiniteDifference::formStateVariableSteps( double centralValue,
-                                                double rate,
-                                                double vol,
-                                                double expiry,
-                                                double numStdev,
-                                                int numSteps,
+      FiniteDifference::formStateVariableSteps( double expiry,
                                                 beagle::dbl_vec_t& logStateVariables,
                                                 beagle::dbl_vec_t& stateVariables ) const
       {
+        double centralValue = spot();
+        double theRate = rate();
+        const beagle::real_2d_function_ptr_t& vol = volatility();
+        double numStdev = numberOfStandardDeviations();
+        int numSteps = numberOfStateVariableSteps();
+
         logStateVariables.resize(numSteps);
         stateVariables.resize(numSteps-2);
 
-        double logSpot = std::log( centralValue ) + (rate - .5 * vol * vol) * expiry;
+
+        double forward = centralValue * std::exp(theRate * expiry);
+        double atmVol = vol->value( expiry, forward );
+        double logSpot = std::log( centralValue ) + (theRate - .5 * atmVol * atmVol) * expiry;
         int mid = numSteps / 2;
-        double logStrikestep = 2. * numStdev * vol * std::sqrt(expiry) / numSteps;
+        double logStrikestep = 2. * numStdev * atmVol * std::sqrt(expiry) / numSteps;
         logStateVariables.resize(numSteps);
         for (int i=0; i<numSteps; ++i)
           logStateVariables[i] = logSpot + (i-mid)*logStrikestep;

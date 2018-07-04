@@ -63,7 +63,7 @@ namespace beagle
         {
           beagle::dbl_vec_t times;
           beagle::int_vec_t exDividendIndices;
-          formTimeSteps( start, end, m_StepsPerAnnum, m_Dividends, times, exDividendIndices );
+          formTimeSteps( start, end, times, exDividendIndices );
 
           // for (auto price : prices)
           //   out << price << " ";
@@ -154,14 +154,44 @@ namespace beagle
 
           beagle::dbl_vec_t logStrikes;
           beagle::dbl_vec_t strikes;
-          formStateVariableSteps( m_Spot, m_Rate, atmVol, expiry, m_NumStdev, m_StepsLogSpot, logStrikes, strikes );
+          formStateVariableSteps( expiry, logStrikes, strikes );
 
           beagle::dbl_vec_t prices;
           formInitialOptionValueCollection( payoff, strikes, prices );
-          optionValueCollection( 0., expiry, payoff, logStrikes, strikes, prices );
+          optionValueCollection( 0., expiry/2., payoff, logStrikes, strikes, prices );
+          optionValueCollection( expiry/2., expiry, payoff, logStrikes, strikes, prices );
 
           beagle::real_function_ptr_t interpResult = m_Interp->formFunction( strikes, prices );
           return interpResult->value(strike);
+        }
+      protected:
+        virtual int stepsPerAnnum( void ) const
+        {
+          return m_StepsPerAnnum;
+        }
+        virtual const beagle::discrete_dividend_schedule_t& dividends( void ) const
+        {
+          return m_Dividends;
+        }
+        virtual double spot( void ) const
+        {
+          return m_Spot;
+        }
+        virtual double rate( void ) const
+        {
+          return m_Rate;
+        }
+        virtual const beagle::real_2d_function_ptr_t& volatility( void ) const
+        {
+          return m_Volatility;
+        }
+        virtual int numberOfStandardDeviations( void ) const
+        {
+          return m_NumStdev;
+        }
+        virtual int numberOfStateVariableSteps( void ) const
+        {
+          return m_StepsLogSpot;
         }
       private:
         two_dbl_t boundaryCondition( const beagle::payoff_ptr_t& payoff,
