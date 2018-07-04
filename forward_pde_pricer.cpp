@@ -7,8 +7,8 @@
 #include "real_function.hpp"
 #include "interpolation_builder.hpp"
 
-#include <fstream>
-std::ofstream out("interpolation.txt");
+// #include <fstream>
+// std::ofstream out("interpolation.txt");
 
 namespace beagle
 {
@@ -83,7 +83,7 @@ namespace beagle
           auto it = m_Dividends.cbegin();
           if (it->first < start)
             ++it;
-          
+
           auto jt = exDividendIndices.cbegin();
           auto jtEnd = exDividendIndices.cend();
           for (int i=0; i<timeSteps-1; ++i)

@@ -11,16 +11,16 @@ int main( void )
 {
   beagle::discrete_dividend_schedule_t dividends;
   dividends.emplace_back( 0.5, 6.0 );
-  // dividends.emplace_back( 1.5, 6.5 );
+  dividends.emplace_back( 1.5, 6.5 );
   // dividends.emplace_back( 2.5, 7.0 );
   // dividends.emplace_back( 3.5, 7.5 );
   // dividends.emplace_back( 4.5, 8.0 );
   // dividends.emplace_back( 5.5, 8.0 );
   // dividends.emplace_back( 6.5, 8.0 );
 
-  double expiry = 1.;
+  double expiry = 2.;
   double strike = 100.;
-  beagle::payoff_ptr_t payoff = beagle::option::Payoff::call();
+  beagle::payoff_ptr_t payoff = beagle::option::Payoff::put();
   beagle::option_ptr_t euroOption = beagle::option::Option::createEuropeanOption( expiry,
                                                                                   strike,
                                                                                   payoff );
