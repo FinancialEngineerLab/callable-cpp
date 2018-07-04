@@ -16,7 +16,8 @@ namespace beagle
   {
     namespace impl
     {
-      struct OneDimensionalBackwardPDEOptionPricer : public Pricer
+      struct OneDimensionalBackwardPDEOptionPricer : public Pricer,
+                                                     public beagle::valuation::mixins::FiniteDifference
       {
         using two_dbl_t = std::pair<double, double>;
 
@@ -49,19 +50,15 @@ namespace beagle
           const beagle::payoff_ptr_t& payoff = option->payoff();
 
           beagle::dbl_vec_t times;
-          beagle::dbl_vec_t logSpots;
           beagle::int_vec_t exDividendIndices;
-          formLatticeForBackwardValuation( expiry, times, logSpots, exDividendIndices );
+          beagle::dbl_vec_t logSpots;
+          beagle::dbl_vec_t spots;
+          formLatticeForBackwardValuation( expiry, times, exDividendIndices, logSpots, spots );
 
           auto pA = dynamic_cast<beagle::option::mixins::American*>(option.get());
           bool isAmerican( pA != nullptr );
 
-          int spotSize = logSpots.size() - 2;
-          beagle::dbl_vec_t spots(spotSize);
-          std::transform( logSpots.cbegin()+1,
-                          logSpots.cend()-1,
-                          spots.begin(),
-                          [](double arg) {return std::exp(arg);} );
+          int spotSize = spots.size();
 
           // calculate terminal value for backward induction
           beagle::dbl_vec_t optionValues(spotSize);
@@ -158,60 +155,15 @@ namespace beagle
       private:
         void formLatticeForBackwardValuation( double expiry,
                                               beagle::dbl_vec_t& times,
+                                              beagle::int_vec_t& exDividendIndices,
                                               beagle::dbl_vec_t& logSpots,
-                                              beagle::int_vec_t& exDividendIndices ) const
+                                              beagle::dbl_vec_t& spots ) const
         {
-          exDividendIndices.clear();
-
-          int numSteps = std::floor(expiry * m_StepsPerAnnum);
-          if (m_Dividends.empty())
-          {
-            times.resize(numSteps + 1);
-
-            for (int i=0; i<numSteps+1; ++i)
-              times[i] = i * expiry / numSteps;
-          }
-          else
-          {
-            times.reserve(numSteps + 1 + m_Dividends.size());
-
-            auto it = m_Dividends.cbegin();
-            auto itEnd = m_Dividends.cend();
-            for (int i=0, j=0; i<numSteps+1; ++i, ++j)
-            {
-              double time = i * expiry / numSteps;
-              if (it != itEnd)
-              {
-                if (it->first < time)
-                {
-                  times.push_back(it->first);
-                  exDividendIndices.push_back(j);
-                  ++j;
-                  times.push_back(time);
-                  ++it;
-                }
-                else if (it->first == time)
-                {
-                  times.push_back(it->first);
-                  exDividendIndices.push_back(j);
-                  ++it;
-                }
-              }
-              
-              times.push_back(time);
-            }
-
-            times.shrink_to_fit();
-          }
+          formTimeSteps( 0., expiry, m_StepsPerAnnum, m_Dividends, times, exDividendIndices );
 
           double forward = m_Spot * std::exp(m_Rate * expiry);
           double atmVol = m_Volatility->value( expiry, forward );
-          double logSpot = std::log( m_Spot ) + (m_Rate - .5 * atmVol * atmVol) * expiry;
-          int mid = m_StepsLogSpot / 2;
-          double logSpotStep = 2. * m_NumStdev * atmVol * std::sqrt(expiry) / m_StepsLogSpot;
-          logSpots.resize(m_StepsLogSpot);
-          for (int i=0; i<m_StepsLogSpot; ++i)
-            logSpots[i] = logSpot + (i-mid)*logSpotStep;
+          formStateVariableSteps( m_Spot, m_Rate, atmVol, expiry, m_NumStdev, m_StepsLogSpot, logSpots, spots );
         }
         two_dbl_t boundaryCondition( const beagle::payoff_ptr_t& payoff,
                                      const two_dbl_t& boundarySpots,
