@@ -42,6 +42,9 @@ namespace beagle
           times.reserve(numSteps + 1 + dividends.size());
 
           auto it = dividends.cbegin();
+          if (it->first < start)
+            ++it;
+
           auto itEnd = dividends.cend();
           for (int i=0, j=0; i<numSteps+1; ++i, ++j)
           {

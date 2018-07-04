@@ -57,14 +57,13 @@ namespace beagle
         virtual void optionValueCollection( double start,
                                             double end,
                                             const beagle::payoff_ptr_t& payoff,
-                                            beagle::dbl_vec_t& strikes,
+                                            const beagle::dbl_vec_t& logStrikes,
+                                            const beagle::dbl_vec_t& strikes,
                                             beagle::dbl_vec_t& prices ) const override
         {
           beagle::dbl_vec_t times;
           beagle::int_vec_t exDividendIndices;
-          beagle::dbl_vec_t logStrikes;
-          formLatticeForBackwardValuation( start, end, times, exDividendIndices, logStrikes, strikes );
-          formInitialOptionValueCollection( payoff, strikes, prices );
+          formTimeSteps( start, end, m_StepsPerAnnum, m_Dividends, times, exDividendIndices );
 
           // for (auto price : prices)
           //   out << price << " ";
@@ -82,6 +81,9 @@ namespace beagle
           beagle::dbl_vec_t upper(strikeSize);
 
           auto it = m_Dividends.cbegin();
+          if (it->first < start)
+            ++it;
+          
           auto jt = exDividendIndices.cbegin();
           auto jtEnd = exDividendIndices.cend();
           for (int i=0; i<timeSteps-1; ++i)
@@ -147,28 +149,21 @@ namespace beagle
           double strike = option->strike();
           const beagle::payoff_ptr_t& payoff = option->payoff();
 
+          double forward = m_Spot * std::exp(m_Rate * expiry);
+          double atmVol = m_Volatility->value( expiry, forward );
+
+          beagle::dbl_vec_t logStrikes;
           beagle::dbl_vec_t strikes;
+          formStateVariableSteps( m_Spot, m_Rate, atmVol, expiry, m_NumStdev, m_StepsLogSpot, logStrikes, strikes );
+
           beagle::dbl_vec_t prices;
-          optionValueCollection( 0., expiry, payoff, strikes, prices );
+          formInitialOptionValueCollection( payoff, strikes, prices );
+          optionValueCollection( 0., expiry, payoff, logStrikes, strikes, prices );
 
           beagle::real_function_ptr_t interpResult = m_Interp->formFunction( strikes, prices );
           return interpResult->value(strike);
         }
       private:
-        void formLatticeForBackwardValuation( double start,
-                                              double end,
-                                              beagle::dbl_vec_t& times,
-                                              beagle::int_vec_t& exDividendIndices,
-                                              beagle::dbl_vec_t& logStrikes,
-                                              beagle::dbl_vec_t& strikes ) const
-        {
-          formTimeSteps( start, end, m_StepsPerAnnum, m_Dividends, times, exDividendIndices );
-
-          double expiry = end - start;
-          double forward = m_Spot * std::exp(m_Rate * expiry);
-          double atmVol = m_Volatility->value( expiry, forward );
-          formStateVariableSteps( m_Spot, m_Rate, atmVol, expiry, m_NumStdev, m_StepsLogSpot, logStrikes, strikes );
-        }
         two_dbl_t boundaryCondition( const beagle::payoff_ptr_t& payoff,
                                      const two_dbl_t& boundaryStrikes,
                                      double timeToExpiry ) const

@@ -53,7 +53,8 @@ namespace beagle
         virtual void optionValueCollection( double start,
                                             double end,
                                             const beagle::payoff_ptr_t& payoff,
-                                            beagle::dbl_vec_t& strikes,
+                                            const beagle::dbl_vec_t& logStrikes,
+                                            const beagle::dbl_vec_t& strikes,
                                             beagle::dbl_vec_t& prices ) const = 0;
       };
 
