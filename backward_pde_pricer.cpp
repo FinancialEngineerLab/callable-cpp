@@ -181,6 +181,14 @@ namespace beagle
         {
           return m_StepsLogSpot;
         }
+        virtual const interp_builder_ptr_t& interpolation( void ) const
+        {
+          return m_Interp;
+        }
+        virtual const beagle::dividend_policy_ptr_t& dividendPolicy( void ) const
+        {
+          return m_Policy;
+        }
       private:
         void formLatticeForBackwardValuation( double expiry,
                                               beagle::dbl_vec_t& times,

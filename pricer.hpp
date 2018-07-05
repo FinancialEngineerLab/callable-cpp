@@ -69,14 +69,16 @@ namespace beagle
         virtual void formStateVariableSteps( double expiry,
                                              beagle::dbl_vec_t& logStateVariables,
                                              beagle::dbl_vec_t& stateVariables ) const;
-      protected:
-        virtual int stepsPerAnnum( void ) const = 0;
-        virtual const beagle::discrete_dividend_schedule_t& dividends( void ) const = 0;
+      public:
         virtual double spot( void ) const = 0;
         virtual double rate( void ) const = 0;
         virtual const beagle::real_2d_function_ptr_t& volatility( void ) const = 0;
-        virtual int numberOfStandardDeviations( void ) const = 0;
+        virtual int stepsPerAnnum( void ) const = 0;
         virtual int numberOfStateVariableSteps( void ) const = 0;
+        virtual int numberOfStandardDeviations( void ) const = 0;
+        virtual const beagle::discrete_dividend_schedule_t& dividends( void ) const = 0;
+        virtual const beagle::dividend_policy_ptr_t& dividendPolicy( void ) const = 0;
+        virtual const interp_builder_ptr_t& interpolation( void ) const = 0;
       };
     }
   }

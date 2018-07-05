@@ -81,7 +81,8 @@ namespace beagle
           beagle::dbl_vec_t upper(strikeSize);
 
           auto it = m_Dividends.cbegin();
-          if (it->first < start)
+          auto itEnd = m_Dividends.cend();
+          if (it != itEnd && it->first < start)
             ++it;
 
           auto jt = exDividendIndices.cbegin();
@@ -164,7 +165,7 @@ namespace beagle
           beagle::real_function_ptr_t interpResult = m_Interp->formFunction( strikes, prices );
           return interpResult->value(strike);
         }
-      protected:
+      public:
         virtual int stepsPerAnnum( void ) const
         {
           return m_StepsPerAnnum;
@@ -192,6 +193,14 @@ namespace beagle
         virtual int numberOfStateVariableSteps( void ) const
         {
           return m_StepsLogSpot;
+        }
+        virtual const interp_builder_ptr_t& interpolation( void ) const
+        {
+          return m_Interp;
+        }
+        virtual const beagle::dividend_policy_ptr_t& dividendPolicy( void ) const
+        {
+          return m_Policy;
         }
       private:
         two_dbl_t boundaryCondition( const beagle::payoff_ptr_t& payoff,

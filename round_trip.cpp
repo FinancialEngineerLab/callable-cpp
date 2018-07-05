@@ -10,7 +10,7 @@ namespace beagle
 {
   namespace test
   {
-    void generateAmericanMarketQuotes( beagle::dbl_vec_t& expiries,
+    void generateEuropeanMarketQuotes( beagle::dbl_vec_t& expiries,
                                        beagle::dbl_vec_vec_t& strikesColl,
                                        beagle::dbl_vec_vec_t& pricesColl )
     {
@@ -24,8 +24,8 @@ namespace beagle
 
       expiries.push_back(1.0);
 
-      beagle::dbl_vec_t strikes{85., 90., 95., 100., 105., 110., 115.};
-      beagle::dbl_vec_t vols{.32, .30, .27, .25, .24, .235, .26};
+      beagle::dbl_vec_t strikes{92.5, 95., 97.5, 100., 102.5, 105., 107.5};
+      beagle::dbl_vec_t vols{.32, .29, .27, .25, .24, .235, .26};
       strikesColl.push_back(strikes);
 
       auto it = strikes.cbegin();
@@ -34,7 +34,7 @@ namespace beagle
       beagle::dbl_vec_t prices;
       for ( ; it != itEnd; ++it, ++jt)
       {
-        beagle::option_ptr_t amerOption = beagle::option::Option::createAmericanOption( expiries[0],
+        beagle::option_ptr_t amerOption = beagle::option::Option::createEuropeanOption( expiries[0],
                                                                                         *it,
                                                                                         payoff );
         beagle::pricer_ptr_t odbpop  = beagle::valuation::Pricer::formOneDimensionalBackwardPDEOptionPricer( 

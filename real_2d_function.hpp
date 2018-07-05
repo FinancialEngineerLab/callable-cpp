@@ -23,7 +23,8 @@ namespace beagle
                                   const beagle::dbl_vec_t& expiries,
                                   const beagle::dbl_vec_vec_t& strikesColl,
                                   const beagle::dbl_vec_vec_t& pricesColl,
-                                  const beagle::pricer_ptr_t& forwardPricer );
+                                  const beagle::pricer_ptr_t& forwardPricer,
+                                  const beagle::payoff_ptr_t& payoff );
     };
   }
 }
