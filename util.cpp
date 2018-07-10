@@ -1,4 +1,5 @@
 #include "util.hpp"
+#include <Eigen/Dense>
 
 namespace beagle
 {
@@ -60,6 +61,32 @@ namespace beagle
       {
         int j = size - 2 - i;
         rhs[j] = (rhs[j] - upper[j] * rhs[j+1]) / diag[j];
+      }
+    }
+
+    void inverseMatrix( beagle::dbl_vec_vec_t& inputMat )
+    {
+      beagle::dbl_vec_vec_t::size_type numRows = inputMat.size();
+      for (const auto row : inputMat)
+      {
+        // The input must be a square matrix in order to perform inversion
+        if (row.size() != numRows)
+          throw(std::string("The input matrix is not a square matrix!"));
+      }
+
+      using dbl_mat_t = Eigen::MatrixXd;
+      dbl_mat_t theMatrix(numRows, numRows);
+      for (beagle::dbl_vec_vec_t::size_type row=0; row<numRows; ++row)
+      {
+        for (beagle::dbl_vec_vec_t::size_type col=0; col<numRows; ++col)
+          theMatrix(row, col) = inputMat[row][col];
+      }
+
+      theMatrix = theMatrix.inverse();
+      for (beagle::dbl_vec_vec_t::size_type row=0; row<numRows; ++row)
+      {
+        for (beagle::dbl_vec_vec_t::size_type col=0; col<numRows; ++col)
+          inputMat[row][col] = theMatrix(row, col);
       }
     }
   }

@@ -22,9 +22,11 @@ namespace beagle
                    double vol );
 
     void tridiagonalSolve( beagle::dbl_vec_t& rhs,
-                       beagle::dbl_vec_t& diag,
-                       beagle::dbl_vec_t& upper,
-                       beagle::dbl_vec_t& lower );
+                           beagle::dbl_vec_t& diag,
+                           beagle::dbl_vec_t& upper,
+                           beagle::dbl_vec_t& lower );
+
+    void inverseMatrix( beagle::dbl_vec_vec_t& inputMat );
   }
 }
 

@@ -110,7 +110,7 @@ void testTwo( void )
 
 int main( void )
 {
-  testTwo();
+  testOne();
 
   return 0;
 }

@@ -4,8 +4,33 @@ namespace beagle
 {
   namespace math
   {
+    namespace mixins
+    {
+      InterpolationParameters::~InterpolationParameters( void )
+      { }
+    }
+
     namespace impl
     {
+      InterpolatedFunction::InterpolatedFunction( const beagle::dbl_vec_t& xValues,
+                                                  const beagle::dbl_vec_t& yValues ) :
+        m_XValues( xValues ),
+        m_YValues( yValues )
+      { }
+
+      InterpolatedFunction::~InterpolatedFunction( void )
+      { }
+
+      const beagle::dbl_vec_t& InterpolatedFunction::xParameters( void ) const
+      {
+        return m_XValues;
+      }
+
+      const beagle::dbl_vec_t& InterpolatedFunction::yParameters( void ) const
+      {
+        return m_YValues;
+      }
+
       struct ConstantFunction : public RealFunction
       {
         ConstantFunction( double constant ) :
@@ -22,27 +47,29 @@ namespace beagle
         double m_Const;
       };
 
-      struct LinearWithFlatExtrapolationInterpolatedFunction : public RealFunction
+      struct LinearWithFlatExtrapolationInterpolatedFunction : public InterpolatedFunction
       {
         LinearWithFlatExtrapolationInterpolatedFunction( const beagle::dbl_vec_t& xValues,
                                                          const beagle::dbl_vec_t& yValues ) :
-          m_XValues( xValues ),
-          m_YValues( yValues )
+          InterpolatedFunction( xValues, yValues )
         { }
         virtual ~LinearWithFlatExtrapolationInterpolatedFunction( void )
         { }
       public:
         virtual double value( double arg ) const override
         {
-          if (arg < m_XValues.front())
-            return m_YValues.front();
-          else if (arg >= m_XValues.back())
-            return m_YValues.back();
+          const beagle::dbl_vec_t& xValues(xParameters());
+          const beagle::dbl_vec_t& yValues(yParameters());
+
+          if (arg < xValues.front())
+            return yValues.front();
+          else if (arg >= xValues.back())
+            return yValues.back();
           else
           {
-            auto it = m_XValues.cbegin() + 1;
-            auto itEnd = m_XValues.cend();
-            auto jt = m_YValues.cbegin() + 1;
+            auto it = xValues.cbegin() + 1;
+            auto itEnd = xValues.cend();
+            auto jt = yValues.cbegin() + 1;
             while (it != itEnd)
             {
               if (arg < *it)
@@ -61,74 +88,47 @@ namespace beagle
             return yLeft + (arg - xLeft) / (xRight - xLeft) * (yRight - yLeft);
           }
         }
-      private:
-        beagle::dbl_vec_t m_XValues;
-        beagle::dbl_vec_t m_YValues;
       };
 
-      struct NaturalCubicSplineWithFlatExtrapolationInterpolatedFunction : public RealFunction
+      struct NaturalCubicSplineWithFlatExtrapolationInterpolatedFunction : public InterpolatedFunction
       {
         NaturalCubicSplineWithFlatExtrapolationInterpolatedFunction( const beagle::dbl_vec_t& xValues,
                                                                      const beagle::dbl_vec_t& yValues ) :
-          m_XValues( xValues ),
-          m_YValues( yValues )
+          InterpolatedFunction(xValues, yValues)
         { }
         virtual ~NaturalCubicSplineWithFlatExtrapolationInterpolatedFunction( void )
         { }
       public:
         virtual double value( double arg ) const override
         {
-          if (arg < m_XValues.front())
-            return m_YValues.front();
-          else if (arg >= m_XValues.back())
-            return m_YValues.back();
-          else
-          {
-            auto it = m_XValues.cbegin() + 1;
-            auto itEnd = m_XValues.cend();
-            auto jt = m_YValues.cbegin() + 1;
-            while (it != itEnd)
-            {
-              if (arg < *it)
-                break;
-              else
-              {
-                ++it;
-                ++jt;
-              }
-            }
+          const beagle::dbl_vec_t& xValues(xParameters());
+          const beagle::dbl_vec_t& yValues(yParameters());
 
-            double xLeft = *(it - 1);
-            double xRight = *it;
-            double yLeft = *(jt - 1);
-            double yRight = *jt;
-            return yLeft + (arg - xLeft) / (xRight - xLeft) * (yRight - yLeft);
-          }
+          return 0.0;
         }
-      private:
-        beagle::dbl_vec_t m_XValues;
-        beagle::dbl_vec_t m_YValues;
       };
 
-      struct PiecewiseConstantRightInterpolatedFunction : public RealFunction
+      struct PiecewiseConstantRightInterpolatedFunction : public InterpolatedFunction
       {
         PiecewiseConstantRightInterpolatedFunction( const beagle::dbl_vec_t& xValues,
                                                     const beagle::dbl_vec_t& yValues ) :
-          m_XValues( xValues ),
-          m_YValues( yValues )
+          InterpolatedFunction(xValues, yValues)
         { }
         virtual ~PiecewiseConstantRightInterpolatedFunction( void )
         { }
       public:
         virtual double value( double arg ) const override
         {
-          if (arg >= m_XValues.back())
-            return m_YValues.back();
+          const beagle::dbl_vec_t& xValues(xParameters());
+          const beagle::dbl_vec_t& yValues(yParameters());
+
+          if (arg >= xValues.back())
+            return yValues.back();
           else
           {
-            auto it = m_XValues.cbegin();
-            auto itEnd = m_XValues.cend();
-            auto jt = m_YValues.cbegin();
+            auto it = xValues.cbegin();
+            auto itEnd = xValues.cend();
+            auto jt = yValues.cbegin();
             while (it != itEnd)
             {
               if (arg < *it)
@@ -143,9 +143,6 @@ namespace beagle
             return *jt;
           }
         }
-      private:
-        beagle::dbl_vec_t m_XValues;
-        beagle::dbl_vec_t m_YValues;
       };
     }
 
