@@ -11,13 +11,13 @@
 void testOne( void )
 {
   beagle::discrete_dividend_schedule_t dividends;
-  // dividends.emplace_back( 0.5, 6.0 );
-  // dividends.emplace_back( 1.5, 6.5 );
-  // dividends.emplace_back( 2.5, 7.0 );
-  // dividends.emplace_back( 3.5, 7.5 );
-  // dividends.emplace_back( 4.5, 8.0 );
-  // dividends.emplace_back( 5.5, 8.0 );
-  // dividends.emplace_back( 6.5, 8.0 );
+  dividends.emplace_back( 0.5, 6.0 );
+  dividends.emplace_back( 1.5, 6.5 );
+  dividends.emplace_back( 2.5, 7.0 );
+  dividends.emplace_back( 3.5, 7.5 );
+  dividends.emplace_back( 4.5, 8.0 );
+  dividends.emplace_back( 5.5, 8.0 );
+  dividends.emplace_back( 6.5, 8.0 );
 
   double expiry = 7.;
   double strike = 70.;
