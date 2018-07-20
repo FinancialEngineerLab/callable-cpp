@@ -7,6 +7,10 @@ namespace beagle
 {
   namespace util
   {
+    double pi( void );
+    
+    double rootTwo( void );
+
     double standardNormal( double arg );
 
     double cumulativeStandardNormal( double arg );

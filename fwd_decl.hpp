@@ -29,6 +29,11 @@ namespace beagle
     struct DividendPolicy;
   }
 
+  namespace calibration
+  {
+    struct CalibrationBoundConstraint;
+  }
+
   using option_ptr_t = std::shared_ptr<option::Option>;
   using payoff_ptr_t = std::shared_ptr<option::Payoff>;
 
@@ -45,6 +50,9 @@ namespace beagle
   using dbl_vec_vec_t = std::vector<dbl_vec_t>;
   using int_vec_t = std::vector<int>;
   using discrete_dividend_schedule_t = std::vector< std::pair<double, double> >;
+
+  using calibration_bound_constraint_ptr_t = std::shared_ptr<calibration::CalibrationBoundConstraint>;
+  using calibration_bound_constraint_coll_t = std::vector<calibration_bound_constraint_ptr_t>;
 }
 
 

@@ -5,17 +5,26 @@ namespace beagle
 {
   namespace util
   {
-    const double PI = 3.14159265358979323846;
-    const double rootTwo = 1.41421356237;
+    double pi( void )
+    {
+      static const double PI = 3.14159265358979323846;
+      return PI;
+    }
+
+    double rootTwo( void )
+    {
+      static const double rootTwo = 1.41421356237;
+      return rootTwo;
+    }
 
     double standardNormal( double arg )
     {
-      return std::exp( -.5*arg*arg ) / std::sqrt( 2 * PI );
+      return std::exp( -.5*arg*arg ) / std::sqrt( 2 * pi() );
     }
 
     double cumulativeStandardNormal( double arg )
     {
-      return .5 * ( 1. + std::erf( arg / rootTwo ) );
+      return .5 * ( 1. + std::erf( arg / rootTwo() ) );
     }
 
     double bsCall( double strike,
