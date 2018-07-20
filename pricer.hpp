@@ -80,6 +80,13 @@ namespace beagle
         virtual const beagle::dividend_policy_ptr_t& dividendPolicy( void ) const = 0;
         virtual const interp_builder_ptr_t& interpolation( void ) const = 0;
       };
+
+      struct CloneWithNewLocalVolatilitySurface
+      {
+        virtual ~CloneWithNewLocalVolatilitySurface( void );
+      public:
+        virtual beagle::pricer_ptr_t createPricerWithNewLocalVolatilitySurface( const beagle::real_2d_function_ptr_t& vol ) const = 0;
+      };
     }
   }
 }

@@ -10,7 +10,8 @@ namespace beagle
     namespace impl
     {
       struct OneDimensionalForwardPDEEuropeanOptionPricer : public OneDimensionalPDEOptionPricer,
-                                                            public beagle::valuation::mixins::OptionValueCollectionProvider
+                                                            public beagle::valuation::mixins::OptionValueCollectionProvider,
+                                                            public beagle::valuation::mixins::CloneWithNewLocalVolatilitySurface
       {
         using two_dbl_t = std::pair<double, double>;
 
@@ -156,6 +157,18 @@ namespace beagle
 
           beagle::real_function_ptr_t interpResult = interpolation()->formFunction( strikes, prices );
           return interpResult->value(strike);
+        }
+        virtual beagle::pricer_ptr_t createPricerWithNewLocalVolatilitySurface( const beagle::real_2d_function_ptr_t& vol ) const override
+        {
+          return std::make_shared<OneDimensionalForwardPDEEuropeanOptionPricer>( spot(),
+                                                                                 rate(),
+                                                                                 vol,
+                                                                                 stepsPerAnnum(),
+                                                                                 numberOfStateVariableSteps(),
+                                                                                 numberOfStandardDeviations(),
+                                                                                 dividends(),
+                                                                                 dividendPolicy(),
+                                                                                 interpolation() );
         }
       private:
         two_dbl_t boundaryCondition( const beagle::payoff_ptr_t& payoff,

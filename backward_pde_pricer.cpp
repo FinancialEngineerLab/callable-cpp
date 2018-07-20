@@ -9,7 +9,8 @@ namespace beagle
   {
     namespace impl
     {
-      struct OneDimensionalBackwardPDEOptionPricer : public OneDimensionalPDEOptionPricer
+      struct OneDimensionalBackwardPDEOptionPricer : public OneDimensionalPDEOptionPricer,
+                                                     public beagle::valuation::mixins::CloneWithNewLocalVolatilitySurface
       {
         using two_dbl_t = std::pair<double, double>;
 
@@ -143,6 +144,18 @@ namespace beagle
 
           beagle::real_function_ptr_t interpResult = interpolation()->formFunction( spots, optionValues );
           return interpResult->value(spot());
+        }
+        virtual beagle::pricer_ptr_t createPricerWithNewLocalVolatilitySurface( const beagle::real_2d_function_ptr_t& vol ) const override
+        {
+          return std::make_shared<OneDimensionalBackwardPDEOptionPricer>( spot(),
+                                                                          rate(),
+                                                                          vol,
+                                                                          stepsPerAnnum(),
+                                                                          numberOfStateVariableSteps(),
+                                                                          numberOfStandardDeviations(),
+                                                                          dividends(),
+                                                                          dividendPolicy(),
+                                                                          interpolation() );
         }
       private:
         void formLatticeForBackwardValuation( double expiry,

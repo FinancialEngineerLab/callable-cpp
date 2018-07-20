@@ -105,6 +105,9 @@ namespace beagle
                         stateVariables.begin(),
                         [](double arg) {return std::exp(arg);} );
       }
+
+      CloneWithNewLocalVolatilitySurface::~CloneWithNewLocalVolatilitySurface( void )
+      { }
     }
   }
 }
