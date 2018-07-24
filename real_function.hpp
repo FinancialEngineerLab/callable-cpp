@@ -15,6 +15,7 @@ namespace beagle
       virtual double value( double arg ) const = 0;
     public:
       static beagle::real_function_ptr_t createConstantFunction( double constant );
+      static beagle::real_function_ptr_t createUnaryFunction( const beagle::real_func_t& func );
       static beagle::real_function_ptr_t createLinearWithFlatExtrapolationInterpolatedFunction(
                                                          const beagle::dbl_vec_t& xValues,
                                                          const beagle::dbl_vec_t& yValues );

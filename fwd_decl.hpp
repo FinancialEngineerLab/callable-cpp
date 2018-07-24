@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cmath>
 #include <string>
+#include <functional>
 
 namespace beagle
 {
@@ -46,13 +47,16 @@ namespace beagle
   using pricer_ptr_t = std::shared_ptr<valuation::Pricer>;
   using dividend_policy_ptr_t = std::shared_ptr<valuation::DividendPolicy>;
 
+  using calibration_bound_constraint_ptr_t = std::shared_ptr<calibration::CalibrationBoundConstraint>;
+  using calibration_bound_constraint_coll_t = std::vector<calibration_bound_constraint_ptr_t>;
+
   using dbl_vec_t = std::vector<double>;
   using dbl_vec_vec_t = std::vector<dbl_vec_t>;
   using int_vec_t = std::vector<int>;
   using discrete_dividend_schedule_t = std::vector< std::pair<double, double> >;
 
-  using calibration_bound_constraint_ptr_t = std::shared_ptr<calibration::CalibrationBoundConstraint>;
-  using calibration_bound_constraint_coll_t = std::vector<calibration_bound_constraint_ptr_t>;
+  using real_func_t = std::function<double(double)>;
+  using real_2d_func_t = std::function<double(double, double)>;
 }
 
 

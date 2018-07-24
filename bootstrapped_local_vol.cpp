@@ -64,7 +64,7 @@ namespace beagle
           for (beagle::dbl_vec_t::size_type i=0; i<m_Expiries.size(); ++i)
           {
             double end = m_Expiries[i];
-            beagle::dbl_vec_t initVols{.32, .29, .27, .25, .24, .235, .26};
+            beagle::dbl_vec_t initVols{.32, .29, .27};
             beagle::dbl_vec_t calibratedPrices(m_StrikesColl[i].size());
             beagle::real_function_ptr_t initGuess = interp->formFunction( m_StrikesColl[i], initVols );
             beagle::real_2d_function_ptr_t localVol 
@@ -128,15 +128,12 @@ namespace beagle
           double inner(0.0);
           for (beagle::dbl_vec_t::size_type i=0; i<quotes.size(); ++i)
           {
-            inner += (quotes[i] - prices[i]) * (quotes[i] - prices[i]);
+            inner += std::fabs(quotes[i] - prices[i]);
             std::cout << quotes[i] << "\t" << prices[i] << std::endl;
           }
           std::cout << std::endl;
 
-          if (inner < 1e-3)
-            return true;
-          else
-            return false;
+          return (inner < 1e-3);
         }
       private:
         beagle::dbl_vec_t m_Expiries;

@@ -15,17 +15,17 @@ namespace beagle
                                        beagle::dbl_vec_vec_t& pricesColl )
     {
       double spot = 100.;
-      double rate = .06;
+      double rate = .00;
       beagle::payoff_ptr_t payoff = beagle::option::Payoff::call();
       
       expiries.clear();
       strikesColl.clear();
       pricesColl.clear();
 
-      expiries.push_back(1.0);
+      expiries.push_back(.3);
 
-      beagle::dbl_vec_t strikes{92.5, 95., 97.5, 100., 102.5, 105., 107.5};
-      beagle::dbl_vec_t vols{.32, .29, .27, .25, .24, .235, .26};
+      beagle::dbl_vec_t strikes{97.5, 100., 102.5};
+      beagle::dbl_vec_t vols{.32, .29, .27};
       strikesColl.push_back(strikes);
 
       auto it = strikes.cbegin();

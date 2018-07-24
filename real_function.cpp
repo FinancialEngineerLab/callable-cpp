@@ -47,6 +47,22 @@ namespace beagle
         double m_Const;
       };
 
+      struct UnaryFunction : public RealFunction
+      {
+        UnaryFunction( const beagle::real_func_t& func ) :
+          m_Func( func )
+        { }
+        virtual ~UnaryFunction( void )
+        { }
+      public:
+        virtual double value( double arg ) const override
+        {
+          return m_Func(arg);
+        }
+      private:
+        beagle::real_func_t m_Func;
+      };
+
       struct LinearWithFlatExtrapolationInterpolatedFunction : public InterpolatedFunction
       {
         LinearWithFlatExtrapolationInterpolatedFunction( const beagle::dbl_vec_t& xValues,
@@ -157,6 +173,12 @@ namespace beagle
     RealFunction::createConstantFunction( double constant )
     {
       return std::make_shared<impl::ConstantFunction>( constant );
+    }
+
+    beagle::real_function_ptr_t
+    RealFunction::createUnaryFunction( const beagle::real_func_t& func )
+    {
+      return std::make_shared<impl::UnaryFunction>( func );
     }
 
     beagle::real_function_ptr_t
