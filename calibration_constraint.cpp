@@ -44,7 +44,7 @@ namespace beagle
           return transformed;
         }
         double transformDerivative( const double transformed,
-                                           const double dOriginal ) const
+                                    const double dOriginal ) const
         {
           return dOriginal;
         }
@@ -75,7 +75,7 @@ namespace beagle
           return std::exp(transformed) + m_LowerBound;
         }
         double transformDerivative( const double transformed,
-                                           const double dOriginal ) const
+                                    const double dOriginal ) const
         {
           return dOriginal * std::exp(transformed);
         }
@@ -108,7 +108,7 @@ namespace beagle
           return m_UpperBound - std::exp(transformed);
         }
         double transformDerivative( const double transformed,
-                                           const double dOriginal ) const
+                                    const double dOriginal ) const
         {
           return -dOriginal * std::exp(transformed);
         }
@@ -144,7 +144,7 @@ namespace beagle
           return m_LowerBound + m_UMinusL * ( .5 * util::pi() + std::atan(transformed) ) / util::pi();
         }
         double transformDerivative( const double transformed,
-                                           const double dOriginal ) const
+                                    const double dOriginal ) const
         {
           return dOriginal * m_UMinusL / util::pi() / (1.0+transformed*transformed);
         }

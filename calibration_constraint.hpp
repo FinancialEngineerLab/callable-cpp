@@ -23,7 +23,7 @@ namespace beagle
       static beagle::calibration_bound_constraint_ptr_t lowerBoundCalibrationConstraint( double lowerBound );
       static beagle::calibration_bound_constraint_ptr_t upperBoundCalibrationConstraint( double upperBound );
       static beagle::calibration_bound_constraint_ptr_t twoSidedBoundCalibrationConstraint( double lowerBound,
-                                                                                    double upperBound );
+                                                                                            double upperBound );
     };
   }
 }
