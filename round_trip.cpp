@@ -17,15 +17,15 @@ namespace beagle
       double spot = 100.;
       double rate = .00;
       beagle::payoff_ptr_t payoff = beagle::option::Payoff::call();
-      
+
       expiries.clear();
       strikesColl.clear();
       pricesColl.clear();
 
       expiries.push_back(.3);
 
-      beagle::dbl_vec_t strikes{97.5, 100., 102.5};
-      beagle::dbl_vec_t vols{.32, .29, .27};
+      beagle::dbl_vec_t strikes{90., 92.5, 95., 97.5, 100., 102.5, 105., 107.5, 110.};
+      beagle::dbl_vec_t vols{.44, .395, .355, .32, .29, .265, .28, .30, .33};
       strikesColl.push_back(strikes);
 
       auto it = strikes.cbegin();
@@ -37,7 +37,7 @@ namespace beagle
         beagle::option_ptr_t amerOption = beagle::option::Option::createEuropeanOption( expiries[0],
                                                                                         *it,
                                                                                         payoff );
-        beagle::pricer_ptr_t odbpop  = beagle::valuation::Pricer::formOneDimensionalBackwardPDEOptionPricer( 
+        beagle::pricer_ptr_t odbpop  = beagle::valuation::Pricer::formOneDimensionalBackwardPDEOptionPricer(
                                                                spot,
                                                                rate,
                                                                beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(*jt),

@@ -24,7 +24,14 @@ namespace beagle
     public:
       static calibration_adapter_ptr_t optionPricerAdapter( const pricer_ptr_t& pricer,
                                                             const option_ptr_coll_t& options );
-      static calibration_adapter_ptr_t forwardPDEPricerAdapter( const pricer_ptr_t& forwardPricer );
+      static calibration_adapter_ptr_t forwardPDEPricerAdapter( const pricer_ptr_t& forwardPricer,
+                                                                double start,
+                                                                double end,
+                                                                const beagle::payoff_ptr_t& payoff,
+                                                                const beagle::dbl_vec_t& logStrikes,
+                                                                const beagle::dbl_vec_t& strikes,
+                                                                const beagle::dbl_vec_t& prices,
+                                                                const beagle::dbl_vec_t& interpStrikes );
     };
 
     namespace util

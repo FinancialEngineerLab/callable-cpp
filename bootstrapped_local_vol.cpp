@@ -3,6 +3,8 @@
 #include "pricer.hpp"
 #include "interpolation_builder.hpp"
 #include "real_function.hpp"
+#include "calibration_functor.hpp"
+#include "unsupported/Eigen/NonLinearOptimization"
 
 #include <iostream>
 
@@ -64,59 +66,38 @@ namespace beagle
           for (beagle::dbl_vec_t::size_type i=0; i<m_Expiries.size(); ++i)
           {
             double end = m_Expiries[i];
-            beagle::dbl_vec_t initVols{.32, .29, .27};
-            beagle::dbl_vec_t calibratedPrices(m_StrikesColl[i].size());
-            beagle::real_function_ptr_t initGuess = interp->formFunction( m_StrikesColl[i], initVols );
-            beagle::real_2d_function_ptr_t localVol 
-                            = beagle::math::RealTwoDimFunction::createPiecewiseConstantRightFunction( beagle::dbl_vec_t(1U, m_Expiries[i]),
-                                                                                                      beagle::real_function_ptr_coll_t(1U, initGuess) );
+            calibration_adapter_ptr_t adapter = beagle::calibration::CalibrationAdapter::forwardPDEPricerAdapter(m_ForwardPricer,
+                                                                                                                 start,
+                                                                                                                 end,
+                                                                                                                 m_Payoff,
+                                                                                                                 logStrikes,
+                                                                                                                 strikes,
+                                                                                                                 prices,
+                                                                                                                 m_StrikesColl[i]);
 
-            beagle::dbl_vec_t initPrices(strikes.size());
-            do
-            {
-              std::copy( prices.cbegin(),
-                         prices.cend(),
-                         initPrices.begin() );
-              beagle::pricer_ptr_t forwardPricer = beagle::valuation::Pricer::formOneDimensionalForwardPDEEuropeanOptionPricer(
-                                                                                        spot,
-                                                                                        rate,
-                                                                                        localVol,
-                                                                                        stepsPerAnnum,
-                                                                                        numStrikes,
-                                                                                        numStdDev,
-                                                                                        dividends,
-                                                                                        policy,
-                                                                                        interp );
-              pOVCP = dynamic_cast<beagle::valuation::mixins::OptionValueCollectionProvider*>(forwardPricer.get());
-              if (!pOVCP)
-                throw(std::string("Cast for OptionValueCollectionProvider failed!"));
+            beagle::dbl_vec_t guesses{.44, .395, .355, .32, .29, .265, .28, .30, .33};
+            beagle::calibration_bound_constraint_coll_t constraints(guesses.size(),
+                                                                    beagle::calibration::CalibrationBoundConstraint::lowerBoundCalibrationConstraint(0.));
+            beagle::int_vec_t elimIndices(0U);
 
-              pOVCP->optionValueCollection( start, end, m_Payoff, logStrikes, strikes, initPrices );
-              beagle::real_function_ptr_t interpFunc = interp->formFunction( strikes, initPrices );
+            guesses = beagle::calibration::util::getTransformedParameters( guesses, constraints );
+            Eigen::VectorXd calibParams(guesses.size());
+            for (int i=0; i<guesses.size(); ++i)
+              calibParams(i) = guesses[i];
 
-              for (beagle::dbl_vec_t::size_type j=0; j<m_StrikesColl[i].size(); ++j)
-              {
-                double calibratedPrice = interpFunc->value(m_StrikesColl[i][j]);
-                calibratedPrices[j] = calibratedPrice;
-                initVols[j] *= m_PricesColl[i][j] / calibratedPrice;
-                // std::cout << m_PricesColl[i][j] << "\t" << calibratedPrice << std::endl;
-              }
-              // std::cout << std::endl;
+            beagle::calibration::CalibrationFunctor functor( m_PricesColl[i], adapter, calibParams, constraints, elimIndices );
+            Eigen::LevenbergMarquardt<beagle::calibration::CalibrationFunctor> lm(functor);
+            Eigen::LevenbergMarquardtSpace::Status status = lm.minimize(calibParams);
 
-              initGuess = interp->formFunction( m_StrikesColl[i], initVols );
-              localVol = beagle::math::RealTwoDimFunction::createPiecewiseConstantRightFunction( beagle::dbl_vec_t(1U, m_Expiries[i]),
-                                                                                                 beagle::real_function_ptr_coll_t(1U, initGuess) );
-            } while ( !hasConverged( m_PricesColl[i], calibratedPrices ) );
+            for (int i=0; i<guesses.size(); ++i)
+              guesses[i] = calibParams(i);
 
-            for (beagle::dbl_vec_t::size_type j=0; j<calibratedPrices.size(); ++j)
-            {
-              std::cout << m_PricesColl[i][j] << "\t" << calibratedPrices[j] << std::endl;
-            }
-            std::cout << std::endl;
+            guesses = beagle::calibration::util::getOriginalParameters( guesses, constraints );
 
             start = end;
-            prices = initPrices;
-            localVols.push_back( initGuess );
+            prices = m_PricesColl[i];
+            localVols.push_back( beagle::math::RealFunction::createLinearWithFlatExtrapolationInterpolatedFunction(m_StrikesColl[i],
+                                                                                                                   guesses) );
           }
 
           m_Func = beagle::math::RealTwoDimFunction::createPiecewiseConstantRightFunction( m_Expiries, localVols );
@@ -147,7 +128,7 @@ namespace beagle
     }
 
     beagle::real_2d_function_ptr_t
-    RealTwoDimFunction::createBootstrappedLocalVolatilityFunction( 
+    RealTwoDimFunction::createBootstrappedLocalVolatilityFunction(
                                   const beagle::dbl_vec_t& expiries,
                                   const beagle::dbl_vec_vec_t& strikesColl,
                                   const beagle::dbl_vec_vec_t& pricesColl,
