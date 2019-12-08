@@ -1,6 +1,6 @@
 #include "calibration_adapter.hpp"
 
-namespace sabr_test
+namespace beagle
 {
   namespace calibration
   {
@@ -14,7 +14,7 @@ namespace sabr_test
 
         dbl_vec_t params(transformedParamters);
         for (int i=0; i<params.size(); ++i)
-          params(i) = constraints[i]->inverseTransform( transformedParamters(i) );
+          params[i] = constraints[i]->inverseTransform( transformedParamters[i] );
 
         return params;
       }
@@ -26,66 +26,32 @@ namespace sabr_test
 
         dbl_vec_t params(parameters);
         for (int i=0; i<params.size(); ++i)
-          params(i) = constraints[i]->transform( parameters(i) );
+          params[i] = constraints[i]->transform( parameters[i] );
 
         return params;
       }
-      dbl_vec_t liveValues( const calibration_adapter_coll_t& adapters,
+      dbl_vec_t liveValues( const calibration_adapter_ptr_t& adapter,
                             const dbl_vec_t& parameters )
       {
-        dbl_vec_t liveValues( adapters.size() );
-        for (int i=0; i<liveValues.size(); ++i)
-          liveValues(i) = adapters[i]->value(parameters);
-
-        return liveValues;
+        return adapter->values(parameters);
       }
-      dbl_vec_t liveValues( const calibration_adapter_coll_t& adapters,
+      dbl_vec_t liveValues( const calibration_adapter_ptr_t& adapter,
                             const dbl_vec_t& transformedParamters,
                             const calibration_bound_constraint_coll_t& constraints )
       {
-        if (transformedParamters.size() != constraints.size())
-          throw("Mismatch in the number of transformed parameters and calibration bound constraints!");
-
-        dbl_vec_t liveValues( adapters.size() );
-        for (int i=0; i<liveValues.size(); ++i)
-          liveValues(i) = adapters[i]->value(transformedParamters, constraints);
-
-        return liveValues;
+        return adapter->values(util::getOriginalParameters(transformedParamters, constraints));
       }
-      dbl_mat_t jacobianMatrix( const calibration_adapter_coll_t& adapters,
+      dbl_mat_t jacobianMatrix( const calibration_adapter_ptr_t& adapter,
                                 const dbl_vec_t& parameters )
       {
-        dbl_mat_t jacobian( adapters.size(), parameters.size() );
-        for (int i=0; i<jacobian.rows(); ++i)
-        {
-          for (int j=0; j<jacobian.cols(); ++j)
-          {
-            dbl_vec_t derivs = adapters[i]->derivativeWithRespectToParameters( parameters );
-            jacobian(i, j) = derivs(j);
-          }
-        }
-
-        return jacobian;
+        return adapter->derivativeWithRespectToParameters( parameters );
       }
 
-      dbl_mat_t jacobianMatrix( const calibration_adapter_coll_t& adapters,
+      dbl_mat_t jacobianMatrix( const calibration_adapter_ptr_t& adapter,
                                 const dbl_vec_t& transformedParamters,
                                 const calibration_bound_constraint_coll_t& constraints )
       {
-        if (transformedParamters.size() != constraints.size())
-          throw("Mismatch in the number of transformed parameters and calibration bound constraints!");
-
-        dbl_mat_t jacobian( adapters.size(), transformedParamters.size() );
-        for (int i=0; i<jacobian.rows(); ++i)
-        {
-          for (int j=0; j<jacobian.cols(); ++j)
-          {
-            dbl_vec_t derivs = adapters[i]->derivativeWithRespectToTransformedParameters( transformedParamters, constraints );
-            jacobian(i, j) = derivs(j);
-          }
-        }
-
-        return jacobian;
+        return adapter->derivativeWithRespectToParameters( util::getOriginalParameters(transformedParamters, constraints) );
       }
     }
 
@@ -93,60 +59,93 @@ namespace sabr_test
     {
       struct OptionPricerAdapter : public CalibrationAdapter
       {
-        OptionPricerAdapter( const opt_ptr_t& optionPricer,
-                             double strike,
-                             double forward,
-                             double expiry ) :
-          m_Option(optionPricer),
-          m_Strike(strike),
-          m_Forward(forward),
-          m_Expiry(expiry)
+        OptionPricerAdapter( const pricer_ptr_t& pricer,
+                             const option_ptr_coll_t& options ) :
+          m_Pricer(pricer),
+          m_Options(options)
         { }
         virtual ~OptionPricerAdapter( void )
         { }
       public:
-        dbl_t value( const dbl_vec_t& parameters ) const override
+        dbl_vec_t values( const dbl_vec_t& parameters ) const override
         {
-          return m_Option->updateModelParameters( parameters )->callValue(m_Strike, m_Forward, m_Expiry);
+          pricer_ptr_t pricer;
+          auto pCWNMP = dynamic_cast<beagle::valuation::mixins::CloneWithNewModelParameters*>(m_Pricer.get());
+          if (pCWNMP)
+            pricer = pCWNMP->createPricerWithNewModelParameters(parameters);
+          else
+            throw("Cannot update model parameters");
+
+          dbl_vec_t result(m_Options.size());
+          std::transform(m_Options.cbegin(),
+                         m_Options.cend(),
+                         result.begin(),
+                         [&pricer](const option_ptr_t& option)
+                         { return pricer->optionValue(option); });
+
+          return result;
         }
-        dbl_vec_t derivativeWithRespectToParameters( const dbl_vec_t& parameters ) const override
+        dbl_mat_t derivativeWithRespectToParameters( const dbl_vec_t& parameters ) const override
         {
-          return m_Option->updateModelParameters( parameters )->derivativeWithRespectToParameters(m_Strike, m_Forward, m_Expiry);
+          auto pCWNMP = dynamic_cast<beagle::valuation::mixins::CloneWithNewModelParameters*>(m_Pricer.get());
+          if (!pCWNMP)
+            throw("Cannot update model parameters");
+
+          dbl_mat_t result(m_Options.size());
+          for (auto row : result)
+            row.resize(parameters.size());
+
+          double bump = 1e-4;
+          for (int j=0; j<parameters.size(); ++j)
+          {
+            dbl_vec_t forwardParams(parameters);
+            dbl_vec_t backwardParams(parameters);\
+            forwardParams[j] += bump;
+            backwardParams[j] -= bump;
+
+            pricer_ptr_t forwardBumpedPricer = pCWNMP->createPricerWithNewModelParameters(forwardParams);
+            pricer_ptr_t backwardBumpedPricer = pCWNMP->createPricerWithNewModelParameters(backwardParams);
+
+            for (int i=0; i<m_Options.size(); ++i)
+              result[i][j] = ( forwardBumpedPricer->optionValue(m_Options[i])
+                             - backwardBumpedPricer->optionValue(m_Options[i]) ) * .5 / bump;
+          }
+
+          return result;
         }
       private:
-        opt_ptr_t m_Option;
-        dbl_t m_Strike;
-        dbl_t m_Forward;
-        dbl_t m_Expiry;
+        pricer_ptr_t m_Pricer;
+        option_ptr_coll_t m_Options;
       };
     }
 
     CalibrationAdapter::~CalibrationAdapter( void )
     { }
 
-    dbl_t CalibrationAdapter::value( const dbl_vec_t& transformedParamters,
-                                     const calibration_bound_constraint_coll_t& constraints ) const
+    dbl_vec_t CalibrationAdapter::values( const dbl_vec_t& transformedParamters,
+                                          const calibration_bound_constraint_coll_t& constraints ) const
     {
-      return value( util::getOriginalParameters(transformedParamters, constraints) );
+      return values( util::getOriginalParameters(transformedParamters, constraints) );
     }
 
-    dbl_vec_t CalibrationAdapter::derivativeWithRespectToTransformedParameters(
+    dbl_mat_t CalibrationAdapter::derivativeWithRespectToTransformedParameters(
                      const dbl_vec_t& transformedParamters,
                      const calibration_bound_constraint_coll_t& constraints ) const
     {
-      dbl_vec_t derivs = derivativeWithRespectToParameters( util::getOriginalParameters(transformedParamters, constraints) );
-      for (int i=0; i<derivs.size(); ++i)
-        derivs(i) = constraints[i]->transformDerivative(transformedParamters(i), derivs(i));
+      dbl_mat_t derivs = derivativeWithRespectToParameters( util::getOriginalParameters(transformedParamters, constraints) );
+      for (int j=0; j<constraints.size(); ++j)
+      {
+        for (int i=0; i<derivs.size(); ++i)
+          derivs[i][j] = constraints[j]->transformDerivative(transformedParamters[j], derivs[i][j]);
+      }
 
       return derivs;
     }
 
-    calibration_adapter_ptr_t CalibrationAdapter::optionPricerAdapter( const opt_ptr_t& optionPricer,
-                                                                       dbl_t strike,
-                                                                       dbl_t forward,
-                                                                       dbl_t expiry )
+    calibration_adapter_ptr_t CalibrationAdapter::optionPricerAdapter( const pricer_ptr_t& pricer,
+                                                                       const option_ptr_coll_t& options )
     {
-      return std::make_shared<impl::OptionPricerAdapter>( optionPricer, strike, forward, expiry );
+      return std::make_shared<impl::OptionPricerAdapter>( pricer, options );
     }
   }
 }

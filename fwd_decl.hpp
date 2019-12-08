@@ -33,9 +33,12 @@ namespace beagle
   namespace calibration
   {
     struct CalibrationBoundConstraint;
+    struct CalibrationAdapter;
   }
 
   using option_ptr_t = std::shared_ptr<option::Option>;
+  using option_ptr_coll_t = std::vector<option_ptr_t>;
+
   using payoff_ptr_t = std::shared_ptr<option::Payoff>;
 
   using real_function_ptr_t = std::shared_ptr<math::RealFunction>;
@@ -50,8 +53,11 @@ namespace beagle
   using calibration_bound_constraint_ptr_t = std::shared_ptr<calibration::CalibrationBoundConstraint>;
   using calibration_bound_constraint_coll_t = std::vector<calibration_bound_constraint_ptr_t>;
 
+  using calibration_adapter_ptr_t = std::shared_ptr<calibration::CalibrationAdapter>;
+
   using dbl_vec_t = std::vector<double>;
   using dbl_vec_vec_t = std::vector<dbl_vec_t>;
+  using dbl_mat_t = dbl_vec_vec_t;
   using int_vec_t = std::vector<int>;
   using discrete_dividend_schedule_t = std::vector< std::pair<double, double> >;
 

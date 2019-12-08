@@ -13,6 +13,7 @@ Program([ "test.cpp",
           "real_2d_function.cpp",
           "real_function.cpp",
           "round_trip.cpp",
-          "util.cpp" ],
+          "util.cpp",
+          "calibration_adapter.cpp" ],
         CCFLAGS="/EHsc /O2 /IEigen",
         MSVC_VERSION=15.0)

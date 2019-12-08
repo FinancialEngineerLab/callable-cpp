@@ -87,6 +87,13 @@ namespace beagle
       public:
         virtual beagle::pricer_ptr_t createPricerWithNewLocalVolatilitySurface( const beagle::real_2d_function_ptr_t& vol ) const = 0;
       };
+
+      struct CloneWithNewModelParameters
+      {
+        virtual ~CloneWithNewModelParameters( void );
+      public:
+        virtual beagle::pricer_ptr_t createPricerWithNewModelParameters( const beagle::dbl_vec_t& parameters ) const = 0;
+      };
     }
   }
 }

@@ -68,7 +68,7 @@ namespace beagle
                 ++it;
               }
             }
-            
+
             times.push_back(time);
           }
 
@@ -107,6 +107,9 @@ namespace beagle
       }
 
       CloneWithNewLocalVolatilitySurface::~CloneWithNewLocalVolatilitySurface( void )
+      { }
+
+      CloneWithNewModelParameters::~CloneWithNewModelParameters( void )
       { }
     }
   }

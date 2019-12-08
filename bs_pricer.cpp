@@ -9,7 +9,8 @@ namespace beagle
   {
     namespace impl
     {
-      struct BlackScholesClosedFormEuropeanOptionPricer : public Pricer
+      struct BlackScholesClosedFormEuropeanOptionPricer : public Pricer,
+                                                          public beagle::valuation::mixins::CloneWithNewModelParameters
       {
         BlackScholesClosedFormEuropeanOptionPricer( double spot,
                                                     double rate,
@@ -43,6 +44,13 @@ namespace beagle
             return result;
           else
             return result - adjustedSpot + adjustedStrike * discounting;
+        }
+        virtual beagle::pricer_ptr_t createPricerWithNewModelParameters( const beagle::dbl_vec_t& parameters ) const override
+        {
+          if (parameters.size() != 1U)
+            throw("Cannot create a new Black-Scholes pricer with more than one volatility");
+
+          return beagle::valuation::Pricer::formBlackScholesClosedFormEuropeanOptionPricer(m_Spot, m_Rate, parameters.front(), m_Dividends);
         }
       private:
         void calculateAdjustedSpotAndStrike( double expiry,
