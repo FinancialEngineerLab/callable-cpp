@@ -37,16 +37,11 @@ namespace beagle
         beagle::option_ptr_t amerOption = beagle::option::Option::createEuropeanOption( expiries[0],
                                                                                         *it,
                                                                                         payoff );
-        beagle::pricer_ptr_t odbpop  = beagle::valuation::Pricer::formOneDimensionalBackwardPDEOptionPricer(
+        beagle::pricer_ptr_t odbpop  = beagle::valuation::Pricer::formBlackScholesClosedFormEuropeanOptionPricer(
                                                                spot,
                                                                rate,
-                                                               beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(*jt),
-                                                               1501,
-                                                               1901,
-                                                               7.5,
-                                                               beagle::discrete_dividend_schedule_t(),
-                                                               beagle::valuation::DividendPolicy::liquidator(),
-                                                               beagle::math::InterpolationBuilder::linear() );
+                                                               *jt,
+                                                               beagle::discrete_dividend_schedule_t() );
         prices.push_back(odbpop->optionValue(amerOption));
       }
 
