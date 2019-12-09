@@ -154,7 +154,7 @@ namespace beagle
                         dbl_vec_t(1U, 1.0),
                         real_function_ptr_coll_t(
                               1U,
-                              beagle::math::RealFunction::createPiecewiseConstantRightInterpolatedFunction(m_InterpStrikes,
+                              beagle::math::RealFunction::createLinearWithFlatExtrapolationInterpolatedFunction(m_InterpStrikes,
                                                                                                                 parameters)));
             pricer = pCWNMP->createPricerWithNewLocalVolatilitySurface(newLocalVolSurface);
           }
@@ -208,14 +208,14 @@ namespace beagle
                         dbl_vec_t(1U, 1.0),
                         real_function_ptr_coll_t(
                               1U,
-                              beagle::math::RealFunction::createPiecewiseConstantRightInterpolatedFunction(m_InterpStrikes,
+                              beagle::math::RealFunction::createLinearWithFlatExtrapolationInterpolatedFunction(m_InterpStrikes,
                                                                                                                 forwardParams)));
             beagle::real_2d_function_ptr_t backwardSurface
               = beagle::math::RealTwoDimFunction::createPiecewiseConstantRightFunction(
                         dbl_vec_t(1U, 1.0),
                         real_function_ptr_coll_t(
                               1U,
-                              beagle::math::RealFunction::createPiecewiseConstantRightInterpolatedFunction(m_InterpStrikes,
+                              beagle::math::RealFunction::createLinearWithFlatExtrapolationInterpolatedFunction(m_InterpStrikes,
                                                                                                                 backwardParams)));
 
             pricer_ptr_t forwardBumpedPricer = pCWNMP->createPricerWithNewLocalVolatilitySurface(forwardSurface);

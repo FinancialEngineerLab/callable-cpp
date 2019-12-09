@@ -120,7 +120,7 @@ void test3( void )
   // dividends.emplace_back( 6.5, 8.0 );
 
   double expiry = 1.;
-  double strike = 90.;
+  double strike = 100.;
   beagle::payoff_ptr_t payoff = beagle::option::Payoff::call();
   beagle::option_ptr_t euroOption = beagle::option::Option::createEuropeanOption( expiry,
                                                                                   strike,
