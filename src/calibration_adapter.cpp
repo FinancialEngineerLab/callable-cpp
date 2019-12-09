@@ -3,6 +3,8 @@
 #include "real_2d_function.hpp"
 #include "interpolation_builder.hpp"
 
+#include <iostream>
+
 namespace beagle
 {
   namespace calibration
@@ -145,6 +147,10 @@ namespace beagle
       public:
         dbl_vec_t values( const dbl_vec_t& parameters ) const override
         {
+          for (int i=0; i<parameters.size(); ++i)
+            std::cout << m_Strikes[i] << "\t" << parameters[i] << "\n";
+          std::cout << "\n";
+
           pricer_ptr_t pricer;
           auto pCWNMP = dynamic_cast<beagle::valuation::mixins::CloneWithNewLocalVolatilitySurface*>(m_Pricer.get());
           if (pCWNMP)
@@ -185,10 +191,6 @@ namespace beagle
         }
         dbl_mat_t derivativeWithRespectToParameters( const dbl_vec_t& parameters ) const override
         {
-          auto pCWNMP = dynamic_cast<beagle::valuation::mixins::CloneWithNewLocalVolatilitySurface*>(m_Pricer.get());
-          if (!pCWNMP)
-            throw("Cannot update model parameters");
-
           dbl_mat_t result(m_InterpStrikes.size());
           for (int i=0; i<m_InterpStrikes.size(); ++i)
           {
