@@ -200,64 +200,12 @@ namespace beagle
           {
             dbl_vec_t forwardParams(parameters);
             dbl_vec_t backwardParams(parameters);
+
             forwardParams[j] += bump;
             backwardParams[j] -= bump;
 
-            beagle::real_2d_function_ptr_t forwardSurface
-              = beagle::math::RealTwoDimFunction::createPiecewiseConstantRightFunction(
-                        dbl_vec_t(1U, 1.0),
-                        real_function_ptr_coll_t(
-                              1U,
-                              beagle::math::RealFunction::createLinearWithFlatExtrapolationInterpolatedFunction(m_InterpStrikes,
-                                                                                                                forwardParams)));
-            beagle::real_2d_function_ptr_t backwardSurface
-              = beagle::math::RealTwoDimFunction::createPiecewiseConstantRightFunction(
-                        dbl_vec_t(1U, 1.0),
-                        real_function_ptr_coll_t(
-                              1U,
-                              beagle::math::RealFunction::createLinearWithFlatExtrapolationInterpolatedFunction(m_InterpStrikes,
-                                                                                                                backwardParams)));
-
-            pricer_ptr_t forwardBumpedPricer = pCWNMP->createPricerWithNewLocalVolatilitySurface(forwardSurface);
-            pricer_ptr_t backwardBumpedPricer = pCWNMP->createPricerWithNewLocalVolatilitySurface(backwardSurface);
-
-            dbl_vec_t forwardPrices(m_Prices);
-            auto pOVCP = dynamic_cast<beagle::valuation::mixins::OptionValueCollectionProvider*>(forwardBumpedPricer.get());
-            pOVCP->optionValueCollection(m_Start,
-                                         m_End,
-                                         m_Payoff,
-                                         m_LogStrikes,
-                                         m_Strikes,
-                                         forwardPrices);
-
-            auto pFD = dynamic_cast<beagle::valuation::mixins::FiniteDifference*>(forwardBumpedPricer.get());
-            beagle::real_function_ptr_t priceFunc = pFD->interpolation()->formFunction(m_Strikes, forwardPrices);
-
-            dbl_vec_t forwardResult(m_InterpStrikes.size());
-            std::transform(m_InterpStrikes.cbegin(),
-                           m_InterpStrikes.cend(),
-                           forwardResult.begin(),
-                           [&priceFunc](double strike)
-                           { return priceFunc->value(strike); });
-
-            dbl_vec_t backwardPrices(m_Prices);
-            auto pOVCQ = dynamic_cast<beagle::valuation::mixins::OptionValueCollectionProvider*>(backwardBumpedPricer.get());
-            pOVCQ->optionValueCollection(m_Start,
-                                         m_End,
-                                         m_Payoff,
-                                         m_LogStrikes,
-                                         m_Strikes,
-                                         backwardPrices);
-
-            auto pFE = dynamic_cast<beagle::valuation::mixins::FiniteDifference*>(backwardBumpedPricer.get());
-            beagle::real_function_ptr_t priceFund = pFE->interpolation()->formFunction(m_Strikes, backwardPrices);
-
-            dbl_vec_t backwardResult(m_InterpStrikes.size());
-            std::transform(m_InterpStrikes.cbegin(),
-                           m_InterpStrikes.cend(),
-                           backwardResult.begin(),
-                           [&priceFund](double strike)
-                           { return priceFund->value(strike); });
+            dbl_vec_t forwardResult = values(forwardParams);
+            dbl_vec_t backwardResult = values(backwardParams);
 
             for (int i=0; i<m_InterpStrikes.size(); ++i)
             {

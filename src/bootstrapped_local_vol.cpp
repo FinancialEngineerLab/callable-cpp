@@ -7,6 +7,7 @@
 #include "unsupported/Eigen/NonLinearOptimization"
 
 #include <iostream>
+#include <fstream>
 
 namespace beagle
 {
@@ -62,6 +63,11 @@ namespace beagle
             throw(std::string("Cast for OptionValueCollectionProvider failed!"));
           pOVCP->formInitialOptionValueCollection( m_Payoff, strikes, prices );
 
+          std::ofstream out("strikes.txt");
+          for (int i=0; i<strikes.size(); ++i)
+            out << strikes[i] << "\t" << prices[i] << "\n";
+          out << "\n";
+
           double start(0.0);
           for (beagle::dbl_vec_t::size_type i=0; i<m_Expiries.size(); ++i)
           {
@@ -75,7 +81,7 @@ namespace beagle
                                                                                                                  prices,
                                                                                                                  m_StrikesColl[i]);
 
-            beagle::dbl_vec_t guesses{.53, .47, .41, .35, .29, .23, .17, .11, .05};
+            beagle::dbl_vec_t guesses{.44, .395, .355, .32, .29, .265, .28, .30, .33};
             beagle::calibration_bound_constraint_coll_t constraints(guesses.size(),
                                                                     beagle::calibration::CalibrationBoundConstraint::twoSidedBoundCalibrationConstraint(0., 2.));
             beagle::int_vec_t elimIndices(0U);
@@ -86,8 +92,8 @@ namespace beagle
               calibParams(i) = guesses[i];
 
             beagle::calibration::CalibrationFunctor functor( m_PricesColl[i], adapter, calibParams, constraints, elimIndices );
-            Eigen::HybridNonLinearSolver<beagle::calibration::CalibrationFunctor> lm(functor);
-            Eigen::HybridNonLinearSolverSpace::Status status = lm.hybrd1(calibParams);
+            Eigen::LevenbergMarquardt<beagle::calibration::CalibrationFunctor> lm(functor);
+            Eigen::LevenbergMarquardtSpace::Status status = lm.minimize(calibParams);
 
             for (int i=0; i<guesses.size(); ++i)
               guesses[i] = calibParams(i);

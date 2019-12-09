@@ -86,7 +86,7 @@ void test2( void )
                                                                  rate,
                                                                  beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(vol),
                                                                  1001,
-                                                                 1001,
+                                                                 2001,
                                                                  5.,
                                                                  beagle::discrete_dividend_schedule_t(),
                                                                  beagle::valuation::DividendPolicy::liquidator(),

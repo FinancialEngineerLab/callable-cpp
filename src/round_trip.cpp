@@ -2,6 +2,7 @@
 #include "payoff.hpp"
 #include "option.hpp"
 #include "pricer.hpp"
+#include "real_function.hpp"
 #include "real_2d_function.hpp"
 #include "dividend_policy.hpp"
 #include "interpolation_builder.hpp"
@@ -28,21 +29,33 @@ namespace beagle
       beagle::dbl_vec_t vols{.44, .395, .355, .32, .29, .265, .28, .30, .33};
       strikesColl.push_back(strikes);
 
+      beagle::real_2d_function_ptr_t localVol
+        = beagle::math::RealTwoDimFunction::createPiecewiseConstantRightFunction(
+                  expiries,
+                  beagle::real_function_ptr_coll_t(
+                              1U,
+                              beagle::math::RealFunction::createLinearWithFlatExtrapolationInterpolatedFunction(strikes,
+                                                                                                                vols)));
+      beagle::pricer_ptr_t odfpeop  = beagle::valuation::Pricer::formOneDimensionalForwardPDEEuropeanOptionPricer(
+                                                                 spot,
+                                                                 rate,
+                                                                 localVol,
+                                                                 1501,
+                                                                 1901,
+                                                                 7.5,
+                                                                 beagle::discrete_dividend_schedule_t(),
+                                                                 beagle::valuation::DividendPolicy::liquidator(),
+                                                                 beagle::math::InterpolationBuilder::linear() );
+
       auto it = strikes.cbegin();
       auto itEnd = strikes.cend();
-      auto jt = vols.cbegin();
       beagle::dbl_vec_t prices;
-      for ( ; it != itEnd; ++it, ++jt)
+      for ( ; it != itEnd; ++it)
       {
         beagle::option_ptr_t amerOption = beagle::option::Option::createEuropeanOption( expiries[0],
                                                                                         *it,
                                                                                         payoff );
-        beagle::pricer_ptr_t odbpop  = beagle::valuation::Pricer::formBlackScholesClosedFormEuropeanOptionPricer(
-                                                               spot,
-                                                               rate,
-                                                               *jt,
-                                                               beagle::discrete_dividend_schedule_t() );
-        prices.push_back(odbpop->optionValue(amerOption));
+        prices.push_back(odfpeop->optionValue(amerOption));
       }
 
       pricesColl.push_back( prices );
