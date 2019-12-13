@@ -9,7 +9,7 @@ namespace beagle
     {
       struct TwoDimConstantFunction : public RealTwoDimFunction
       {
-        TwoDimConstantFunction( double constant ) :
+        explicit TwoDimConstantFunction( double constant ) :
           m_Const( constant )
         { }
         virtual ~TwoDimConstantFunction( void )

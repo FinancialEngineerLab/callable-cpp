@@ -33,7 +33,7 @@ namespace beagle
 
       struct ConstantFunction : public RealFunction
       {
-        ConstantFunction( double constant ) :
+        explicit ConstantFunction( double constant ) :
           m_Const( constant )
         { }
         virtual ~ConstantFunction( void )

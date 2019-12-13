@@ -24,27 +24,27 @@ namespace beagle
       {
         NoBoundCalibrationConstraintImpl( void )
         { }
-        ~NoBoundCalibrationConstraintImpl( void )
+        virtual ~NoBoundCalibrationConstraintImpl( void )
         { }
       public:
-        double lowerBound( void ) const
+        virtual double lowerBound( void ) const
         {
           return negativeInfiniteBoundary();
         }
-        double upperBound( void ) const
+        virtual double upperBound( void ) const
         {
           return positiveInfiniteBoundary();
         }
-        double transform( const double original ) const
+        virtual double transform( const double original ) const
         {
           return original;
         }
-        double inverseTransform( const double transformed ) const
+        virtual double inverseTransform( const double transformed ) const
         {
           return transformed;
         }
-        double transformDerivative( const double transformed,
-                                    const double dOriginal ) const
+        virtual double transformDerivative( const double transformed,
+                                            const double dOriginal ) const
         {
           return dOriginal;
         }
@@ -52,30 +52,30 @@ namespace beagle
 
       struct LowerBoundCalibrationConstraintImpl : public CalibrationBoundConstraint
       {
-        LowerBoundCalibrationConstraintImpl( const double lowerBound ) :
+        explicit LowerBoundCalibrationConstraintImpl( const double lowerBound ) :
           m_LowerBound( lowerBound )
         { }
-        ~LowerBoundCalibrationConstraintImpl( void )
+        virtual ~LowerBoundCalibrationConstraintImpl( void )
         { }
       public:
-        double lowerBound( void ) const
+        virtual double lowerBound( void ) const
         {
           return m_LowerBound;
         }
-        double upperBound( void ) const
+        virtual double upperBound( void ) const
         {
           return positiveInfiniteBoundary();
         }
-        double transform( const double original ) const
+        virtual double transform( const double original ) const
         {
           return std::log( original-m_LowerBound );
         }
-        double inverseTransform( const double transformed ) const
+        virtual double inverseTransform( const double transformed ) const
         {
           return std::exp(transformed) + m_LowerBound;
         }
-        double transformDerivative( const double transformed,
-                                    const double dOriginal ) const
+        virtual double transformDerivative( const double transformed,
+                                            const double dOriginal ) const
         {
           return dOriginal * std::exp(transformed);
         }
@@ -85,30 +85,30 @@ namespace beagle
 
       struct UpperBoundCalibrationConstraintImpl : public CalibrationBoundConstraint
       {
-        UpperBoundCalibrationConstraintImpl( const double upperBound ) :
+        explicit UpperBoundCalibrationConstraintImpl( const double upperBound ) :
           m_UpperBound( upperBound )
         { }
-        ~UpperBoundCalibrationConstraintImpl( void )
+        virtual ~UpperBoundCalibrationConstraintImpl( void )
         { }
       public:
-        double lowerBound( void ) const
+        virtual double lowerBound( void ) const
         {
           return negativeInfiniteBoundary();
         }
-        double upperBound( void ) const
+        virtual double upperBound( void ) const
         {
           return m_UpperBound;
         }
-        double transform( const double original ) const
+        virtual double transform( const double original ) const
         {
           return std::log( m_UpperBound-original );
         }
-        double inverseTransform( const double transformed ) const
+        virtual double inverseTransform( const double transformed ) const
         {
           return m_UpperBound - std::exp(transformed);
         }
-        double transformDerivative( const double transformed,
-                                    const double dOriginal ) const
+        virtual double transformDerivative( const double transformed,
+                                            const double dOriginal ) const
         {
           return -dOriginal * std::exp(transformed);
         }
@@ -124,27 +124,27 @@ namespace beagle
           m_UpperBound( upperBound ),
           m_UMinusL( upperBound-lowerBound )
         { }
-        ~TwoSidedBoundCalibrationConstraintImpl( void )
+        virtual ~TwoSidedBoundCalibrationConstraintImpl( void )
         { }
       public:
-        double lowerBound( void ) const
+        virtual double lowerBound( void ) const
         {
           return m_LowerBound;
         }
-        double upperBound( void ) const
+        virtual double upperBound( void ) const
         {
           return m_UpperBound;
         }
-        double transform( const double original ) const
+        virtual double transform( const double original ) const
         {
           return std::tan( util::pi() * ( (original-m_LowerBound)/m_UMinusL - 0.5 ) );
         }
-        double inverseTransform( const double transformed ) const
+        virtual double inverseTransform( const double transformed ) const
         {
           return m_LowerBound + m_UMinusL * ( .5 * util::pi() + std::atan(transformed) ) / util::pi();
         }
-        double transformDerivative( const double transformed,
-                                    const double dOriginal ) const
+        virtual double transformDerivative( const double transformed,
+                                            const double dOriginal ) const
         {
           return dOriginal * m_UMinusL / util::pi() / (1.0+transformed*transformed);
         }

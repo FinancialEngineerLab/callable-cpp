@@ -129,8 +129,6 @@ namespace beagle
           double strike = option->strike();
           const beagle::payoff_ptr_t& payoff = option->payoff();
 
-          double forward = finiteDifferenceDetails().spot() * std::exp(finiteDifferenceDetails().rate() * expiry);
-
           beagle::dbl_vec_t logStrikes;
           beagle::dbl_vec_t strikes;
           finiteDifferenceDetails().formStateVariableSteps( expiry, logStrikes, strikes );

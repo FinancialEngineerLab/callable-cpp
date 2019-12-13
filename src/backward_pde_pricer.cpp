@@ -144,8 +144,6 @@ namespace beagle
                                               beagle::dbl_vec_t& spots ) const
         {
           finiteDifferenceDetails().formTimeSteps( 0., expiry, times, exDividendIndices );
-
-          double forward = finiteDifferenceDetails().spot() * std::exp(finiteDifferenceDetails().rate() * expiry);
           finiteDifferenceDetails().formStateVariableSteps( expiry, logSpots, spots );
         }
         two_dbl_t boundaryCondition( const beagle::payoff_ptr_t& payoff,
