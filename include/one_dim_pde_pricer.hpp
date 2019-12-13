@@ -19,7 +19,7 @@ namespace beagle
       struct OneDimensionalPDEOptionPricer : public Pricer,
                                              public beagle::valuation::mixins::FiniteDifference
       {
-        OneDimensionalPDEOptionPricer( const FiniteDifferenceDetails& fdDetails) :
+        explicit OneDimensionalPDEOptionPricer( const FiniteDifferenceDetails& fdDetails) :
           m_FDDetails(fdDetails)
         { }
         virtual ~OneDimensionalPDEOptionPricer( void )

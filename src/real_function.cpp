@@ -49,7 +49,7 @@ namespace beagle
 
       struct UnaryFunction : public RealFunction
       {
-        UnaryFunction( const beagle::real_func_t& func ) :
+        explicit UnaryFunction( const beagle::real_func_t& func ) :
           m_Func( func )
         { }
         virtual ~UnaryFunction( void )
