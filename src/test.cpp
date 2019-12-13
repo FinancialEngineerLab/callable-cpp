@@ -1,4 +1,3 @@
-#include <iostream>
 #include "pricer.hpp"
 #include "option.hpp"
 #include "payoff.hpp"
@@ -9,8 +8,12 @@
 #include "util.hpp"
 #include "round_trip.hpp"
 
+#include <iostream>
+
 void test1( void )
 {
+  std::cout << "\nStart of Test 1:\n";
+
   beagle::discrete_dividend_schedule_t dividends;
   dividends.emplace_back( 0.5, 6.0 );
   dividends.emplace_back( 1.5, 6.5 );
@@ -61,6 +64,8 @@ void test1( void )
     std::cout << "European option price (FD-B) is: " << odbpop->optionValue( euroOption ) << std::endl;
     std::cout << "American option price (FD-B) is: " << odbpop->optionValue( amerOption ) << std::endl;
     std::cout << "European option price (FD-F) is: " << odfpeop->optionValue( euroOption ) << std::endl;
+
+    std::cout << "\nEnd of Test 1:\n";
   }
   catch (const std::string& what)
   {
@@ -70,13 +75,17 @@ void test1( void )
 
 void test2( void )
 {
+  std::cout << "\nStart of Test 2:\n";
+
+  beagle::discrete_dividend_schedule_t dividends;
+  dividends.emplace_back( 0.4, 3.0 );
+  dividends.emplace_back(0.6, 2.0);
+  dividends.emplace_back(0.8, 1.0);
+
   beagle::dbl_vec_t expiries;
   beagle::dbl_vec_vec_t strikesColl;
   beagle::dbl_vec_vec_t pricesColl;
-  beagle::test::generateEuropeanMarketQuotes( expiries, strikesColl, pricesColl );
-
-  beagle::discrete_dividend_schedule_t dividends;
-  dividends.emplace_back( 0.4, 6.0 );
+  beagle::test::generateEuropeanMarketQuotes( dividends, expiries, strikesColl, pricesColl );
 
   double spot = 100.;
   double rate = .00;
@@ -104,6 +113,9 @@ void test2( void )
 
     for (auto strike : strikesColl[0])
       std::cout << localVol->value( expiries[0], strike ) << std::endl;
+
+
+    std::cout << "\nEnd of Test 2:\n";
   }
   catch (const std::string& what)
   {
@@ -113,6 +125,8 @@ void test2( void )
 
 void test3( void )
 {
+  std::cout << "\nStart of Test 3:\n";
+
   beagle::discrete_dividend_schedule_t dividends;
   // dividends.emplace_back( 0.5, 6.0 );
   // dividends.emplace_back( 1.5, 6.5 );
@@ -169,6 +183,8 @@ void test3( void )
     std::cout << "European option price (FD-B) is: " << odbpop->optionValue( euroOption ) << std::endl;
     std::cout << "American option price (FD-B) is: " << odbpop->optionValue( amerOption ) << std::endl;
     std::cout << "European option price (FD-F) is: " << odfpeop->optionValue( euroOption ) << std::endl;
+
+    std::cout << "\nEnd of Test 3:\n";
   }
   catch (const std::string& what)
   {
@@ -178,7 +194,9 @@ void test3( void )
 
 int main( void )
 {
+  test1();
   test2();
+  test3();
 
   return 0;
 }

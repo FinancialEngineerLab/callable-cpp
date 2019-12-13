@@ -11,7 +11,8 @@ namespace beagle
 {
   namespace test
   {
-    void generateEuropeanMarketQuotes( beagle::dbl_vec_t& expiries,
+    void generateEuropeanMarketQuotes( const beagle::discrete_dividend_schedule_t& dividends,
+                                       beagle::dbl_vec_t& expiries,
                                        beagle::dbl_vec_vec_t& strikesColl,
                                        beagle::dbl_vec_vec_t& pricesColl )
     {
@@ -28,9 +29,6 @@ namespace beagle
       beagle::dbl_vec_t strikes{90., 92.5, 95., 97.5, 100., 102.5, 105., 107.5, 110.};
       beagle::dbl_vec_t vols{.44, .395, .355, .32, .29, .265, .28, .30, .33};
       strikesColl.push_back(strikes);
-
-      beagle::discrete_dividend_schedule_t dividends;
-      dividends.emplace_back( 0.4, 6.0 );
 
       beagle::real_2d_function_ptr_t localVol
         = beagle::math::RealTwoDimFunction::createPiecewiseConstantRightFunction(
