@@ -20,17 +20,20 @@ namespace beagle
       strikesColl.clear();
       pricesColl.clear();
 
-      expiries.push_back(.5);
+      expiries.push_back(.25);
+      //expiries.push_back(.5);
+      //expiries.push_back(.75);
+      //expiries.push_back(1.);
 
       beagle::dbl_vec_t strikes{90., 92.5, 95., 97.5, 100., 102.5, 105., 107.5, 110.};
-      strikesColl.push_back(strikes);
+      strikesColl.resize(expiries.size(), strikes);
 
       beagle::dbl_vec_t vols{.44, .395, .355, .32, .29, .265, .28, .30, .33};
       beagle::real_2d_function_ptr_t localVol
         = beagle::math::RealTwoDimFunction::createPiecewiseConstantRightFunction(
                   expiries,
                   beagle::real_function_ptr_coll_t(
-                              1U,
+                              expiries.size(),
                               beagle::math::RealFunction::createLinearWithFlatExtrapolationInterpolatedFunction(strikes,
                                                                                                                 vols)));
 
@@ -39,19 +42,19 @@ namespace beagle
       beagle::pricer_ptr_t odfpeop  = beagle::valuation::Pricer::formOneDimensionalForwardPDEEuropeanOptionPricer(
                                                                  fdDetails,
                                                                  localVol );
-
-      auto it = strikes.cbegin();
-      auto itEnd = strikes.cend();
-      beagle::dbl_vec_t prices;
-      for ( ; it != itEnd; ++it)
+      for (dbl_vec_t::size_type i = 0; i < expiries.size(); ++i)
       {
-        beagle::option_ptr_t amerOption = beagle::option::Option::createEuropeanOption( expiries[0],
-                                                                                        *it,
-                                                                                        payoff );
-        prices.push_back(odfpeop->optionValue(amerOption));
-      }
+        beagle::dbl_vec_t prices;
+        for (dbl_vec_t::size_type j = 0; j < strikesColl[i].size(); ++j)
+        {
+          beagle::option_ptr_t euroOption = beagle::option::Option::createEuropeanOption(expiries[i],
+                                                                                         strikesColl[i][j],
+                                                                                         payoff);
+          prices.push_back(odfpeop->optionValue(euroOption));
+        }
 
-      pricesColl.push_back( prices );
+        pricesColl.push_back(prices);
+      }
     }
   }
 }

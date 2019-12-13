@@ -12,7 +12,7 @@
 
 void test1( void )
 {
-  std::cout << "\nStart of Test 1:\n";
+  std::cout << "\nStart of Test 1:\n\n";
 
   beagle::discrete_dividend_schedule_t dividends;
   dividends.emplace_back( 0.5, 6.0 );
@@ -55,7 +55,7 @@ void test1( void )
     std::cout << "American option price (FD-B) is: " << odbpop->optionValue( amerOption ) << std::endl;
     std::cout << "European option price (FD-F) is: " << odfpeop->optionValue( euroOption ) << std::endl;
 
-    std::cout << "\nEnd of Test 1:\n";
+    std::cout << "\nEnd of Test 1\n";
   }
   catch (const std::string& what)
   {
@@ -65,10 +65,10 @@ void test1( void )
 
 void test2( void )
 {
-  std::cout << "\nStart of Test 2:\n";
+  std::cout << "\nStart of Test 2:\n\n";
 
   beagle::discrete_dividend_schedule_t dividends;
-  dividends.emplace_back( 0.4, 3.0 );
+  dividends.emplace_back(0.4, 3.0);
   dividends.emplace_back(0.6, 2.0);
   dividends.emplace_back(0.8, 1.0);
 
@@ -81,25 +81,68 @@ void test2( void )
   beagle::dbl_vec_vec_t pricesColl;
   beagle::test::generateEuropeanMarketQuotes(fdDetails, expiries, strikesColl, pricesColl );
 
+  beagle::dbl_vec_t initialGuesses(expiries.size(), .3);
+
   try
   {
     beagle::payoff_ptr_t payoff = beagle::option::Payoff::call();
-    beagle::pricer_ptr_t forwardPricer  = beagle::valuation::Pricer::formOneDimensionalForwardPDEEuropeanOptionPricer(
+    beagle::interp_builder_ptr_t interp = beagle::math::InterpolationBuilder::linear();
+
+    beagle::pricer_ptr_t forwardPricer = beagle::valuation::Pricer::formOneDimensionalForwardPDEEuropeanOptionPricer(
                                                                  fdDetails,
                                                                  beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(fdDetails.volatility()) );
 
     beagle::real_2d_function_ptr_t localVol =
       beagle::math::RealTwoDimFunction::createBootstrappedLocalVolatilityFunction( expiries,
+                                                                                   initialGuesses,
                                                                                    strikesColl,
                                                                                    pricesColl,
                                                                                    forwardPricer,
-                                                                                   payoff );
+                                                                                   payoff,
+                                                                                   interp );
 
-    for (auto strike : strikesColl[0])
-      std::cout << localVol->value( expiries[0], strike ) << std::endl;
+    // Output local volatility surface
+    for (beagle::dbl_vec_t::size_type i = 0; i < expiries.size(); ++i)
+    {
+      for (beagle::dbl_vec_t::size_type j = 0; j < strikesColl[i].size(); ++j)
+        std::cout << expiries[i] - .1 << "\t"
+                  << strikesColl[i][j] << "\t"
+                  << localVol->value(expiries[i] - .1, strikesColl[i][j]) << "\n";
 
+      std::cout << "\n";
+    }
 
-    std::cout << "\nEnd of Test 2:\n";
+    std::cout << "\n";
+
+    // Output price quotes
+    for (beagle::dbl_vec_t::size_type i = 0; i < expiries.size(); ++i)
+    {
+      for (beagle::dbl_vec_t::size_type j = 0; j < strikesColl[i].size(); ++j)
+        std::cout << pricesColl[i][j] << "\t";
+
+      std::cout << "\n";
+    }
+
+    std::cout << "\n";
+
+    // Output calibrated prices
+    beagle::pricer_ptr_t calibratedPricer = beagle::valuation::Pricer::formOneDimensionalForwardPDEEuropeanOptionPricer( fdDetails, localVol );
+    for (beagle::dbl_vec_t::size_type i = 0; i < expiries.size(); ++i)
+    {
+      for (beagle::dbl_vec_t::size_type j = 0; j < strikesColl[i].size(); ++j)
+      {
+        beagle::option_ptr_t euroOption = beagle::option::Option::createEuropeanOption(expiries[i],
+                                                                                       strikesColl[i][j],
+                                                                                       payoff);
+        std::cout << calibratedPricer->optionValue(euroOption) << "\t";
+      }
+
+      std::cout << "\n";
+    }
+
+    std::cout << "\n";
+
+    std::cout << "\nEnd of Test 2\n";
   }
   catch (const std::string& what)
   {
@@ -109,7 +152,7 @@ void test2( void )
 
 void test3( void )
 {
-  std::cout << "\nStart of Test 3:\n";
+  std::cout << "\nStart of Test 3:\n\n";
 
   beagle::discrete_dividend_schedule_t dividends;
   // dividends.emplace_back( 0.5, 6.0 );
@@ -159,7 +202,7 @@ void test3( void )
     std::cout << "American option price (FD-B) is: " << odbpop->optionValue( amerOption ) << std::endl;
     std::cout << "European option price (FD-F) is: " << odfpeop->optionValue( euroOption ) << std::endl;
 
-    std::cout << "\nEnd of Test 3:\n";
+    std::cout << "\nEnd of Test 3\n";
   }
   catch (const std::string& what)
   {
@@ -169,9 +212,9 @@ void test3( void )
 
 int main( void )
 {
-  test1();
+  //test1();
   test2();
-  test3();
+  //test3();
 
   return 0;
 }
