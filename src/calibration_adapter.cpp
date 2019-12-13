@@ -173,7 +173,7 @@ namespace beagle
                                        prices );
 
           auto pFD = dynamic_cast<beagle::valuation::mixins::FiniteDifference*>(pricer.get());
-          beagle::real_function_ptr_t priceFunc = pFD->interpolation()->formFunction(m_Strikes, prices);
+          beagle::real_function_ptr_t priceFunc = pFD->finiteDifferenceDetails().interpolation()->formFunction(m_Strikes, prices);
 
           dbl_vec_t result(m_InterpStrikes.size());
           std::transform(m_InterpStrikes.cbegin(),

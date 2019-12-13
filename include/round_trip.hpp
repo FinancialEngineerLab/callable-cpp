@@ -7,7 +7,7 @@ namespace beagle
 {
   namespace test
   {
-    void generateEuropeanMarketQuotes( const beagle::discrete_dividend_schedule_t& dividends,
+    void generateEuropeanMarketQuotes( const beagle::valuation::FiniteDifferenceDetails& fdDetails,
                                        beagle::dbl_vec_t& expiries,
                                        beagle::dbl_vec_vec_t& strikesColl,
                                        beagle::dbl_vec_vec_t& pricesColl );

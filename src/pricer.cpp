@@ -11,6 +11,147 @@ namespace beagle
     Pricer::~Pricer( void )
     { }
 
+    FiniteDifferenceDetails::FiniteDifferenceDetails( double spot,
+                                                      double rate,
+                                                      double volatility,
+                                                      int stepsPerAnnum,
+                                                      int stepsLogSpot,
+                                                      double numStdev,
+                                                      const beagle::discrete_dividend_schedule_t& dividends,
+                                                      const beagle::dividend_policy_ptr_t& policy,
+                                                      const beagle::interp_builder_ptr_t& interp ) :
+      m_Spot(spot),
+      m_Rate(rate),
+      m_Volatility(volatility),
+      m_StepsPerAnnum(stepsPerAnnum),
+      m_StepsLogSpot(stepsLogSpot),
+      m_NumStdev(numStdev),
+      m_Dividends(dividends),
+      m_Policy(policy),
+      m_Interp(interp)
+    { }
+
+    void
+    FiniteDifferenceDetails::formTimeSteps( double start,
+                                            double end,
+                                            beagle::dbl_vec_t& times,
+                                            beagle::int_vec_t& exDividendIndices ) const
+    {
+      exDividendIndices.clear();
+
+      double expiry = end - start;
+      int numSteps = static_cast<int>(std::floor(expiry * m_StepsPerAnnum));
+      if (m_Dividends.empty())
+      {
+        times.resize(numSteps + 1);
+
+        for (int i=0; i<numSteps+1; ++i)
+          times[i] = start + i * expiry / numSteps;
+      }
+      else
+      {
+        times.reserve(numSteps + 1 + m_Dividends.size());
+
+        auto it = m_Dividends.cbegin();
+        if (it->first < start)
+          ++it;
+
+        auto itEnd = m_Dividends.cend();
+        for (int i=0, j=0; i<numSteps+1; ++i, ++j)
+        {
+          double time = start + i * expiry / numSteps;
+          if (it != itEnd)
+          {
+            if (it->first < time)
+            {
+              times.push_back(it->first);
+              exDividendIndices.push_back(j);
+              ++j;
+              times.push_back(time);
+              ++it;
+            }
+            else if (it->first == time)
+            {
+              times.push_back(it->first);
+              exDividendIndices.push_back(j);
+              ++it;
+            }
+          }
+
+          times.push_back(time);
+        }
+
+        times.shrink_to_fit();
+      }
+    }
+
+    void
+    FiniteDifferenceDetails::formStateVariableSteps( double expiry,
+                                                      beagle::dbl_vec_t& logStateVariables,
+                                                      beagle::dbl_vec_t& stateVariables ) const
+    {
+      logStateVariables.resize(m_StepsLogSpot);
+      stateVariables.resize(m_StepsLogSpot -2);
+
+      double forward = m_Spot * std::exp(m_Rate * expiry);
+      double logSpot = std::log( m_Spot ) + (m_Rate - .5 * m_Volatility * m_Volatility) * expiry;
+      int mid = m_StepsLogSpot / 2;
+      double logStrikestep = 2. * m_NumStdev * m_Volatility * std::sqrt(expiry) / m_StepsLogSpot;
+      logStateVariables.resize(m_StepsLogSpot);
+      for (int i=0; i<m_StepsLogSpot; ++i)
+        logStateVariables[i] = logSpot + (i-mid)*logStrikestep;
+
+      std::transform( logStateVariables.cbegin()+1,
+                      logStateVariables.cend()-1,
+                      stateVariables.begin(),
+                      [](double arg) {return std::exp(arg);} );
+    }
+
+    double FiniteDifferenceDetails::spot() const
+    {
+      return m_Spot;
+    }
+
+    double FiniteDifferenceDetails::rate() const
+    {
+      return m_Rate;
+    }
+
+    double FiniteDifferenceDetails::volatility() const
+    {
+      return m_Volatility;
+    }
+
+    int FiniteDifferenceDetails::stepsPerAnnum() const
+    {
+      return m_StepsPerAnnum;
+    }
+
+    int FiniteDifferenceDetails::numberOfStateVariableSteps() const
+    {
+      return m_StepsLogSpot;
+    }
+
+    double FiniteDifferenceDetails::numberOfStandardDeviations() const
+    {
+      return m_NumStdev;
+    }
+
+    const beagle::discrete_dividend_schedule_t& FiniteDifferenceDetails::dividends() const
+    {
+      return m_Dividends;
+    }
+
+    const beagle::dividend_policy_ptr_t& FiniteDifferenceDetails::dividendPolicy() const
+    {
+      return m_Policy;
+    }
+
+    const beagle::interp_builder_ptr_t& FiniteDifferenceDetails::interpolation() const
+    {
+      return m_Interp;
+    }
+
     namespace mixins
     {
       OptionValueCollectionProvider::~OptionValueCollectionProvider( void )
@@ -18,93 +159,6 @@ namespace beagle
 
       FiniteDifference::~FiniteDifference( void )
       { }
-
-      void
-      FiniteDifference::formTimeSteps( double start,
-                                       double end,
-                                       beagle::dbl_vec_t& times,
-                                       beagle::int_vec_t& exDividendIndices ) const
-      {
-        int steps = stepsPerAnnum();
-        const beagle::discrete_dividend_schedule_t& divs = dividends();
-
-        exDividendIndices.clear();
-
-        double expiry = end - start;
-        int numSteps = static_cast<int>(std::floor(expiry * steps));
-        if (divs.empty())
-        {
-          times.resize(numSteps + 1);
-
-          for (int i=0; i<numSteps+1; ++i)
-            times[i] = start + i * expiry / numSteps;
-        }
-        else
-        {
-          times.reserve(numSteps + 1 + divs.size());
-
-          auto it = divs.cbegin();
-          if (it->first < start)
-            ++it;
-
-          auto itEnd = divs.cend();
-          for (int i=0, j=0; i<numSteps+1; ++i, ++j)
-          {
-            double time = start + i * expiry / numSteps;
-            if (it != itEnd)
-            {
-              if (it->first < time)
-              {
-                times.push_back(it->first);
-                exDividendIndices.push_back(j);
-                ++j;
-                times.push_back(time);
-                ++it;
-              }
-              else if (it->first == time)
-              {
-                times.push_back(it->first);
-                exDividendIndices.push_back(j);
-                ++it;
-              }
-            }
-
-            times.push_back(time);
-          }
-
-          times.shrink_to_fit();
-        }
-      }
-
-      void
-      FiniteDifference::formStateVariableSteps( double expiry,
-                                                beagle::dbl_vec_t& logStateVariables,
-                                                beagle::dbl_vec_t& stateVariables ) const
-      {
-        double centralValue = spot();
-        double theRate = rate();
-        const beagle::real_2d_function_ptr_t& vol = volatility();
-        double numStdev = numberOfStandardDeviations();
-        int numSteps = numberOfStateVariableSteps();
-
-        logStateVariables.resize(numSteps);
-        stateVariables.resize(numSteps-2);
-
-
-        double forward = centralValue * std::exp(theRate * expiry);
-        double atmVol = vol->value( expiry, forward );
-        double logSpot = std::log( centralValue ) + (theRate - .5 * atmVol * atmVol) * expiry;
-        int mid = numSteps / 2;
-        double logStrikestep = 2. * numStdev * atmVol * std::sqrt(expiry) / numSteps;
-        logStateVariables.resize(numSteps);
-        for (int i=0; i<numSteps; ++i)
-          logStateVariables[i] = logSpot + (i-mid)*logStrikestep;
-
-        std::transform( logStateVariables.cbegin()+1,
-                        logStateVariables.cend()-1,
-                        stateVariables.begin(),
-                        [](double arg) {return std::exp(arg);} );
-      }
 
       CloneWithNewLocalVolatilitySurface::~CloneWithNewLocalVolatilitySurface( void )
       { }

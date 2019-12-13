@@ -48,15 +48,8 @@ namespace beagle
           beagle::real_function_ptr_coll_t localVols;
 
           auto pFD = dynamic_cast<beagle::valuation::mixins::FiniteDifference*>(m_ForwardPricer.get());
-          double spot = pFD->spot();
-          double rate = pFD->rate();
-          int stepsPerAnnum = pFD->stepsPerAnnum();
-          int numStrikes = pFD->numberOfStateVariableSteps();
-          double numStdDev = pFD->numberOfStandardDeviations();
-          const beagle::discrete_dividend_schedule_t& dividends = pFD->dividends();
-          const beagle::dividend_policy_ptr_t& policy = pFD->dividendPolicy();
-          const beagle::interp_builder_ptr_t& interp = pFD->interpolation();
-          pFD->formStateVariableSteps( m_Expiries.back(), logStrikes, strikes );
+          const beagle::valuation::FiniteDifferenceDetails& fdDetails = pFD->finiteDifferenceDetails();
+          fdDetails.formStateVariableSteps( m_Expiries.back(), logStrikes, strikes );
 
           auto pOVCP = dynamic_cast<beagle::valuation::mixins::OptionValueCollectionProvider*>(m_ForwardPricer.get());
           if (!pOVCP)

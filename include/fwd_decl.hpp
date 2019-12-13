@@ -28,6 +28,7 @@ namespace beagle
   {
     struct Pricer;
     struct DividendPolicy;
+    struct FiniteDifferenceDetails;
   }
 
   namespace calibration

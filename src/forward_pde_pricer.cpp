@@ -15,24 +15,10 @@ namespace beagle
       {
         using two_dbl_t = std::pair<double, double>;
 
-        OneDimensionalForwardPDEEuropeanOptionPricer( double spot,
-                                                      double rate,
-                                                      const beagle::real_2d_function_ptr_t& volatility,
-                                                      int stepsPerAnnum,
-                                                      int stepsLogSpot,
-                                                      double numStdev,
-                                                      const beagle::discrete_dividend_schedule_t& dividends,
-                                                      const beagle::dividend_policy_ptr_t& policy,
-                                                      const beagle::interp_builder_ptr_t& interp ) :
-          OneDimensionalPDEOptionPricer( spot,
-                                         rate,
-                                         volatility,
-                                         stepsPerAnnum,
-                                         stepsLogSpot,
-                                         numStdev,
-                                         dividends,
-                                         policy,
-                                         interp )
+        OneDimensionalForwardPDEEuropeanOptionPricer( const FiniteDifferenceDetails& fdDetails,
+                                                      const beagle::real_2d_function_ptr_t& volatility ) :
+          OneDimensionalPDEOptionPricer( fdDetails ),
+          m_Volatility( volatility )
         { }
         ~OneDimensionalForwardPDEEuropeanOptionPricer( void )
         { }
@@ -45,7 +31,7 @@ namespace beagle
           std::transform( strikes.cbegin(),
                           strikes.cend(),
                           prices.begin(),
-                          [&payoff, this](double strike) {return payoff->intrinsicValue(spot(), strike);}  );
+                          [&payoff, this](double strike) {return payoff->intrinsicValue(finiteDifferenceDetails().spot(), strike);}  );
         }
         virtual void optionValueCollection( double start,
                                             double end,
@@ -56,7 +42,7 @@ namespace beagle
         {
           beagle::dbl_vec_t times;
           beagle::int_vec_t exDividendIndices;
-          formTimeSteps( start, end, times, exDividendIndices );
+          finiteDifferenceDetails().formTimeSteps( start, end, times, exDividendIndices );
 
           // for (auto price : prices)
           //   out << price << " ";
@@ -73,8 +59,8 @@ namespace beagle
           beagle::dbl_vec_t lower(strikeSize);
           beagle::dbl_vec_t upper(strikeSize);
 
-          auto it = dividends().cbegin();
-          auto itEnd = dividends().cend();
+          auto it = finiteDifferenceDetails().dividends().cbegin();
+          auto itEnd = finiteDifferenceDetails().dividends().cend();
           if (it != itEnd && it->first < start)
             ++it;
 
@@ -86,10 +72,10 @@ namespace beagle
             double deltaT = thisTime - times[i];
             for (int j=0; j<strikeSize; ++j)
             {
-              double vol = volatility()->value(thisTime, strikes[j]);
+              double vol = m_Volatility->value(thisTime, strikes[j]);
               double volOverDeltaX = vol / deltaX;
               double volOverDeltaXSquared = volOverDeltaX * volOverDeltaX;
-              double mu = rate() + .5 * vol * vol;
+              double mu = finiteDifferenceDetails().rate() + .5 * vol * vol;
               double muOverDeltaX = mu / deltaX;
               diag[j]  = 1. + deltaT * volOverDeltaXSquared;
               upper[j] =   deltaT * .5 * (muOverDeltaX - volOverDeltaXSquared);
@@ -111,7 +97,7 @@ namespace beagle
             /// Ex-dividend date
             if (jt != jtEnd && *jt == i)
             {
-              beagle::real_function_ptr_t interpFunc = interpolation()->formFunction( strikes, prices );
+              beagle::real_function_ptr_t interpFunc = finiteDifferenceDetails().interpolation()->formFunction( strikes, prices );
               beagle::dbl_vec_t shiftedStrikes(strikes.size());
 
               double dividendAmount = it->second;
@@ -119,7 +105,7 @@ namespace beagle
                               strikes.cend(),
                               shiftedStrikes.begin(),
                               [this, dividendAmount](double strike) { 
-                                return strike + dividendPolicy()->dividendAmount(spot(), dividendAmount);
+                                return strike + finiteDifferenceDetails().dividendPolicy()->dividendAmount(finiteDifferenceDetails().spot(), dividendAmount);
                               } );
 
               std::transform( shiftedStrikes.cbegin(),
@@ -143,32 +129,24 @@ namespace beagle
           double strike = option->strike();
           const beagle::payoff_ptr_t& payoff = option->payoff();
 
-          double forward = spot() * std::exp(rate() * expiry);
-          double atmVol = volatility()->value( expiry, forward );
+          double forward = finiteDifferenceDetails().spot() * std::exp(finiteDifferenceDetails().rate() * expiry);
 
           beagle::dbl_vec_t logStrikes;
           beagle::dbl_vec_t strikes;
-          formStateVariableSteps( expiry, logStrikes, strikes );
+          finiteDifferenceDetails().formStateVariableSteps( expiry, logStrikes, strikes );
 
           beagle::dbl_vec_t prices;
           formInitialOptionValueCollection( payoff, strikes, prices );
           optionValueCollection( 0., expiry, payoff, logStrikes, strikes, prices );
           // optionValueCollection( expiry/2., expiry, payoff, logStrikes, strikes, prices );
 
-          beagle::real_function_ptr_t interpResult = interpolation()->formFunction( strikes, prices );
+          beagle::real_function_ptr_t interpResult = finiteDifferenceDetails().interpolation()->formFunction( strikes, prices );
           return interpResult->value(strike);
         }
         virtual beagle::pricer_ptr_t createPricerWithNewLocalVolatilitySurface( const beagle::real_2d_function_ptr_t& vol ) const override
         {
-          return std::make_shared<OneDimensionalForwardPDEEuropeanOptionPricer>( spot(),
-                                                                                 rate(),
-                                                                                 vol,
-                                                                                 stepsPerAnnum(),
-                                                                                 numberOfStateVariableSteps(),
-                                                                                 numberOfStandardDeviations(),
-                                                                                 dividends(),
-                                                                                 dividendPolicy(),
-                                                                                 interpolation() );
+          return std::make_shared<OneDimensionalForwardPDEEuropeanOptionPricer>( finiteDifferenceDetails(),
+                                                                                 vol );
         }
       private:
         two_dbl_t boundaryCondition( const beagle::payoff_ptr_t& payoff,
@@ -178,33 +156,21 @@ namespace beagle
           double minStrike = boundaryStrikes.first;
           double maxStrike = boundaryStrikes.second;
 
-          double discounting = std::exp(-rate() * timeToExpiry);
-          return std::make_pair( payoff->intrinsicValue( spot(), minStrike * discounting ),
-                                 payoff->intrinsicValue( spot(), maxStrike * discounting ) );
+          double discounting = std::exp(-finiteDifferenceDetails().rate() * timeToExpiry);
+          return std::make_pair( payoff->intrinsicValue(finiteDifferenceDetails().spot(), minStrike * discounting ),
+                                 payoff->intrinsicValue(finiteDifferenceDetails().spot(), maxStrike * discounting ) );
         }
+      private:
+        beagle::real_2d_function_ptr_t m_Volatility;
       };
     }
 
     beagle::pricer_ptr_t
-    Pricer::formOneDimensionalForwardPDEEuropeanOptionPricer( double spot,
-                                                              double rate,
-                                                              const beagle::real_2d_function_ptr_t& volatility,
-                                                              int stepsPerAnnum,
-                                                              int stepsLogSpot,
-                                                              double numStdev,
-                                                              const beagle::discrete_dividend_schedule_t& dividends,
-                                                              const beagle::dividend_policy_ptr_t& policy,
-                                                              const beagle::interp_builder_ptr_t& interp )
+    Pricer::formOneDimensionalForwardPDEEuropeanOptionPricer( const FiniteDifferenceDetails& fdDetails,
+                                                              const beagle::real_2d_function_ptr_t& volatility )
     {
-      return std::make_shared<impl::OneDimensionalForwardPDEEuropeanOptionPricer>( spot,
-                                                                                   rate,
-                                                                                   volatility,
-                                                                                   stepsPerAnnum,
-                                                                                   stepsLogSpot,
-                                                                                   numStdev,
-                                                                                   dividends,
-                                                                                   policy,
-                                                                                   interp );
+      return std::make_shared<impl::OneDimensionalForwardPDEEuropeanOptionPricer>( fdDetails,
+                                                                                   volatility );
     }
   }
 }
