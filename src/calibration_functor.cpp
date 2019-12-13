@@ -27,13 +27,13 @@ namespace beagle
     int CalibrationFunctor::operator()( const Eigen::VectorXd& params, Eigen::VectorXd& diff ) const
     {
       dbl_vec_t parameters( params.size() );
-      for (int i=0; i<parameters.size(); ++i)
+      for (beagle::dbl_vec_t::size_type i=0; i<parameters.size(); ++i)
       {
         parameters[i] = params(i);
       }
 
       dbl_vec_t values = m_Adapter->values(parameters, m_Constraints);
-      for (int i=0; i<values.size(); ++i)
+      for (beagle::dbl_vec_t::size_type i=0; i<values.size(); ++i)
       {
         diff(i) = values[i] - m_Targets[i];
         std::cout << values[i] << "\t" << m_Targets[i] << "\t" << diff(i) << "\n";
@@ -46,16 +46,16 @@ namespace beagle
     int CalibrationFunctor::df(const Eigen::VectorXd& params, Eigen::MatrixXd& jacobian) const
     {
       dbl_vec_t parameters( params.size() );
-      for (int i=0; i<parameters.size(); ++i)
+      for (beagle::dbl_vec_t::size_type i=0; i<parameters.size(); ++i)
       {
         parameters[i] = params(i);
       }
 
       dbl_mat_t derivs = m_Adapter->derivativeWithRespectToTransformedParameters( parameters, m_Constraints );
 
-      for (int i=0; i<derivs.size(); ++i)
+      for (beagle::dbl_vec_t::size_type i=0; i<derivs.size(); ++i)
       {
-        for (int j=0; j<m_Constraints.size(); ++j)
+        for (beagle::dbl_vec_t::size_type j=0; j<m_Constraints.size(); ++j)
         {
           jacobian(i, j) = derivs[i][j];
         }

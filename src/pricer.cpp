@@ -31,7 +31,7 @@ namespace beagle
         exDividendIndices.clear();
 
         double expiry = end - start;
-        int numSteps = std::floor(expiry * steps);
+        int numSteps = static_cast<int>(std::floor(expiry * steps));
         if (divs.empty())
         {
           times.resize(numSteps + 1);

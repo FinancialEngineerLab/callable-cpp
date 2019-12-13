@@ -66,7 +66,7 @@ namespace beagle
         {
           return m_StepsLogSpot;
         }
-        virtual int numberOfStandardDeviations( void ) const
+        virtual double numberOfStandardDeviations( void ) const
         {
           return m_NumStdev;
         }

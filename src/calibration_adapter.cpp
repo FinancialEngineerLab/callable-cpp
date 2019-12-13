@@ -3,8 +3,6 @@
 #include "real_2d_function.hpp"
 #include "interpolation_builder.hpp"
 
-#include <iostream>
-
 namespace beagle
 {
   namespace calibration
@@ -18,7 +16,7 @@ namespace beagle
           throw("Mismatch in the number of transformed parameters and calibration bound constraints!");
 
         dbl_vec_t params(transformedParamters);
-        for (int i=0; i<params.size(); ++i)
+        for (beagle::dbl_vec_t::size_type i=0; i<params.size(); ++i)
           params[i] = constraints[i]->inverseTransform( transformedParamters[i] );
 
         return params;
@@ -30,7 +28,7 @@ namespace beagle
           throw("Mismatch in the number of parameters and calibration bound constraints!");
 
         dbl_vec_t params(parameters);
-        for (int i=0; i<params.size(); ++i)
+        for (beagle::dbl_vec_t::size_type i=0; i<params.size(); ++i)
           params[i] = constraints[i]->transform( parameters[i] );
 
         return params;
@@ -101,7 +99,7 @@ namespace beagle
             row.resize(parameters.size());
 
           double bump = 1e-4;
-          for (int j=0; j<parameters.size(); ++j)
+          for (beagle::dbl_vec_t::size_type j=0; j<parameters.size(); ++j)
           {
             dbl_vec_t forwardParams(parameters);
             dbl_vec_t backwardParams(parameters);
@@ -111,7 +109,7 @@ namespace beagle
             pricer_ptr_t forwardBumpedPricer = pCWNMP->createPricerWithNewModelParameters(forwardParams);
             pricer_ptr_t backwardBumpedPricer = pCWNMP->createPricerWithNewModelParameters(backwardParams);
 
-            for (int i=0; i<m_Options.size(); ++i)
+            for (beagle::dbl_vec_t::size_type i=0; i<m_Options.size(); ++i)
               result[i][j] = ( forwardBumpedPricer->optionValue(m_Options[i])
                              - backwardBumpedPricer->optionValue(m_Options[i]) ) * .5 / bump;
           }
@@ -147,10 +145,6 @@ namespace beagle
       public:
         dbl_vec_t values( const dbl_vec_t& parameters ) const override
         {
-          for (int i=0; i<parameters.size(); ++i)
-            std::cout << m_Strikes[i] << "\t" << parameters[i] << "\n";
-          std::cout << "\n";
-
           pricer_ptr_t pricer;
           auto pCWNMP = dynamic_cast<beagle::valuation::mixins::CloneWithNewLocalVolatilitySurface*>(m_Pricer.get());
           if (pCWNMP)
@@ -192,13 +186,13 @@ namespace beagle
         dbl_mat_t derivativeWithRespectToParameters( const dbl_vec_t& parameters ) const override
         {
           dbl_mat_t result(m_InterpStrikes.size());
-          for (int i=0; i<m_InterpStrikes.size(); ++i)
+          for (beagle::dbl_vec_t::size_type i=0; i<m_InterpStrikes.size(); ++i)
           {
             result[i].resize(parameters.size());
           }
 
           double bump = 1e-4;
-          for (int j=0; j<parameters.size(); ++j)
+          for (beagle::dbl_vec_t::size_type j=0; j<parameters.size(); ++j)
           {
             dbl_vec_t forwardParams(parameters);
             dbl_vec_t backwardParams(parameters);
@@ -209,7 +203,7 @@ namespace beagle
             dbl_vec_t forwardResult = values(forwardParams);
             dbl_vec_t backwardResult = values(backwardParams);
 
-            for (int i=0; i<m_InterpStrikes.size(); ++i)
+            for (beagle::dbl_vec_t::size_type i=0; i<m_InterpStrikes.size(); ++i)
             {
               result[i][j] = ( forwardResult[i] - backwardResult[i] ) * .5 / bump;
             }
@@ -243,9 +237,9 @@ namespace beagle
                      const calibration_bound_constraint_coll_t& constraints ) const
     {
       dbl_mat_t derivs = derivativeWithRespectToParameters( util::getOriginalParameters(transformedParamters, constraints) );
-      for (int j=0; j<constraints.size(); ++j)
+      for (beagle::dbl_vec_t::size_type j=0; j<constraints.size(); ++j)
       {
-        for (int i=0; i<derivs.size(); ++i)
+        for (beagle::dbl_vec_t::size_type i=0; i<derivs.size(); ++i)
           derivs[i][j] = constraints[j]->transformDerivative(transformedParamters[j], derivs[i][j]);
       }
 

@@ -75,6 +75,9 @@ void test2( void )
   beagle::dbl_vec_vec_t pricesColl;
   beagle::test::generateEuropeanMarketQuotes( expiries, strikesColl, pricesColl );
 
+  beagle::discrete_dividend_schedule_t dividends;
+  dividends.emplace_back( 0.4, 6.0 );
+
   double spot = 100.;
   double rate = .00;
   double vol  = .25;
@@ -87,8 +90,8 @@ void test2( void )
                                                                  beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(vol),
                                                                  1001,
                                                                  2001,
-                                                                 5.,
-                                                                 beagle::discrete_dividend_schedule_t(),
+                                                                 7.5,
+                                                                 dividends,
                                                                  beagle::valuation::DividendPolicy::liquidator(),
                                                                  beagle::math::InterpolationBuilder::linear() );
 

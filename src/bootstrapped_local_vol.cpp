@@ -52,7 +52,7 @@ namespace beagle
           double rate = pFD->rate();
           int stepsPerAnnum = pFD->stepsPerAnnum();
           int numStrikes = pFD->numberOfStateVariableSteps();
-          int numStdDev = pFD->numberOfStandardDeviations();
+          double numStdDev = pFD->numberOfStandardDeviations();
           const beagle::discrete_dividend_schedule_t& dividends = pFD->dividends();
           const beagle::dividend_policy_ptr_t& policy = pFD->dividendPolicy();
           const beagle::interp_builder_ptr_t& interp = pFD->interpolation();
@@ -62,11 +62,6 @@ namespace beagle
           if (!pOVCP)
             throw(std::string("Cast for OptionValueCollectionProvider failed!"));
           pOVCP->formInitialOptionValueCollection( m_Payoff, strikes, prices );
-
-          std::ofstream out("strikes.txt");
-          for (int i=0; i<strikes.size(); ++i)
-            out << strikes[i] << "\t" << prices[i] << "\n";
-          out << "\n";
 
           double start(0.0);
           for (beagle::dbl_vec_t::size_type i=0; i<m_Expiries.size(); ++i)
@@ -81,21 +76,21 @@ namespace beagle
                                                                                                                  prices,
                                                                                                                  m_StrikesColl[i]);
 
-            beagle::dbl_vec_t guesses{.44, .395, .355, .32, .29, .265, .28, .30, .33};
+            beagle::dbl_vec_t guesses{.3, .3, .3, .3, .3, .3, .3, .3, .3};
             beagle::calibration_bound_constraint_coll_t constraints(guesses.size(),
                                                                     beagle::calibration::CalibrationBoundConstraint::twoSidedBoundCalibrationConstraint(0., 2.));
             beagle::int_vec_t elimIndices(0U);
 
             guesses = beagle::calibration::util::getTransformedParameters( guesses, constraints );
             Eigen::VectorXd calibParams(guesses.size());
-            for (int i=0; i<guesses.size(); ++i)
+            for (beagle::dbl_vec_t::size_type i=0; i<guesses.size(); ++i)
               calibParams(i) = guesses[i];
 
             beagle::calibration::CalibrationFunctor functor( m_PricesColl[i], adapter, calibParams, constraints, elimIndices );
             Eigen::LevenbergMarquardt<beagle::calibration::CalibrationFunctor> lm(functor);
             Eigen::LevenbergMarquardtSpace::Status status = lm.minimize(calibParams);
 
-            for (int i=0; i<guesses.size(); ++i)
+            for (beagle::dbl_vec_t::size_type i=0; i<guesses.size(); ++i)
               guesses[i] = calibParams(i);
 
             guesses = beagle::calibration::util::getOriginalParameters( guesses, constraints );
@@ -107,20 +102,6 @@ namespace beagle
           }
 
           m_Func = beagle::math::RealTwoDimFunction::createPiecewiseConstantRightFunction( m_Expiries, localVols );
-        }
-      private:
-        bool hasConverged( const beagle::dbl_vec_t& quotes,
-                           const beagle::dbl_vec_t& prices ) const
-        {
-          double inner(0.0);
-          for (beagle::dbl_vec_t::size_type i=0; i<quotes.size(); ++i)
-          {
-            inner += std::fabs(quotes[i] - prices[i]);
-            std::cout << quotes[i] << "\t" << prices[i] << std::endl;
-          }
-          std::cout << std::endl;
-
-          return (inner < 1e-3);
         }
       private:
         beagle::dbl_vec_t m_Expiries;

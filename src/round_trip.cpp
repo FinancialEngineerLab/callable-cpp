@@ -23,11 +23,14 @@ namespace beagle
       strikesColl.clear();
       pricesColl.clear();
 
-      expiries.push_back(.3);
+      expiries.push_back(.5);
 
       beagle::dbl_vec_t strikes{90., 92.5, 95., 97.5, 100., 102.5, 105., 107.5, 110.};
       beagle::dbl_vec_t vols{.44, .395, .355, .32, .29, .265, .28, .30, .33};
       strikesColl.push_back(strikes);
+
+      beagle::discrete_dividend_schedule_t dividends;
+      dividends.emplace_back( 0.4, 6.0 );
 
       beagle::real_2d_function_ptr_t localVol
         = beagle::math::RealTwoDimFunction::createPiecewiseConstantRightFunction(
@@ -40,10 +43,10 @@ namespace beagle
                                                                  spot,
                                                                  rate,
                                                                  localVol,
-                                                                 1501,
-                                                                 1901,
-                                                                 7.5,
-                                                                 beagle::discrete_dividend_schedule_t(),
+                                                                 1001,
+                                                                 1001,
+                                                                 5.,
+                                                                 dividends,
                                                                  beagle::valuation::DividendPolicy::liquidator(),
                                                                  beagle::math::InterpolationBuilder::linear() );
 
