@@ -21,14 +21,14 @@ namespace beagle
       pricesColl.clear();
 
       expiries.push_back(.25);
-      //expiries.push_back(.5);
+      expiries.push_back(.5);
       //expiries.push_back(.75);
       //expiries.push_back(1.);
 
       beagle::dbl_vec_t strikes{90., 92.5, 95., 97.5, 100., 102.5, 105., 107.5, 110.};
       strikesColl.resize(expiries.size(), strikes);
 
-      beagle::dbl_vec_t vols{.44, .395, .355, .32, .29, .265, .28, .30, .33};
+      beagle::dbl_vec_t vols{.35, .32, .31, .30, .29, .28, .28, .29, .31};
       beagle::real_2d_function_ptr_t localVol
         = beagle::math::RealTwoDimFunction::createPiecewiseConstantRightFunction(
                   expiries,
@@ -47,6 +47,11 @@ namespace beagle
         beagle::dbl_vec_t prices;
         for (dbl_vec_t::size_type j = 0; j < strikesColl[i].size(); ++j)
         {
+          beagle::pricer_ptr_t bscfeop = beagle::valuation::Pricer::formBlackScholesClosedFormEuropeanOptionPricer(fdDetails.spot(),
+                                                                                                                   fdDetails.rate(),
+                                                                                                                   vols[j],
+                                                                                                                   fdDetails.dividends());
+
           beagle::option_ptr_t euroOption = beagle::option::Option::createEuropeanOption(expiries[i],
                                                                                          strikesColl[i][j],
                                                                                          payoff);

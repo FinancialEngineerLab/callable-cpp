@@ -74,7 +74,7 @@ namespace beagle
 
             beagle::dbl_vec_t guesses(m_StrikesColl[i].size(), m_InitialGuesses[i]);
             beagle::calibration_bound_constraint_coll_t constraints(guesses.size(),
-                                                                    beagle::calibration::CalibrationBoundConstraint::twoSidedBoundCalibrationConstraint(0., 2.));
+                                                                    beagle::calibration::CalibrationBoundConstraint::twoSidedBoundCalibrationConstraint(0., 5.));
             beagle::int_vec_t elimIndices(0U);
 
             guesses = beagle::calibration::util::getTransformedParameters( guesses, constraints );
