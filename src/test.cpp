@@ -68,11 +68,11 @@ void test2( void )
   std::cout << "\nStart of Test 2:\n\n";
 
   beagle::discrete_dividend_schedule_t dividends;
-  //dividends.emplace_back(0.4, 3.0);
-  //dividends.emplace_back(0.6, 2.0);
+  dividends.emplace_back(0.4, 3.0);
+  dividends.emplace_back(0.6, 2.0);
   //dividends.emplace_back(0.8, 1.0);
 
-  beagle::valuation::FiniteDifferenceDetails fdDetails(100., .00, .3, 1501, 2901, 19.5, dividends,
+  beagle::valuation::FiniteDifferenceDetails fdDetails(100., .00, .3, 1000, 2000, 13.5, dividends,
                                                        beagle::valuation::DividendPolicy::liquidator(),
                                                        beagle::math::InterpolationBuilder::linear());
 
@@ -81,12 +81,12 @@ void test2( void )
   beagle::dbl_vec_vec_t pricesColl;
   beagle::test::generateEuropeanMarketQuotes(fdDetails, expiries, strikesColl, pricesColl );
 
-  beagle::dbl_vec_t initialGuesses(expiries.size(), .4);
+  beagle::dbl_vec_t initialGuesses(expiries.size(), .7);
 
   try
   {
     beagle::payoff_ptr_t payoff = beagle::option::Payoff::call();
-    beagle::interp_builder_ptr_t interp = beagle::math::InterpolationBuilder::piecewiseConstantRight();
+    beagle::interp_builder_ptr_t interp = beagle::math::InterpolationBuilder::linear();
 
     beagle::pricer_ptr_t forwardPricer = beagle::valuation::Pricer::formOneDimensionalForwardPDEEuropeanOptionPricer(
                                                                  fdDetails,

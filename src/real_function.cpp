@@ -47,15 +47,34 @@ namespace beagle
         double m_Const;
       };
 
-      struct UnaryFunction : public RealFunction
+      struct CompositeFunction : public RealFunction
       {
-        explicit UnaryFunction( const beagle::real_func_t& func ) :
-          m_Func( func )
+        CompositeFunction( const beagle::real_function_ptr_t& f,
+                           const beagle::real_function_ptr_t& g ) :
+          m_F( f ),
+          m_G( g )
         { }
-        virtual ~UnaryFunction( void )
+        virtual ~CompositeFunction( void )
         { }
       public:
         virtual double value( double arg ) const override
+        {
+          return m_F->value( m_G->value(arg) );
+        }
+      private:
+        beagle::real_function_ptr_t m_F;
+        beagle::real_function_ptr_t m_G;
+      };
+
+      struct UnaryFunction : public RealFunction
+      {
+        explicit UnaryFunction(const beagle::real_func_t& func) :
+          m_Func(func)
+        { }
+        virtual ~UnaryFunction(void)
+        { }
+      public:
+        virtual double value(double arg) const override
         {
           return m_Func(arg);
         }
@@ -179,6 +198,13 @@ namespace beagle
     RealFunction::createUnaryFunction( const beagle::real_func_t& func )
     {
       return std::make_shared<impl::UnaryFunction>( func );
+    }
+
+    beagle::real_function_ptr_t
+    RealFunction::createCompositeFunction( const beagle::real_function_ptr_t& f,
+                                           const beagle::real_function_ptr_t& g )
+    {
+      return std::make_shared<impl::CompositeFunction>( f, g );
     }
 
     beagle::real_function_ptr_t

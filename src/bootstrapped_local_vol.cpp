@@ -74,7 +74,7 @@ namespace beagle
 
             beagle::dbl_vec_t guesses(m_StrikesColl[i].size(), m_InitialGuesses[i]);
             beagle::calibration_bound_constraint_coll_t constraints(guesses.size(),
-                                                                    beagle::calibration::CalibrationBoundConstraint::twoSidedBoundCalibrationConstraint(0., 5.));
+                                                                    beagle::calibration::CalibrationBoundConstraint::lowerBoundCalibrationConstraint(0.));
             beagle::int_vec_t elimIndices(0U);
 
             guesses = beagle::calibration::util::getTransformedParameters( guesses, constraints );
@@ -90,7 +90,17 @@ namespace beagle
               guesses[i] = calibParams(i);
 
             guesses = beagle::calibration::util::getOriginalParameters( guesses, constraints );
-            beagle::real_function_ptr_t localVol = m_Interpolation->formFunction(m_StrikesColl[i], guesses);
+
+            beagle::dbl_vec_t logAbscissas(m_StrikesColl[i]);
+            std::transform(logAbscissas.begin(),
+                           logAbscissas.end(),
+                           logAbscissas.begin(),
+                           [](double x) { return std::log(x); });
+            beagle::real_function_ptr_t localVol = m_Interpolation->formFunction(logAbscissas, guesses);
+            localVol = beagle::math::RealFunction::createCompositeFunction(
+                                localVol,
+                                beagle::math::RealFunction::createUnaryFunction([](double x) { return std::log(x); }));
+
             beagle::pricer_ptr_t forwardPricer
               = beagle::valuation::Pricer::formOneDimensionalForwardPDEEuropeanOptionPricer(
                                                 fdDetails,

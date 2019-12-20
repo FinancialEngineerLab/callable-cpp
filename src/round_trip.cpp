@@ -22,13 +22,13 @@ namespace beagle
 
       expiries.push_back(.25);
       expiries.push_back(.5);
-      //expiries.push_back(.75);
-      //expiries.push_back(1.);
+      expiries.push_back(.75);
+      expiries.push_back(1.);
 
       beagle::dbl_vec_t strikes{90., 92.5, 95., 97.5, 100., 102.5, 105., 107.5, 110.};
       strikesColl.resize(expiries.size(), strikes);
 
-      beagle::dbl_vec_t vols{.35, .32, .31, .30, .29, .28, .28, .29, .31};
+      beagle::dbl_vec_t vols{.33, .32, .31, .30, .29, .28, .28, .29, .31};
       beagle::real_2d_function_ptr_t localVol
         = beagle::math::RealTwoDimFunction::createPiecewiseConstantRightFunction(
                   expiries,
@@ -55,7 +55,7 @@ namespace beagle
           beagle::option_ptr_t euroOption = beagle::option::Option::createEuropeanOption(expiries[i],
                                                                                          strikesColl[i][j],
                                                                                          payoff);
-          prices.push_back(odfpeop->optionValue(euroOption));
+          prices.push_back(bscfeop->optionValue(euroOption));
         }
 
         pricesColl.push_back(prices);

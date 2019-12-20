@@ -16,6 +16,8 @@ namespace beagle
     public:
       static beagle::real_function_ptr_t createConstantFunction( double constant );
       static beagle::real_function_ptr_t createUnaryFunction( const beagle::real_func_t& func );
+      static beagle::real_function_ptr_t createCompositeFunction( const beagle::real_function_ptr_t& f,
+                                                                  const beagle::real_function_ptr_t& g );
       static beagle::real_function_ptr_t createLinearWithFlatExtrapolationInterpolatedFunction(
                                                          const beagle::dbl_vec_t& xValues,
                                                          const beagle::dbl_vec_t& yValues );
