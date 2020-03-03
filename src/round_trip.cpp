@@ -24,6 +24,7 @@ namespace beagle
       expiries.push_back(.5);
       expiries.push_back(.75);
       expiries.push_back(1.);
+      expiries.push_back(1.25);
 
       beagle::dbl_vec_t strikes{90., 92.5, 95., 97.5, 100., 102.5, 105., 107.5, 110.};
       strikesColl.resize(expiries.size(), strikes);

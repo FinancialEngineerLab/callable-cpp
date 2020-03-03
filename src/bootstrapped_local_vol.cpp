@@ -84,6 +84,7 @@ namespace beagle
 
             beagle::calibration::CalibrationFunctor functor( m_PricesColl[i], adapter, calibParams, constraints, elimIndices );
             Eigen::LevenbergMarquardt<beagle::calibration::CalibrationFunctor> lm(functor);
+            lm.parameters.xtol = 1.0e-4;
             Eigen::LevenbergMarquardtSpace::Status status = lm.minimize(calibParams);
 
             for (beagle::dbl_vec_t::size_type i=0; i<guesses.size(); ++i)

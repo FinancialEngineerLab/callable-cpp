@@ -68,8 +68,8 @@ void test2( void )
   std::cout << "\nStart of Test 2:\n\n";
 
   beagle::discrete_dividend_schedule_t dividends;
-  dividends.emplace_back(0.4, 3.0);
-  dividends.emplace_back(0.6, 2.0);
+  // dividends.emplace_back(0.4, 3.0);
+  // dividends.emplace_back(0.6, 2.0);
   //dividends.emplace_back(0.8, 1.0);
 
   beagle::valuation::FiniteDifferenceDetails fdDetails(100., .00, .3, 1000, 2000, 13.5, dividends,
@@ -102,7 +102,7 @@ void test2( void )
                                                                                    interp );
 
     // Output local volatility surface
-    for (beagle::dbl_vec_t::size_type i = 0; i < expiries.size(); ++i)
+    for (beagle::dbl_vec_t::size_type i = 0; i < expiries.size() - 1; ++i)
     {
       for (beagle::dbl_vec_t::size_type j = 0; j < strikesColl[i].size(); ++j)
         std::cout << expiries[i] - .1 << "\t"
@@ -115,7 +115,7 @@ void test2( void )
     std::cout << "\n";
 
     // Output price quotes
-    for (beagle::dbl_vec_t::size_type i = 0; i < expiries.size(); ++i)
+    for (beagle::dbl_vec_t::size_type i = 0; i < expiries.size() - 1; ++i)
     {
       for (beagle::dbl_vec_t::size_type j = 0; j < strikesColl[i].size(); ++j)
         std::cout << pricesColl[i][j] << "\t";
@@ -127,7 +127,7 @@ void test2( void )
 
     // Output calibrated prices
     beagle::pricer_ptr_t calibratedPricer = beagle::valuation::Pricer::formOneDimensionalForwardPDEEuropeanOptionPricer( fdDetails, localVol );
-    for (beagle::dbl_vec_t::size_type i = 0; i < expiries.size(); ++i)
+    for (beagle::dbl_vec_t::size_type i = 0; i < expiries.size() - 1; ++i)
     {
       for (beagle::dbl_vec_t::size_type j = 0; j < strikesColl[i].size(); ++j)
       {
