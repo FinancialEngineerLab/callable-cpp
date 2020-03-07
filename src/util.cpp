@@ -58,19 +58,31 @@ namespace beagle
                            beagle::dbl_vec_t& lower )
     {
       int size = rhs.size();
-      for (int i = 0; i < size - 1; ++i)
+
+      diag[1] -= lower[1] / diag[0] * upper[0];
+      upper[1] -= lower[1] / diag[0] * lower[0];
+      rhs[1] -= lower[1] / diag[0] * rhs[0];
+
+      lower[size - 2] -= upper[size - 2] / diag[size - 1] * upper[size - 1];
+      diag[size - 2] -= upper[size - 2] / diag[size - 1] * lower[size - 1];
+      rhs[size - 2] -= upper[size - 2] / diag[size - 1] * rhs[size - 1];
+
+      for (int i = 1; i < size - 2; ++i)
       {
-        diag[i+1] -= lower[i+1] / diag[i] * upper[i];
-        rhs[i+1] -= lower[i+1] / diag[i] * rhs[i];
+        diag[i + 1] -= lower[i + 1] / diag[i] * upper[i];
+        rhs[i + 1] -= lower[i + 1] / diag[i] * rhs[i];
       }
 
-      rhs[size-1] /= diag[size-1];
+      rhs[size - 2] /= diag[size - 2];
 
-      for (int i = 0; i < size - 1; ++i)
+      for (int i = 1; i < size - 2; ++i)
       {
         int j = size - 2 - i;
-        rhs[j] = (rhs[j] - upper[j] * rhs[j+1]) / diag[j];
+        rhs[j] = (rhs[j] - upper[j] * rhs[j + 1]) / diag[j];
       }
+
+      rhs[0] = (rhs[0] - upper[0] * rhs[1] - lower[0] * rhs[2]) / diag[0];
+      rhs[size - 1] = (rhs[size - 1] - upper[size - 1] * rhs[size - 3] - lower[size - 1] * rhs[size - 2]) / diag[size - 1];
     }
 
     void inverseMatrix( beagle::dbl_vec_vec_t& inputMat )

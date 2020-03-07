@@ -22,8 +22,8 @@ namespace beagle
                      const dbl_vec_t& transformedParamters,
                      const calibration_bound_constraint_coll_t& constraints ) const;
     public:
-      static calibration_adapter_ptr_t optionPricerAdapter( const pricer_ptr_t& pricer,
-                                                            const option_ptr_coll_t& options );
+      static calibration_adapter_ptr_t pricerAdapter( const pricer_ptr_t& pricer,
+                                                      const product_ptr_coll_t& products );
       static calibration_adapter_ptr_t forwardPDEPricerAdapter( const pricer_ptr_t& forwardPricer,
                                                                 double start,
                                                                 double end,

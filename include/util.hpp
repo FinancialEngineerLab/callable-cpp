@@ -25,6 +25,10 @@ namespace beagle
                    double expiry,
                    double vol );
 
+    // The indices for all the vectors run from 0 to N+1, with the zeroth and (N+1)-th 
+    // elements used for boundary conditions, up to second order
+    // d_0 * x_0         + u_0 * x_1     + l_0 * x_2         = y_0
+    // u_{N+1} * x_{N-1} + l_{N+1} * x_N + d_{N+1} * x_{N+1} = y_{N+1}
     void tridiagonalSolve( beagle::dbl_vec_t& rhs,
                            beagle::dbl_vec_t& diag,
                            beagle::dbl_vec_t& upper,

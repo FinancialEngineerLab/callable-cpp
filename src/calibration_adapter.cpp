@@ -60,14 +60,14 @@ namespace beagle
 
     namespace impl
     {
-      struct OptionPricerAdapter : public CalibrationAdapter
+      struct PricerAdapter : public CalibrationAdapter
       {
-        OptionPricerAdapter( const pricer_ptr_t& pricer,
-                             const option_ptr_coll_t& options ) :
+        PricerAdapter( const pricer_ptr_t& pricer,
+                       const product_ptr_coll_t& products ) :
           m_Pricer(pricer),
-          m_Options(options)
+          m_Products(products)
         { }
-        virtual ~OptionPricerAdapter( void )
+        virtual ~PricerAdapter( void )
         { }
       public:
         dbl_vec_t values( const dbl_vec_t& parameters ) const override
@@ -79,12 +79,12 @@ namespace beagle
           else
             throw("Cannot update model parameters");
 
-          dbl_vec_t result(m_Options.size());
-          std::transform(m_Options.cbegin(),
-                         m_Options.cend(),
+          dbl_vec_t result(m_Products.size());
+          std::transform(m_Products.cbegin(),
+                         m_Products.cend(),
                          result.begin(),
-                         [&pricer](const option_ptr_t& option)
-                         { return pricer->optionValue(option); });
+                         [&pricer](const product_ptr_t& product)
+                         { return pricer->value(product); });
 
           return result;
         }
@@ -94,7 +94,7 @@ namespace beagle
           if (!pCWNMP)
             throw("Cannot update model parameters");
 
-          dbl_mat_t result(m_Options.size());
+          dbl_mat_t result(m_Products.size());
           for (auto row : result)
             row.resize(parameters.size());
 
@@ -109,16 +109,16 @@ namespace beagle
             pricer_ptr_t forwardBumpedPricer = pCWNMP->createPricerWithNewModelParameters(forwardParams);
             pricer_ptr_t backwardBumpedPricer = pCWNMP->createPricerWithNewModelParameters(backwardParams);
 
-            for (beagle::dbl_vec_t::size_type i=0; i<m_Options.size(); ++i)
-              result[i][j] = ( forwardBumpedPricer->optionValue(m_Options[i])
-                             - backwardBumpedPricer->optionValue(m_Options[i]) ) * .5 / bump;
+            for (beagle::dbl_vec_t::size_type i=0; i<m_Products.size(); ++i)
+              result[i][j] = ( forwardBumpedPricer->value(m_Products[i])
+                             - backwardBumpedPricer->value(m_Products[i]) ) * .5 / bump;
           }
 
           return result;
         }
       private:
         pricer_ptr_t m_Pricer;
-        option_ptr_coll_t m_Options;
+        product_ptr_coll_t m_Products;
       };
 
       struct ForwardPDEPricerAdapter : public CalibrationAdapter
@@ -246,10 +246,10 @@ namespace beagle
       return derivs;
     }
 
-    calibration_adapter_ptr_t CalibrationAdapter::optionPricerAdapter( const pricer_ptr_t& pricer,
-                                                                       const option_ptr_coll_t& options )
+    calibration_adapter_ptr_t CalibrationAdapter::pricerAdapter( const pricer_ptr_t& pricer,
+                                                                       const product_ptr_coll_t& products )
     {
-      return std::make_shared<impl::OptionPricerAdapter>( pricer, options );
+      return std::make_shared<impl::PricerAdapter>( pricer, products );
     }
 
     calibration_adapter_ptr_t CalibrationAdapter::forwardPDEPricerAdapter( const pricer_ptr_t& forwardPricer,

@@ -38,7 +38,7 @@ namespace beagle
                               beagle::math::RealFunction::createLinearWithFlatExtrapolationInterpolatedFunction(strikes,
                                                                                                                 vols)));
 
-      beagle::payoff_ptr_t payoff = beagle::option::Payoff::call();
+      beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::call();
 
       beagle::pricer_ptr_t odfpeop  = beagle::valuation::Pricer::formOneDimensionalForwardPDEEuropeanOptionPricer(
                                                                  fdDetails,
@@ -53,10 +53,10 @@ namespace beagle
                                                                                                                    vols[j],
                                                                                                                    fdDetails.dividends());
 
-          beagle::option_ptr_t euroOption = beagle::option::Option::createEuropeanOption(expiries[i],
-                                                                                         strikesColl[i][j],
-                                                                                         payoff);
-          prices.push_back(bscfeop->optionValue(euroOption));
+          beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption(expiries[i],
+                                                                                                   strikesColl[i][j],
+                                                                                                   payoff);
+          prices.push_back(bscfeop->value(euroOption));
         }
 
         pricesColl.push_back(prices);

@@ -24,14 +24,18 @@ namespace beagle
         ~BlackScholesClosedFormEuropeanOptionPricer( void )
         { }
       public:
-        virtual double optionValue( const beagle::option_ptr_t& option ) const override
+        virtual double value( const beagle::product_ptr_t& product ) const override
         {
-          auto pE = dynamic_cast<beagle::option::mixins::European*>( option.get() );
+          auto pE = dynamic_cast<beagle::product::option::mixins::European*>(product.get());
           if (!pE)
-            throw(std::string("Cannot valuate an option with non-European exercise style in closed form!"));
+            throw(std::string("Cannot value an option with non-European exercise style in closed form!"));
 
-          double expiry = option->expiry();
-          double strike = option->strike();
+          auto pO = dynamic_cast<beagle::product::mixins::Option*>( product.get() );
+          if (!pO)
+            throw(std::string("The incoming product is not an option!"));
+
+          double expiry = pO->expiry();
+          double strike = pO->strike();
 
           double adjustedSpot;
           double adjustedStrike;
@@ -40,7 +44,7 @@ namespace beagle
           double discounting = std::exp( - m_Rate * expiry );
           double result = util::bsCall( adjustedStrike, adjustedSpot / discounting, expiry, m_Volatility ) * discounting;
 
-          if (option->payoff()->isCall())
+          if (pO->payoff()->isCall())
             return result;
           else
             return result - adjustedSpot + adjustedStrike * discounting;
@@ -137,7 +141,6 @@ namespace beagle
                 }
               }
             }
-
           }
         }
       private:

@@ -9,10 +9,9 @@ namespace beagle
   {
     struct Pricer
     {
-      Pricer( void );
       virtual ~Pricer( void );
     public:
-      virtual double optionValue( const beagle::option_ptr_t& option ) const = 0;
+      virtual double value( const beagle::product_ptr_t& product ) const = 0;
     public:
       static beagle::pricer_ptr_t formBlackScholesClosedFormEuropeanOptionPricer(
                                                                           double spot,
@@ -20,8 +19,8 @@ namespace beagle
                                                                           double volatility,
                                                                           const discrete_dividend_schedule_t& dividends );
       static beagle::pricer_ptr_t formOneDimensionalBackwardPDEOptionPricer(
-                                                                     const FiniteDifferenceDetails& fdDetails,
-                                                                     const beagle::real_2d_function_ptr_t& volatility );
+                                                                     const beagle::real_2d_function_ptr_t& drift,
+                                                                     const beagle::real_2d_function_ptr_t& diffusion );
       static beagle::pricer_ptr_t formOneDimensionalForwardPDEEuropeanOptionPricer(
                                                                      const FiniteDifferenceDetails& fdDetails,
                                                                      const beagle::real_2d_function_ptr_t& volatility);
@@ -29,6 +28,7 @@ namespace beagle
 
     struct FiniteDifferenceDetails
     {
+      FiniteDifferenceDetails( void );
       FiniteDifferenceDetails(double spot,
                               double rate,
                               double volatility,

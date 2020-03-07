@@ -10,11 +10,17 @@
 
 namespace beagle
 {
-  namespace option
+  namespace product
   {
-    struct Option;
-    struct Payoff;
+    struct Product;
+
+    namespace option
+    {
+      struct Option;
+      struct Payoff;
+    }
   }
+
 
   namespace math
   {
@@ -37,10 +43,10 @@ namespace beagle
     struct CalibrationAdapter;
   }
 
-  using option_ptr_t = std::shared_ptr<option::Option>;
-  using option_ptr_coll_t = std::vector<option_ptr_t>;
+  using product_ptr_t = std::shared_ptr<product::Product>;
+  using product_ptr_coll_t = std::vector<product_ptr_t>;
 
-  using payoff_ptr_t = std::shared_ptr<option::Payoff>;
+  using payoff_ptr_t = std::shared_ptr<product::option::Payoff>;
 
   using real_function_ptr_t = std::shared_ptr<math::RealFunction>;
   using real_function_ptr_coll_t = std::vector<real_function_ptr_t>;

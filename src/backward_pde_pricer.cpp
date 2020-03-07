@@ -22,11 +22,15 @@ namespace beagle
         virtual ~OneDimensionalBackwardPDEOptionPricer( void )
         { }
       public:
-        virtual double optionValue( const beagle::option_ptr_t& option ) const override
+        virtual double value( const beagle::product_ptr_t& product ) const override
         {
-          double expiry = option->expiry();
-          double strike = option->strike();
-          const beagle::payoff_ptr_t& payoff = option->payoff();
+          auto pO = dynamic_cast<beagle::product::mixins::Option*>(product.get());
+          if (!pO)
+            throw(std::string("The incoming product is not an option!"));
+
+          double expiry = pO->expiry();
+          double strike = pO->strike();
+          const beagle::payoff_ptr_t& payoff = pO->payoff();
 
           beagle::dbl_vec_t times;
           beagle::int_vec_t exDividendIndices;
@@ -34,7 +38,7 @@ namespace beagle
           beagle::dbl_vec_t spots;
           formLatticeForBackwardValuation( expiry, times, exDividendIndices, logSpots, spots );
 
-          auto pA = dynamic_cast<beagle::option::mixins::American*>(option.get());
+          auto pA = dynamic_cast<beagle::product::option::mixins::American*>(product.get());
           bool isAmerican( pA != nullptr );
 
           int spotSize = spots.size();
@@ -168,11 +172,11 @@ namespace beagle
     }
 
     beagle::pricer_ptr_t
-    Pricer::formOneDimensionalBackwardPDEOptionPricer( const FiniteDifferenceDetails& fdDetails,
-                                                       const beagle::real_2d_function_ptr_t& volatility )
+    Pricer::formOneDimensionalBackwardPDEOptionPricer( const beagle::real_2d_function_ptr_t& drift,
+                                                       const beagle::real_2d_function_ptr_t& diffusion)
     {
-      return std::make_shared<impl::OneDimensionalBackwardPDEOptionPricer>( fdDetails,
-                                                                            volatility );
+      return std::make_shared<impl::OneDimensionalBackwardPDEOptionPricer>( beagle::valuation::FiniteDifferenceDetails(),
+                                                                            diffusion );
     }
   }
 }

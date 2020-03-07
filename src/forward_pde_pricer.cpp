@@ -120,14 +120,18 @@ namespace beagle
             }
           }
         }
-        virtual double optionValue( const beagle::option_ptr_t& option ) const override
+        virtual double value( const beagle::product_ptr_t& product ) const override
         {
-          if (auto pA = dynamic_cast<beagle::option::mixins::American*>(option.get()))
+          if (auto pA = dynamic_cast<beagle::product::option::mixins::American*>(product.get()))
             throw(std::string("Cannot price an American option with forward PDE European option pricer!"));
 
-          double expiry = option->expiry();
-          double strike = option->strike();
-          const beagle::payoff_ptr_t& payoff = option->payoff();
+          auto pO = dynamic_cast<beagle::product::mixins::Option*>(product.get());
+          if (!pO)
+            throw(std::string("The incoming product is not an option!"));
+
+          double expiry = pO->expiry();
+          double strike = pO->strike();
+          const beagle::payoff_ptr_t& payoff = pO->payoff();
 
           beagle::dbl_vec_t logStrikes;
           beagle::dbl_vec_t strikes;
