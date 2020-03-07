@@ -72,7 +72,7 @@ void test2( void )
   // dividends.emplace_back(0.6, 2.0);
   //dividends.emplace_back(0.8, 1.0);
 
-  beagle::valuation::FiniteDifferenceDetails fdDetails(100., .00, .3, 1000, 2000, 13.5, dividends,
+  beagle::valuation::FiniteDifferenceDetails fdDetails(100., .00, .3, 500, 1500, 7.5, dividends,
                                                        beagle::valuation::DividendPolicy::liquidator(),
                                                        beagle::math::InterpolationBuilder::linear());
 

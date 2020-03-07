@@ -75,6 +75,7 @@ namespace beagle
 
     namespace mixins
     {
+      
       European::~European( void ) { }
       American::~American( void ) { }
     }

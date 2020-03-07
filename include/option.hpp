@@ -31,6 +31,7 @@ namespace beagle
                                                         const beagle::payoff_ptr_t& payoff );
     };
 
+
     namespace mixins
     {
       struct European
