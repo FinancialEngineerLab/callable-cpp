@@ -24,6 +24,42 @@ namespace beagle
       static beagle::pricer_ptr_t formOneDimensionalForwardPDEEuropeanOptionPricer(
                                                                      const FiniteDifferenceDetails& fdDetails,
                                                                      const beagle::real_2d_function_ptr_t& volatility);
+      static beagle::pricer_ptr_t formOneDimensionalForwardPDEPricer(double spot,
+                                                                     const beagle::real_2d_function_ptr_t& drift,
+                                                                     const beagle::real_2d_function_ptr_t& volatility,
+                                                                     const beagle::real_function_ptr_t& rate,
+                                                                     const beagle::discrete_dividend_schedule_t& dividends,
+                                                                     const beagle::valuation::OneDimFiniteDifferenceSettings& settings);
+    };
+
+    struct OneDimFiniteDifferenceSettings
+    {
+      OneDimFiniteDifferenceSettings( void );
+      OneDimFiniteDifferenceSettings( int numTimeSteps,
+                                      int numStateVariableSteps,
+                                      double numGaussianStandardDeviations,
+                                      const beagle::dividend_policy_ptr_t& policy,
+                                      const beagle::interp_builder_ptr_t& interp );
+    //public:
+    //  void formTimeSteps( double start,
+    //                      double end,
+    //                      beagle::dbl_vec_t& times,
+    //                      beagle::int_vec_t& exDividendIndices ) const;
+    //  void formStateVariableSteps(double expiry,
+    //                              beagle::dbl_vec_t& logStateVariables,
+    //                              beagle::dbl_vec_t& stateVariables) const;
+    public:
+      int numberOfTimeSteps( void ) const;
+      int numberOfStateVariableSteps( void ) const;
+      double numberOfGaussianStandardDeviations( void ) const;
+      const beagle::dividend_policy_ptr_t& dividendPolicy( void ) const;
+      const beagle::interp_builder_ptr_t& interpolationMethod( void ) const;
+    private:
+      int m_NumTimeSteps;
+      int m_NumUnderlyingSteps;
+      double m_NumStdev;
+      beagle::dividend_policy_ptr_t m_Policy;
+      beagle::interp_builder_ptr_t m_Interp;
     };
 
     struct FiniteDifferenceDetails

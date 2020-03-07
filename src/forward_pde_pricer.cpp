@@ -165,6 +165,30 @@ namespace beagle
       private:
         beagle::real_2d_function_ptr_t m_Volatility;
       };
+
+      struct OneDimensionalForwardPDEPricer
+      {
+        OneDimensionalForwardPDEPricer(double spot,
+                                       const beagle::real_2d_function_ptr_t& drift,
+                                       const beagle::real_2d_function_ptr_t& volatility,
+                                       const beagle::real_function_ptr_t& rate,
+                                       const beagle::discrete_dividend_schedule_t& dividends,
+                                       const beagle::valuation::OneDimFiniteDifferenceSettings& settings) :
+          m_Spot(spot),
+          m_Drift(drift),
+          m_Vol(volatility),
+          m_Rate(rate),
+          m_Dividends(dividends),
+          m_Settings(settings)
+        { }
+      private:
+        double m_Spot;
+        beagle::real_2d_function_ptr_t m_Drift;
+        beagle::real_2d_function_ptr_t m_Vol;
+        beagle::real_function_ptr_t m_Rate;
+        beagle::discrete_dividend_schedule_t m_Dividends;
+        beagle::valuation::OneDimFiniteDifferenceSettings m_Settings;
+      };
     }
 
     beagle::pricer_ptr_t
@@ -173,6 +197,22 @@ namespace beagle
     {
       return std::make_shared<impl::OneDimensionalForwardPDEEuropeanOptionPricer>( fdDetails,
                                                                                    volatility );
+    }
+
+    beagle::pricer_ptr_t
+    Pricer::formOneDimensionalForwardPDEPricer(double spot,
+                                               const beagle::real_2d_function_ptr_t& drift,
+                                               const beagle::real_2d_function_ptr_t& volatility,
+                                               const beagle::real_function_ptr_t& rate,
+                                               const beagle::discrete_dividend_schedule_t& dividends,
+                                               const beagle::valuation::OneDimFiniteDifferenceSettings& settings)
+    {
+      return std::make_shared<impl::OneDimensionalForwardPDEPricer>( spot,
+                                                                     drift,
+                                                                     volatility,
+                                                                     rate,
+                                                                     dividends,
+                                                                     settings );
     }
   }
 }
