@@ -166,7 +166,7 @@ namespace beagle
         beagle::real_2d_function_ptr_t m_Volatility;
       };
 
-      struct OneDimensionalForwardPDEPricer
+      struct OneDimensionalForwardPDEPricer : public Pricer
       {
         OneDimensionalForwardPDEPricer(double spot,
                                        const beagle::real_2d_function_ptr_t& drift,
@@ -181,6 +181,13 @@ namespace beagle
           m_Dividends(dividends),
           m_Settings(settings)
         { }
+        virtual ~OneDimensionalForwardPDEPricer( void )
+        { }
+      public:
+        virtual double value(const beagle::product_ptr_t& product) const
+        {
+          return 0.0;
+        }
       private:
         double m_Spot;
         beagle::real_2d_function_ptr_t m_Drift;

@@ -7,31 +7,6 @@ namespace beagle
 {
   namespace valuation
   {
-    struct Pricer
-    {
-      virtual ~Pricer( void );
-    public:
-      virtual double value( const beagle::product_ptr_t& product ) const = 0;
-    public:
-      static beagle::pricer_ptr_t formBlackScholesClosedFormEuropeanOptionPricer(
-                                                                          double spot,
-                                                                          double rate,
-                                                                          double volatility,
-                                                                          const discrete_dividend_schedule_t& dividends );
-      static beagle::pricer_ptr_t formOneDimensionalBackwardPDEOptionPricer(
-                                                                     const beagle::real_2d_function_ptr_t& drift,
-                                                                     const beagle::real_2d_function_ptr_t& diffusion );
-      static beagle::pricer_ptr_t formOneDimensionalForwardPDEEuropeanOptionPricer(
-                                                                     const FiniteDifferenceDetails& fdDetails,
-                                                                     const beagle::real_2d_function_ptr_t& volatility);
-      static beagle::pricer_ptr_t formOneDimensionalForwardPDEPricer(double spot,
-                                                                     const beagle::real_2d_function_ptr_t& drift,
-                                                                     const beagle::real_2d_function_ptr_t& volatility,
-                                                                     const beagle::real_function_ptr_t& rate,
-                                                                     const beagle::discrete_dividend_schedule_t& dividends,
-                                                                     const beagle::valuation::OneDimFiniteDifferenceSettings& settings);
-    };
-
     struct OneDimFiniteDifferenceSettings
     {
       OneDimFiniteDifferenceSettings( void );
@@ -102,6 +77,31 @@ namespace beagle
       beagle::discrete_dividend_schedule_t m_Dividends;
       beagle::dividend_policy_ptr_t m_Policy;
       beagle::interp_builder_ptr_t m_Interp;
+    };
+
+    struct Pricer
+    {
+      virtual ~Pricer( void );
+    public:
+      virtual double value( const beagle::product_ptr_t& product ) const = 0;
+    public:
+      static beagle::pricer_ptr_t formBlackScholesClosedFormEuropeanOptionPricer(
+                                                                          double spot,
+                                                                          double rate,
+                                                                          double volatility,
+                                                                          const discrete_dividend_schedule_t& dividends );
+      static beagle::pricer_ptr_t formOneDimensionalBackwardPDEOptionPricer(
+                                                                     const beagle::real_2d_function_ptr_t& drift,
+                                                                     const beagle::real_2d_function_ptr_t& diffusion );
+      static beagle::pricer_ptr_t formOneDimensionalForwardPDEEuropeanOptionPricer(
+                                                                     const FiniteDifferenceDetails& fdDetails,
+                                                                     const beagle::real_2d_function_ptr_t& volatility);
+      static beagle::pricer_ptr_t formOneDimensionalForwardPDEPricer(double spot,
+                                                                     const beagle::real_2d_function_ptr_t& drift,
+                                                                     const beagle::real_2d_function_ptr_t& volatility,
+                                                                     const beagle::real_function_ptr_t& rate,
+                                                                     const beagle::discrete_dividend_schedule_t& dividends,
+                                                                     const beagle::valuation::OneDimFiniteDifferenceSettings& settings);
     };
 
     namespace mixins
