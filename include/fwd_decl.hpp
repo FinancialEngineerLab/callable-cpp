@@ -28,6 +28,8 @@ namespace beagle
     struct RealTwoDimFunction;
     struct InterpolationBuilder;
     struct TwoDimInterpolationBuilder;
+    struct OneDimParabolicPDESolver;
+    struct BoundaryCondition;
   }
 
   namespace valuation
@@ -53,6 +55,7 @@ namespace beagle
   using real_2d_function_ptr_t = std::shared_ptr<math::RealTwoDimFunction>;
   using interp_builder_ptr_t = std::shared_ptr<math::InterpolationBuilder>;
   using interp_builder_2d_ptr_t = std::shared_ptr<math::TwoDimInterpolationBuilder>;
+  using boundary_condition_ptr_t = std::shared_ptr<math::BoundaryCondition>;
 
   using pricer_ptr_t = std::shared_ptr<valuation::Pricer>;
   using dividend_policy_ptr_t = std::shared_ptr<valuation::DividendPolicy>;

@@ -214,10 +214,10 @@ void test4(void)
 {
   std::cout << "\nStart of Test 4:\n\n";
 
-  beagle::dbl_vec_t diag{ 1., -2.6, -2.6, -2.6, -2.6, 1. };
-  beagle::dbl_vec_t upper{ 0., 1., 1., 1., 1., 0. };
-  beagle::dbl_vec_t lower{ 0., 1., 1., 1., 1., 0. };
-  beagle::dbl_vec_t rhs{ 240., 0., 0., 0., 0., 150. };
+  beagle::dbl_vec_t diag{ -2.6, -2.6, -2.6, -2.6 };
+  beagle::dbl_vec_t upper{ 1., 1., 1., 1. };
+  beagle::dbl_vec_t lower{ 1., 1., 1., 1. };
+  beagle::dbl_vec_t rhs{ -240., 0., 0., -150. };
 
   beagle::util::tridiagonalSolve(rhs, diag, upper, lower);
   for (auto result : rhs)
@@ -228,8 +228,8 @@ void test4(void)
 
 int main( void )
 {
-  test1();
-  test2();
+  //test1();
+  //test2();
   //test3();
   test4();
 
