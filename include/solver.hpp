@@ -30,7 +30,8 @@ namespace beagle
     public:
       beagle::real_function_ptr_t evolve(double start,
                                          double end,
-                                         const beagle::boundary_condition_ptr_t& boundaryCondition,
+                                         const beagle::boundary_condition_ptr_t& lowerBoundaryCondition,
+                                         const beagle::boundary_condition_ptr_t& upperBoundaryCondition,
                                          const beagle::real_function_ptr_t& initialCondition) const;
     private:
       double m_Spot;

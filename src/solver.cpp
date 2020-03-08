@@ -2,6 +2,7 @@
 #include "real_function.hpp"
 #include "real_2d_function.hpp"
 #include "util.hpp"
+#include "interpolation_builder.hpp"
 
 namespace beagle
 {
@@ -75,7 +76,8 @@ namespace beagle
     beagle::real_function_ptr_t
     OneDimParabolicPDESolver::evolve(double start,
                                      double end,
-                                     const beagle::boundary_condition_ptr_t& boundaryCondition,
+                                     const beagle::boundary_condition_ptr_t& lowerBoundaryCondition,
+                                     const beagle::boundary_condition_ptr_t& upperBoundaryCondition,
                                      const beagle::real_function_ptr_t& initialCondition) const
     {
       // Form time steps
@@ -105,11 +107,17 @@ namespace beagle
 
       // Discretize the intial condition
       beagle::dbl_vec_t prices(numUnderlyingSteps);
+      beagle::dbl_vec_t svs(numUnderlyingSteps);
       std::transform(underlyings.cbegin(),
                      underlyings.cend(),
+                     svs.begin(),
+                     [](double z)
+                     { return std::exp(z); });
+      std::transform(svs.cbegin(),
+                     svs.cend(),
                      prices.begin(),
                      [&initialCondition](double z)
-                     { return initialCondition->value(std::exp(z)); });
+                     { return initialCondition->value(z); });
 
       // Now, perform induction
       beagle::dbl_vec_t diag(numUnderlyingSteps);
@@ -125,9 +133,8 @@ namespace beagle
 
         for (int j=0; j<numUnderlyingSteps; ++j)
         {
-          double thisSpot = std::exp(underlyings[j]);
-          double convection = m_Convection->value(thisTime, thisSpot);
-          double diffusion = m_Diffusion->value(thisTime, thisSpot);
+          double convection = m_Convection->value(thisTime, svs[j]);
+          double diffusion = m_Diffusion->value(thisTime, svs[j]);
           double rate = m_Rate->value(thisTime);
 
           diag[j]  = 1. - rate * deltaT - 2. * diffusion * dTdXdX;
@@ -135,12 +142,12 @@ namespace beagle
           lower[j] = - .5 * convection * dTdX + diffusion * dTdXdX;
         }
 
-        beagle::dbl_vec_t lbc = boundaryCondition->lowerBoundaryCoefficients();
+        beagle::dbl_vec_t lbc = lowerBoundaryCondition->lowerBoundaryCoefficients();
         prices[0] -= lower[0] * lbc[0] / lbc[1];
         diag[0]   -= lower[0] * lbc[2] / lbc[1];
         upper[0]  -= lower[0] * lbc[3] / lbc[1];
 
-        beagle::dbl_vec_t ubc = boundaryCondition->upperBoundaryCoefficients();
+        beagle::dbl_vec_t ubc = upperBoundaryCondition->upperBoundaryCoefficients();
         prices[numUnderlyingSteps-1] -= upper[numUnderlyingSteps-1] * ubc[0] / ubc[3];
         diag[numUnderlyingSteps-1]   -= upper[numUnderlyingSteps-1] * ubc[1] / ubc[3];
         upper[numUnderlyingSteps-1]  -= upper[numUnderlyingSteps-1] * ubc[2] / ubc[3];
@@ -152,7 +159,7 @@ namespace beagle
         beagle::util::tridiagonalSolve( prices, diag, upper, lower );
       }
 
-      return beagle::real_function_ptr_t();
+      return m_Settings.interpolationMethod()->formFunction(svs, prices);
     }
   }
 }

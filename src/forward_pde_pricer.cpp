@@ -166,14 +166,14 @@ namespace beagle
         beagle::real_2d_function_ptr_t m_Volatility;
       };
 
-      struct OneDimensionalForwardPDEPricer : public Pricer
+      struct OneDimForwardPDEEuroOptionPricer : public Pricer
       {
-        OneDimensionalForwardPDEPricer(double spot,
-                                       const beagle::real_2d_function_ptr_t& drift,
-                                       const beagle::real_2d_function_ptr_t& volatility,
-                                       const beagle::real_function_ptr_t& rate,
-                                       const beagle::discrete_dividend_schedule_t& dividends,
-                                       const beagle::valuation::OneDimFiniteDifferenceSettings& settings) :
+        OneDimForwardPDEEuroOptionPricer(double spot,
+                                         const beagle::real_2d_function_ptr_t& drift,
+                                         const beagle::real_2d_function_ptr_t& volatility,
+                                         const beagle::real_function_ptr_t& rate,
+                                         const beagle::discrete_dividend_schedule_t& dividends,
+                                         const beagle::valuation::OneDimFiniteDifferenceSettings& settings) :
           m_Spot(spot),
           m_Drift(drift),
           m_Vol(volatility),
@@ -181,7 +181,7 @@ namespace beagle
           m_Dividends(dividends),
           m_Settings(settings)
         { }
-        virtual ~OneDimensionalForwardPDEPricer( void )
+        virtual ~OneDimForwardPDEEuroOptionPricer( void )
         { }
       public:
         virtual double value(const beagle::product_ptr_t& product) const
@@ -207,19 +207,19 @@ namespace beagle
     }
 
     beagle::pricer_ptr_t
-    Pricer::formOneDimensionalForwardPDEPricer(double spot,
-                                               const beagle::real_2d_function_ptr_t& drift,
-                                               const beagle::real_2d_function_ptr_t& volatility,
-                                               const beagle::real_function_ptr_t& rate,
-                                               const beagle::discrete_dividend_schedule_t& dividends,
-                                               const beagle::valuation::OneDimFiniteDifferenceSettings& settings)
+    Pricer::formOneDimForwardPDEEuroOptionPricer(double spot,
+                                                 const beagle::real_2d_function_ptr_t& convection,
+                                                 const beagle::real_2d_function_ptr_t& diffusion,
+                                                 const beagle::real_function_ptr_t& rate,
+                                                 const beagle::discrete_dividend_schedule_t& dividends,
+                                                 const beagle::valuation::OneDimFiniteDifferenceSettings& settings)
     {
-      return std::make_shared<impl::OneDimensionalForwardPDEPricer>( spot,
-                                                                     drift,
-                                                                     volatility,
-                                                                     rate,
-                                                                     dividends,
-                                                                     settings );
+      return std::make_shared<impl::OneDimForwardPDEEuroOptionPricer>( spot,
+                                                                       convection,
+                                                                       diffusion,
+                                                                       rate,
+                                                                       dividends,
+                                                                       settings );
     }
   }
 }
