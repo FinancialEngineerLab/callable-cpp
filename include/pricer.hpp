@@ -91,7 +91,7 @@ namespace beagle
                                                                           double volatility,
                                                                           const discrete_dividend_schedule_t& dividends );
       static beagle::pricer_ptr_t formOneDimensionalBackwardPDEOptionPricer(
-                                                                     const beagle::real_2d_function_ptr_t& drift,
+                                                                     const FiniteDifferenceDetails& fdDetails,
                                                                      const beagle::real_2d_function_ptr_t& diffusion );
       static beagle::pricer_ptr_t formOneDimensionalForwardPDEEuropeanOptionPricer(
                                                                      const FiniteDifferenceDetails& fdDetails,

@@ -52,7 +52,7 @@ namespace beagle
 
           auto pFD = dynamic_cast<beagle::valuation::mixins::FiniteDifference*>(m_ForwardPricer.get());
           const beagle::valuation::FiniteDifferenceDetails& fdDetails = pFD->finiteDifferenceDetails();
-          fdDetails.formStateVariableSteps( m_Expiries.back(), logStrikes, strikes );
+          fdDetails.formStateVariableSteps( m_Expiries.front(), logStrikes, strikes );
 
           auto pOVCP = dynamic_cast<beagle::valuation::mixins::OptionValueCollectionProvider*>(m_ForwardPricer.get());
           if (!pOVCP)
@@ -60,9 +60,27 @@ namespace beagle
           pOVCP->formInitialOptionValueCollection( m_Payoff, strikes, prices );
 
           double start(0.0);
+          beagle::real_function_ptr_t previousPrices;
+          beagle::interp_builder_ptr_t priceInterp = beagle::math::InterpolationBuilder::linear();
+          beagle::real_function_ptr_t localVol;
           for (beagle::dbl_vec_t::size_type i=0; i<m_Expiries.size(); ++i)
           {
             double end = m_Expiries[i];
+
+            if (i != 0)
+            {
+              fdDetails.formStateVariableSteps(end, logStrikes, strikes);
+
+              prices.resize(strikes.size());
+              std::transform(strikes.cbegin(),
+                             strikes.cend(),
+                             prices.begin(),
+                             [&previousPrices](double strike)
+                             { return previousPrices->value(strike);} );
+            }
+
+            std::cout << strikes.front() << "\t" << strikes.back() << "\n\n";
+
             calibration_adapter_ptr_t adapter = beagle::calibration::CalibrationAdapter::forwardPDEPricerAdapter(m_ForwardPricer,
                                                                                                                  start,
                                                                                                                  end,
@@ -72,7 +90,18 @@ namespace beagle
                                                                                                                  prices,
                                                                                                                  m_StrikesColl[i]);
 
-            beagle::dbl_vec_t guesses(m_StrikesColl[i].size(), m_InitialGuesses[i]);
+            beagle::dbl_vec_t guesses;
+            if (true)
+              guesses.resize(m_StrikesColl[i].size(), m_InitialGuesses[i]);
+            else
+            {
+              guesses.resize(m_StrikesColl[i].size());
+              std::transform(m_StrikesColl[i].cbegin(),
+                             m_StrikesColl[i].cend(),
+                             guesses.begin(),
+                             [&localVol](double logStrike)
+                             { return localVol->value(logStrike); });
+            }
             beagle::calibration_bound_constraint_coll_t constraints(guesses.size(),
                                                                     beagle::calibration::CalibrationBoundConstraint::lowerBoundCalibrationConstraint(0.));
             beagle::int_vec_t elimIndices(0U);
@@ -92,16 +121,7 @@ namespace beagle
 
             guesses = beagle::calibration::util::getOriginalParameters( guesses, constraints );
 
-            beagle::dbl_vec_t logAbscissas(m_StrikesColl[i]);
-            std::transform(logAbscissas.begin(),
-                           logAbscissas.end(),
-                           logAbscissas.begin(),
-                           [](double x) { return std::log(x); });
-            beagle::real_function_ptr_t localVol = m_Interpolation->formFunction(logAbscissas, guesses);
-            localVol = beagle::math::RealFunction::createCompositeFunction(
-                                localVol,
-                                beagle::math::RealFunction::createUnaryFunction([](double x) { return std::log(x); }));
-
+            localVol = m_Interpolation->formFunction(m_StrikesColl[i], guesses);
             beagle::pricer_ptr_t forwardPricer
               = beagle::valuation::Pricer::formOneDimensionalForwardPDEEuropeanOptionPricer(
                                                 fdDetails,
@@ -111,6 +131,8 @@ namespace beagle
 
             auto pOVCP = dynamic_cast<beagle::valuation::mixins::OptionValueCollectionProvider*>(forwardPricer.get());
             pOVCP->optionValueCollection(start, end, m_Payoff, logStrikes, strikes, prices);
+
+            previousPrices = priceInterp->formFunction(strikes, prices);
 
             start = end;
             localVols.push_back( localVol );

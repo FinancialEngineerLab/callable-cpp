@@ -172,10 +172,10 @@ namespace beagle
     }
 
     beagle::pricer_ptr_t
-    Pricer::formOneDimensionalBackwardPDEOptionPricer( const beagle::real_2d_function_ptr_t& drift,
+    Pricer::formOneDimensionalBackwardPDEOptionPricer( const FiniteDifferenceDetails& fdDetails,
                                                        const beagle::real_2d_function_ptr_t& diffusion)
     {
-      return std::make_shared<impl::OneDimensionalBackwardPDEOptionPricer>( beagle::valuation::FiniteDifferenceDetails(),
+      return std::make_shared<impl::OneDimensionalBackwardPDEOptionPricer>( fdDetails,
                                                                             diffusion );
     }
   }
