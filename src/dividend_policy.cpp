@@ -14,7 +14,7 @@ namespace beagle
         { }
       public:
         virtual double dividendAmount( double spot,
-                                       double dividend ) const
+                                       double dividend ) const override
         {
           return spot > dividend ? dividend : spot;
         }
@@ -28,7 +28,7 @@ namespace beagle
         { }
       public:
         virtual double dividendAmount( double spot,
-                                       double dividend ) const
+                                       double dividend ) const override
         {
           return spot > dividend ? dividend : 0.;
         }
@@ -42,7 +42,7 @@ namespace beagle
     { }
 
 
-    double 
+    double
     DividendPolicy::exDividendStockPrice( double spot,
                                           double dividend ) const
     {

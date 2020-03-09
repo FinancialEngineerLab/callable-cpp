@@ -21,11 +21,11 @@ namespace beagle
           {
             return std::max( spot - strike, 0. );
           }
-          virtual bool isCall( void ) const
+          virtual bool isCall( void ) const override
           {
             return true;
           }
-          virtual bool isPut( void ) const
+          virtual bool isPut( void ) const override
           {
             return false;
           }
@@ -44,11 +44,11 @@ namespace beagle
           {
             return std::max( strike - spot, 0. );
           }
-          virtual bool isCall( void ) const
+          virtual bool isCall( void ) const override
           {
             return false;
           }
-          virtual bool isPut( void ) const
+          virtual bool isPut( void ) const override
           {
             return true;
           }

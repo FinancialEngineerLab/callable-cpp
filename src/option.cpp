@@ -19,7 +19,7 @@ namespace beagle
           virtual ~EuropeanOption( void )
           { }
         public:
-          virtual const std::string& name(void) const
+          virtual const std::string& name(void) const override
           {
             static std::string ss("EuropeanOption");
             return ss;
@@ -37,7 +37,7 @@ namespace beagle
           virtual ~AmericanOption( void )
           { }
         public:
-          virtual const std::string& name(void) const
+          virtual const std::string& name(void) const override
           {
             static std::string ss("AmericanOption");
             return ss;

@@ -17,7 +17,7 @@ namespace beagle
         virtual ~TwoOneDimInterpolationBuilder( void )
         { }
       public:
-        virtual beagle::real_2d_function_ptr_t formTwoDimFunction() const
+        virtual beagle::real_2d_function_ptr_t formTwoDimFunction() const override
         {
           throw(std::string("Cannot form a two dimensional function with two one dimensional interpolation builders!"));
           return real_2d_function_ptr_t();

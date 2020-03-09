@@ -15,18 +15,18 @@ namespace beagle
         virtual ~NaturalBoundaryCondition( void )
         { }
       public:
-        virtual beagle::dbl_vec_t boundaryCoefficients( void ) const
+        virtual beagle::dbl_vec_t boundaryCoefficients( void ) const override
         {
           return beagle::dbl_vec_t{0., 1., 0., 0.};
         }
       };
-      
+
       struct LinearBoundaryCondition : public BoundaryCondition
       {
         virtual ~LinearBoundaryCondition( void )
         { }
       public:
-        virtual beagle::dbl_vec_t boundaryCoefficients( void ) const
+        virtual beagle::dbl_vec_t boundaryCoefficients( void ) const override
         {
           return beagle::dbl_vec_t{0., 1., -2., 1.};
         }
