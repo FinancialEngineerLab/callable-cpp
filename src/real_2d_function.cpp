@@ -7,6 +7,23 @@ namespace beagle
   {
     namespace impl
     {
+      struct BinaryFunction : public RealTwoDimFunction
+      {
+        explicit BinaryFunction(const beagle::real_2d_func_t& func) :
+          m_Func(func)
+        { }
+        virtual ~BinaryFunction(void)
+        { }
+      public:
+        virtual double value(double argX,
+                             double argY) const override
+        {
+          return m_Func(argX, argY);
+        }
+      private:
+        beagle::real_2d_func_t m_Func;
+      };
+
       struct TwoDimConstantFunction : public RealTwoDimFunction
       {
         explicit TwoDimConstantFunction( double constant ) :
@@ -70,6 +87,12 @@ namespace beagle
 
     RealTwoDimFunction::~RealTwoDimFunction( void )
     { }
+
+    beagle::real_2d_function_ptr_t
+    RealTwoDimFunction::createBinaryFunction( const beagle::real_2d_func_t& func )
+    {
+      return std::make_shared<impl::BinaryFunction>( func );
+    }
 
     beagle::real_2d_function_ptr_t
     RealTwoDimFunction::createTwoDimConstantFunction( double constant )

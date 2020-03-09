@@ -55,6 +55,7 @@ namespace beagle
   using real_2d_function_ptr_t = std::shared_ptr<math::RealTwoDimFunction>;
   using interp_builder_ptr_t = std::shared_ptr<math::InterpolationBuilder>;
   using interp_builder_2d_ptr_t = std::shared_ptr<math::TwoDimInterpolationBuilder>;
+  using parabolic_pde_solver_ptr_t = std::shared_ptr<math::OneDimParabolicPDESolver>;
   using boundary_condition_ptr_t = std::shared_ptr<math::BoundaryCondition>;
 
   using pricer_ptr_t = std::shared_ptr<valuation::Pricer>;
