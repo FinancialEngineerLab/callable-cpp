@@ -11,9 +11,9 @@ namespace beagle
     { }
 
     OneDimFiniteDifferenceSettings::OneDimFiniteDifferenceSettings( void ) :
-      m_NumTimeSteps(500),
-      m_NumUnderlyingSteps(1000),
-      m_NumStdev(4.0),
+      m_NumTimeSteps(1500),
+      m_NumUnderlyingSteps(1501),
+      m_NumStdev(7.0),
       m_Interp(beagle::math::InterpolationBuilder::linear()),
       m_Policy(beagle::valuation::DividendPolicy::liquidator())
     { }
