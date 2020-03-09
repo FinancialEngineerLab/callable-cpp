@@ -1,7 +1,7 @@
 #ifndef SOLVER_HPP
 #define SOLVER_HPP
 
-#include "pricer.hpp"
+#include "fwd_decl.hpp"
 
 namespace beagle
 {
