@@ -14,20 +14,31 @@ namespace beagle
       m_NumTimeSteps(500),
       m_NumUnderlyingSteps(1000),
       m_NumStdev(4.0),
-      m_Policy(beagle::valuation::DividendPolicy::liquidator()),
-      m_Interp(beagle::math::InterpolationBuilder::linear())
+      m_Interp(beagle::math::InterpolationBuilder::linear()),
+      m_Policy(beagle::valuation::DividendPolicy::liquidator())
     { }
 
     OneDimFiniteDifferenceSettings::OneDimFiniteDifferenceSettings( int numTimeSteps,
                                                                     int numStateVariableSteps,
                                                                     double numGaussianStandardDeviations,
-                                                                    const beagle::dividend_policy_ptr_t& policy,
+                                                                    const beagle::interp_builder_ptr_t& interp,
+                                                                    const beagle::dividend_policy_ptr_t& policy ) :
+      m_NumTimeSteps(numTimeSteps),
+      m_NumUnderlyingSteps(numStateVariableSteps),
+      m_NumStdev(numGaussianStandardDeviations),
+      m_Interp(interp),
+      m_Policy(policy)
+    { }
+
+    OneDimFiniteDifferenceSettings::OneDimFiniteDifferenceSettings( int numTimeSteps,
+                                                                    int numStateVariableSteps,
+                                                                    double numGaussianStandardDeviations,
                                                                     const beagle::interp_builder_ptr_t& interp ) :
       m_NumTimeSteps(numTimeSteps),
       m_NumUnderlyingSteps(numStateVariableSteps),
       m_NumStdev(numGaussianStandardDeviations),
-      m_Policy(policy),
-      m_Interp(interp)
+      m_Interp(interp),
+      m_Policy(beagle::valuation::DividendPolicy::liquidator())
     { }
 
     int OneDimFiniteDifferenceSettings::numberOfTimeSteps( void ) const

@@ -8,6 +8,9 @@ namespace beagle
     {
       InterpolationParameters::~InterpolationParameters( void )
       { }
+
+      DividendSchedule::~DividendSchedule( void )
+      { }
     }
 
     namespace impl
@@ -179,6 +182,69 @@ namespace beagle
           }
         }
       };
+
+      struct ContinuousForwardAssetPriceFunction : public RealFunction
+      {
+        ContinuousForwardAssetPriceFunction( double spot,
+                                             const beagle::real_function_ptr_t& funding ) :
+          m_Spot(spot),
+          m_Funding(funding)
+        { }
+        virtual ~ContinuousForwardAssetPriceFunction( void )
+        { }
+      public:
+        virtual double value( double arg ) const override
+        {
+          return m_Spot / m_Funding->value(arg);
+        }
+      private:
+        double m_Spot;
+        beagle::real_function_ptr_t m_Funding;
+      };
+
+      struct GeneralForwardAssetPriceFunction : public RealFunction,
+                                                public mixins::DividendSchedule
+      {
+        GeneralForwardAssetPriceFunction( double spot,
+                                          const beagle::real_function_ptr_t& funding,
+                                          const beagle::discrete_dividend_schedule_t& dividends ) :
+          m_Spot(spot),
+          m_Funding(funding),
+          m_Dividends(dividends)
+        { }
+        virtual ~GeneralForwardAssetPriceFunction( void )
+        { }
+      public:
+        virtual double value( double arg ) const override
+        {
+          double factor = m_Funding->value(arg);
+          double forward = m_Spot / factor;
+
+          auto it = std::lower_bound(m_Dividends.cbegin(),
+                                     m_Dividends.cend(),
+                                     arg,
+                                     [](const beagle::discrete_dividend_schedule_t::value_type& pair,
+                                        double value)
+                                     { return pair.first < value; });
+          for (auto jt = m_Dividends.cbegin(); jt != it; ++jt)
+          {
+            double exDivTime = jt->first;
+            double dividend = jt->second;
+            double exDivFactor = m_Funding->value(exDivTime);
+            forward -= dividend * exDivFactor / factor;
+          }
+
+          return forward;
+        }
+        virtual const beagle::discrete_dividend_schedule_t& dividendSchedule( void ) const override
+        {
+          return m_Dividends;
+        }
+      private:
+        double m_Spot;
+        beagle::real_function_ptr_t m_Funding;
+        beagle::discrete_dividend_schedule_t m_Dividends;
+      };
     }
 
 
@@ -250,6 +316,21 @@ namespace beagle
       else
         return std::make_shared<impl::PiecewiseConstantRightInterpolatedFunction>( xValues,
                                                                                         yValues );
+    }
+
+    beagle::real_function_ptr_t
+    RealFunction::createContinuousForwardAssetPriceFunction( double spot,
+                                                             const beagle::real_function_ptr_t& funding )
+    {
+      return std::make_shared<impl::ContinuousForwardAssetPriceFunction>( spot, funding );
+    }
+
+    beagle::real_function_ptr_t
+    RealFunction::createGeneralForwardAssetPriceFunction( double spot,
+                                                          const beagle::real_function_ptr_t& funding,
+                                                          const beagle::discrete_dividend_schedule_t& dividends )
+    {
+      return std::make_shared<impl::GeneralForwardAssetPriceFunction>( spot, funding, dividends );
     }
   }
 }

@@ -1,6 +1,7 @@
 #include "one_dim_pde_pricer.hpp"
+#include "solver.hpp"
 
-// #include <fstream>
+ #include <iostream>
 // std::ofstream out("interpolation.txt");
 
 namespace beagle
@@ -169,6 +170,104 @@ namespace beagle
       private:
         beagle::real_2d_function_ptr_t m_Volatility;
       };
+
+      struct OneDimBackwardPDEOptionPricer : public Pricer
+      {
+        OneDimBackwardPDEOptionPricer(const beagle::real_function_ptr_t& forward,
+                                      const beagle::real_function_ptr_t& discounting,
+                                      const beagle::real_2d_function_ptr_t& drift,
+                                      const beagle::real_2d_function_ptr_t& volatility,
+                                      const beagle::valuation::OneDimFiniteDifferenceSettings& settings) :
+          m_Forward(forward),
+          m_Discounting(discounting),
+          m_Drift(drift),
+          m_Vol(volatility),
+          m_Settings(settings)
+        { }
+        virtual ~OneDimBackwardPDEOptionPricer( void )
+        { }
+      public:
+        virtual double value(const beagle::product_ptr_t& product) const
+        {
+          auto pO = dynamic_cast<beagle::product::mixins::Option*>(product.get());
+          if (!pO)
+            throw(std::string("The incoming product is not an option!"));
+
+          double expiry = pO->expiry();
+          double strike = pO->strike();
+          const beagle::payoff_ptr_t& payoff = pO->payoff();
+
+          auto pDS = dynamic_cast<beagle::math::mixins::DividendSchedule*>(m_Forward.get());
+          if (!pDS)
+          {
+            beagle::real_2d_function_ptr_t convection = beagle::math::RealTwoDimFunction::createBinaryFunction(
+                              [this](double time, double logMoneyness)
+                              {
+                                 double spot = m_Forward->value(time) * std::exp(logMoneyness);
+                                 double localVol = m_Vol->value(time, spot);
+                                 double drift = m_Drift->value(time, spot);
+                                 return drift - .5 * localVol * localVol;
+                              } );
+            beagle::real_2d_function_ptr_t diffusion = beagle::math::RealTwoDimFunction::createBinaryFunction(
+                             [this](double time, double logMoneyness)
+                             {
+                                double spot = m_Forward->value(time) * std::exp(logMoneyness);
+                                double localVol = m_Vol->value(time, spot);
+                                return .5 * localVol * localVol;
+                             } );
+
+            beagle::parabolic_pde_solver_ptr_t solver
+              = beagle::math::OneDimParabolicPDESolver::formOneDimParabolicValuationPDESolver(convection, diffusion);
+
+            int numTimeSteps = static_cast<int>(expiry * m_Settings.numberOfStateVariableSteps());
+            int numStateVarSteps = m_Settings.numberOfStateVariableSteps();
+            if (numStateVarSteps % 2 == 0)
+              numStateVarSteps += 1;
+
+            double forward = m_Forward->value(expiry);
+            double atmVol = m_Vol->value(expiry, forward);
+            double confidenceInterval = m_Settings.numberOfGaussianStandardDeviations() * atmVol * std::sqrt(expiry);
+            int centralIndex = numStateVarSteps / 2;
+
+            beagle::dbl_vec_t stateVarSteps(numStateVarSteps);
+            for (int i=0; i<numStateVarSteps; ++i)
+              stateVarSteps[i] = (i - centralIndex) * confidenceInterval / centralIndex;
+
+            beagle::dbl_vec_t initialCondition(numStateVarSteps);
+            std::transform(stateVarSteps.cbegin(),
+                           stateVarSteps.cend(),
+                           initialCondition.begin(),
+                           [this, strike, payoff, forward, expiry](double logMoneyness)
+                           { return payoff->intrinsicValue(forward * std::exp(logMoneyness), strike)
+                                  * m_Discounting->value(expiry); });
+
+            beagle::boundary_condition_ptr_t linear = beagle::math::BoundaryCondition::linearBoundaryCondition();
+            solver->evolve(expiry,
+                           0.,
+                           numTimeSteps,
+                           stateVarSteps,
+                           linear,
+                           linear,
+                           initialCondition);
+
+            beagle::real_function_ptr_t result = m_Settings.interpolationMethod()->formFunction(stateVarSteps, initialCondition);
+
+            //for (int i=0; i<stateVarSteps.size(); ++i)
+            //  std::cout << stateVarSteps[i] << "\t" << initialCondition[i] << "\n";
+            //std::cout << "\n";
+
+            return result->value(0.);
+          }
+          else
+            return 0.0;
+        }
+      private:
+        beagle::real_function_ptr_t m_Forward;
+        beagle::real_function_ptr_t m_Discounting;
+        beagle::real_2d_function_ptr_t m_Drift;
+        beagle::real_2d_function_ptr_t m_Vol;
+        beagle::valuation::OneDimFiniteDifferenceSettings m_Settings;
+      };
     }
 
     beagle::pricer_ptr_t
@@ -177,6 +276,20 @@ namespace beagle
     {
       return std::make_shared<impl::OneDimensionalBackwardPDEOptionPricer>( fdDetails,
                                                                             diffusion );
+    }
+
+    beagle::pricer_ptr_t
+    Pricer::formOneDimBackwardPDEOptionPricer(const beagle::real_function_ptr_t& forward,
+                                              const beagle::real_function_ptr_t& discounting,
+                                              const beagle::real_2d_function_ptr_t& drift,
+                                              const beagle::real_2d_function_ptr_t& volatility,
+                                              const beagle::valuation::OneDimFiniteDifferenceSettings& settings)
+    {
+      return std::make_shared<impl::OneDimBackwardPDEOptionPricer>( forward,
+                                                                    discounting,
+                                                                    drift,
+                                                                    volatility,
+                                                                    settings );
     }
   }
 }

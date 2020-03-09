@@ -15,16 +15,16 @@ void test1( void )
   std::cout << "\nStart of Test 1:\n\n";
 
   beagle::discrete_dividend_schedule_t dividends;
-  dividends.emplace_back( 0.5, 3.0 );
-  dividends.emplace_back( 1.5, 3.0 );
-  dividends.emplace_back( 2.5, 3.0 );
-  dividends.emplace_back( 3.5, 3.0 );
-  dividends.emplace_back( 4.5, 3.0 );
-  dividends.emplace_back( 5.5, 8.0 );
-  dividends.emplace_back( 6.5, 8.0 );
+  //dividends.emplace_back( 0.5, 3.0 );
+  //dividends.emplace_back( 1.5, 3.0 );
+  //dividends.emplace_back( 2.5, 3.0 );
+  //dividends.emplace_back( 3.5, 3.0 );
+  //dividends.emplace_back( 4.5, 3.0 );
+  //dividends.emplace_back( 5.5, 8.0 );
+  //dividends.emplace_back( 6.5, 8.0 );
 
-  double expiry = 5.;
-  double strike = 50.;
+  double expiry = .5;
+  double strike = 100.;
   beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::call();
   beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption( expiry,
                                                                                             strike,
@@ -32,6 +32,11 @@ void test1( void )
   beagle::product_ptr_t amerOption = beagle::product::option::Option::createAmericanOption( expiry,
                                                                                             strike,
                                                                                             payoff );
+
+  beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
+                                            [](double arg) { return std::exp(-.03 * arg);});
+  beagle::real_function_ptr_t forward = beagle::math::RealFunction::createContinuousForwardAssetPriceFunction(
+                                            100, discounting);
 
   beagle::valuation::FiniteDifferenceDetails fdDetails( 100., .03, .3, 1501, 1901, 7.5, dividends,
                                                         beagle::valuation::DividendPolicy::liquidator(),
@@ -43,9 +48,12 @@ void test1( void )
                                                                                                              fdDetails.rate(), 
                                                                                                              fdDetails.volatility(), 
                                                                                                              fdDetails.dividends() );
-    beagle::pricer_ptr_t odbpop  = beagle::valuation::Pricer::formOneDimensionalBackwardPDEOptionPricer(
-                                                               fdDetails,
-                                                               beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(fdDetails.volatility()) );
+    beagle::pricer_ptr_t odbpop  = beagle::valuation::Pricer::formOneDimBackwardPDEOptionPricer(
+                                                               forward,
+                                                               discounting,
+                                                               beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0.),
+                                                               beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0.3),
+                                                               beagle::valuation::OneDimFiniteDifferenceSettings() );
     beagle::pricer_ptr_t odfpeop  = beagle::valuation::Pricer::formOneDimensionalForwardPDEEuropeanOptionPricer(
                                                                fdDetails,
                                                                beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(fdDetails.volatility()) );
@@ -228,7 +236,7 @@ void test4(void)
 
 int main( void )
 {
-  //test1();
+  test1();
   //test2();
   //test3();
   test4();

@@ -27,6 +27,13 @@ namespace beagle
       static beagle::real_function_ptr_t createPiecewiseConstantRightInterpolatedFunction(
                                                          const beagle::dbl_vec_t& xValues,
                                                          const beagle::dbl_vec_t& yValues );
+      static beagle::real_function_ptr_t createContinuousForwardAssetPriceFunction(
+                                                         double spot,
+                                                         const beagle::real_function_ptr_t& funding );
+      static beagle::real_function_ptr_t createGeneralForwardAssetPriceFunction(
+                                                         double spot,
+                                                         const beagle::real_function_ptr_t& funding,
+                                                         const beagle::discrete_dividend_schedule_t& dividends );
     };
 
     namespace mixins
@@ -37,6 +44,13 @@ namespace beagle
       public:
         virtual const beagle::dbl_vec_t& xParameters( void ) const = 0;
         virtual const beagle::dbl_vec_t& yParameters( void ) const = 0;
+      };
+
+      struct DividendSchedule
+      {
+        virtual ~DividendSchedule( void );
+      public:
+        virtual const beagle::discrete_dividend_schedule_t& dividendSchedule( void ) const = 0;
       };
     }
 

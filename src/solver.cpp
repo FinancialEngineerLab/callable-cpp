@@ -35,11 +35,9 @@ namespace beagle
       struct OneDimParabolicValuationPDESolver : public OneDimParabolicPDESolver
       {
         OneDimParabolicValuationPDESolver(const beagle::real_2d_function_ptr_t& convection,
-                                          const beagle::real_2d_function_ptr_t& diffusion,
-                                          const beagle::real_function_ptr_t& rate) :
+                                          const beagle::real_2d_function_ptr_t& diffusion) :
           m_Convection(convection),
-          m_Diffusion(diffusion),
-          m_Rate(rate)
+          m_Diffusion(diffusion)
         { }
         virtual ~OneDimParabolicValuationPDESolver(void)
         { }
@@ -79,9 +77,8 @@ namespace beagle
             {
               double convection = m_Convection->value(thisTime, stateVariables[j]);
               double diffusion = m_Diffusion->value(thisTime, stateVariables[j]);
-              double rate = m_Rate->value(thisTime);
 
-              diag[j]  = 1. - rate * deltaT - 2. * diffusion * dTdXdX;
+              diag[j]  = 1. - 2. * diffusion * dTdXdX;
               upper[j] =   .5 * convection * dTdX + diffusion * dTdXdX;
               lower[j] = - .5 * convection * dTdX + diffusion * dTdXdX;
             }
@@ -159,10 +156,9 @@ namespace beagle
 
     beagle::parabolic_pde_solver_ptr_t
     OneDimParabolicPDESolver::formOneDimParabolicValuationPDESolver(const beagle::real_2d_function_ptr_t& convection,
-                                                                    const beagle::real_2d_function_ptr_t& diffusion,
-                                                                    const beagle::real_function_ptr_t& rate)
+                                                                    const beagle::real_2d_function_ptr_t& diffusion)
     {
-      return std::make_shared<impl::OneDimParabolicValuationPDESolver>(convection, diffusion, rate);
+      return std::make_shared<impl::OneDimParabolicValuationPDESolver>(convection, diffusion);
     }
 
     beagle::parabolic_pde_solver_ptr_t
