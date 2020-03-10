@@ -225,8 +225,8 @@ namespace beagle
             if (numStateVarSteps % 2 == 0)
               numStateVarSteps += 1;
 
-            double forward = m_Forward->value(expiry);
-            double atmVol = m_Vol->value(expiry, forward);
+            double termForward = m_Forward->value(expiry);
+            double atmVol = m_Vol->value(expiry, termForward);
             double confidenceInterval = m_Settings.numberOfGaussianStandardDeviations() * atmVol * std::sqrt(expiry);
             int centralIndex = numStateVarSteps / 2;
 
@@ -239,19 +239,23 @@ namespace beagle
             std::transform(stateVarSteps.cbegin(),
                            stateVarSteps.cend(),
                            initialCondition.begin(),
-                           [strike, payoff, forward, expiry](double logMoneyness)
-                           { return payoff->intrinsicValue(forward * std::exp(logMoneyness), strike); });
+                           [=](double logMoneyness)
+                           { return payoff->intrinsicValue(termForward * std::exp(logMoneyness), strike); });
 
             // Form time grid
+            double termDF = m_Discounting->value(expiry);
             int numTimeSteps = static_cast<int>(expiry * m_Settings.numberOfStateVariableSteps());
             double timeStep = (0. - expiry) / numTimeSteps;
             beagle::dbl_vec_t timeSteps(numTimeSteps + 1);
             for (int i=0; i<numTimeSteps; ++i)
             {
+              double start = expiry + i * timeStep / numTimeSteps;
               double end = expiry + (i+1) * timeStep / numTimeSteps;
+              double startDF = m_Discounting->value(start);
+              double endDF = m_Discounting->value(end);
               double forward = m_Forward->value(end);
-              double lbc = payoff->intrinsicValue( forward * std::exp(stateVarSteps.front() - stateVarStep), strike);
-              double ubc = payoff->intrinsicValue( forward * std::exp(stateVarSteps.back() + stateVarStep), strike);
+              double lbc = payoff->intrinsicValue( forward * std::exp(stateVarSteps.front() - stateVarStep), strike );
+              double ubc = payoff->intrinsicValue( forward * std::exp(stateVarSteps.back() + stateVarStep), strike );
               solver->evolve(end,
                              timeStep,
                              stateVarSteps,
@@ -260,16 +264,21 @@ namespace beagle
                              initialCondition);
 
               if (pA)
-                std::transform(initialCondition.begin(),
-                               initialCondition.end(),
-                               stateVarSteps.cbegin(),
-                               initialCondition.begin(),
-                               [payoff, forward, strike](double value, double logMoneyness)
-                               { return std::max(value,
-                                                 payoff->intrinsicValue(forward * std::exp(logMoneyness), strike)); });
+              {
+                for (int i=0; i<numStateVarSteps; ++i)
+                {
+                  double continuationValue = initialCondition[i];
+                  double intrinsicValue = payoff->intrinsicValue( forward * std::exp(stateVarSteps[i]), strike ) * endDF / termDF;
+                  initialCondition[i] = std::max(continuationValue, intrinsicValue);
+
+                  std::cout << "\n" << continuationValue << "\t" << intrinsicValue;
+                }
+
+                std::cout << "\n\n";
+              }
             }
 
-            return initialCondition[centralIndex] * m_Discounting->value(expiry);
+            return initialCondition[centralIndex] * termDF;
           }
           else
             return 0.0;
