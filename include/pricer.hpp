@@ -12,8 +12,7 @@ namespace beagle
       OneDimFiniteDifferenceSettings( void );
       OneDimFiniteDifferenceSettings( int numTimeSteps,
                                       int numStateVariableSteps,
-                                      double numGaussianStandardDeviations,
-                                      const beagle::interp_builder_ptr_t& interp );
+                                      double numGaussianStandardDeviations );
       OneDimFiniteDifferenceSettings( int numTimeSteps,
                                       int numStateVariableSteps,
                                       double numGaussianStandardDeviations,

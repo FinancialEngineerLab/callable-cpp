@@ -53,13 +53,17 @@ void test1( void )
                                                                discounting,
                                                                beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0.),
                                                                beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0.3),
-                                                               beagle::valuation::OneDimFiniteDifferenceSettings() );
+                                                               beagle::valuation::OneDimFiniteDifferenceSettings(1501, 1901, 7.5) );
+    beagle::pricer_ptr_t odbpop2  = beagle::valuation::Pricer::formOneDimensionalBackwardPDEOptionPricer(
+                                                               fdDetails,
+                                                               beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(fdDetails.volatility()) );
     beagle::pricer_ptr_t odfpeop  = beagle::valuation::Pricer::formOneDimensionalForwardPDEEuropeanOptionPricer(
                                                                fdDetails,
                                                                beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(fdDetails.volatility()) );
 
     std::cout << "European option price (CF)   is: " << bscfeop->value( euroOption ) << std::endl;
     std::cout << "European option price (FD-B) is: " << odbpop->value( euroOption ) << std::endl;
+    std::cout << "European option price (FD-B) is: " << odbpop2->value( euroOption ) << std::endl;
     std::cout << "American option price (FD-B) is: " << odbpop->value( amerOption ) << std::endl;
     std::cout << "European option price (FD-F) is: " << odfpeop->value( euroOption ) << std::endl;
 

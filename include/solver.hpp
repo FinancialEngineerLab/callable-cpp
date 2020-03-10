@@ -7,28 +7,16 @@ namespace beagle
 {
   namespace math
   {
-    struct BoundaryCondition
-    {
-      BoundaryCondition( void );
-      virtual ~BoundaryCondition( void );
-    public:
-      virtual beagle::dbl_vec_t boundaryCoefficients( void ) const = 0;
-    public:
-      static beagle::boundary_condition_ptr_t naturalBoundaryCondition( void );
-      static beagle::boundary_condition_ptr_t linearBoundaryCondition( void );
-    };
-
     struct OneDimParabolicPDESolver
     {
       OneDimParabolicPDESolver(void);
       virtual ~OneDimParabolicPDESolver(void);
     public:
-      virtual void evolve(double start,
-                          double end,
-                          int numTimeSteps,
+      virtual void evolve(double end,
+                          double timeStep,
                           const beagle::dbl_vec_t& stateVariables,
-                          const beagle::boundary_condition_ptr_t& lowerBoundaryCondition,
-                          const beagle::boundary_condition_ptr_t& upperBoundaryCondition,
+                          const beagle::dbl_vec_t& lowerBoundaryCondition,
+                          const beagle::dbl_vec_t& upperBoundaryCondition,
                           beagle::dbl_vec_t& initialCondition) const = 0;
     public:
       static beagle::parabolic_pde_solver_ptr_t formOneDimParabolicValuationPDESolver(const beagle::real_2d_function_ptr_t& convection,

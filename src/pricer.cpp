@@ -32,12 +32,11 @@ namespace beagle
 
     OneDimFiniteDifferenceSettings::OneDimFiniteDifferenceSettings( int numTimeSteps,
                                                                     int numStateVariableSteps,
-                                                                    double numGaussianStandardDeviations,
-                                                                    const beagle::interp_builder_ptr_t& interp ) :
+                                                                    double numGaussianStandardDeviations ) :
       m_NumTimeSteps(numTimeSteps),
       m_NumUnderlyingSteps(numStateVariableSteps),
       m_NumStdev(numGaussianStandardDeviations),
-      m_Interp(interp),
+      m_Interp(beagle::math::InterpolationBuilder::linear()),
       m_Policy(beagle::valuation::DividendPolicy::liquidator())
     { }
 

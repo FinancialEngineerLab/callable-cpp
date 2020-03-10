@@ -193,6 +193,8 @@ namespace beagle
           if (!pO)
             throw(std::string("The incoming product is not an option!"));
 
+          auto pA = dynamic_cast<beagle::product::option::mixins::American*>(product.get());
+
           double expiry = pO->expiry();
           double strike = pO->strike();
           const beagle::payoff_ptr_t& payoff = pO->payoff();
@@ -219,7 +221,6 @@ namespace beagle
             beagle::parabolic_pde_solver_ptr_t solver
               = beagle::math::OneDimParabolicPDESolver::formOneDimParabolicValuationPDESolver(convection, diffusion);
 
-            int numTimeSteps = static_cast<int>(expiry * m_Settings.numberOfStateVariableSteps());
             int numStateVarSteps = m_Settings.numberOfStateVariableSteps();
             if (numStateVarSteps % 2 == 0)
               numStateVarSteps += 1;
@@ -230,33 +231,45 @@ namespace beagle
             int centralIndex = numStateVarSteps / 2;
 
             beagle::dbl_vec_t stateVarSteps(numStateVarSteps);
+            double stateVarStep = confidenceInterval / centralIndex;
             for (int i=0; i<numStateVarSteps; ++i)
-              stateVarSteps[i] = (i - centralIndex) * confidenceInterval / centralIndex;
+              stateVarSteps[i] = (i - centralIndex) * stateVarStep;
 
             beagle::dbl_vec_t initialCondition(numStateVarSteps);
             std::transform(stateVarSteps.cbegin(),
                            stateVarSteps.cend(),
                            initialCondition.begin(),
-                           [this, strike, payoff, forward, expiry](double logMoneyness)
-                           { return payoff->intrinsicValue(forward * std::exp(logMoneyness), strike)
-                                  * m_Discounting->value(expiry); });
+                           [strike, payoff, forward, expiry](double logMoneyness)
+                           { return payoff->intrinsicValue(forward * std::exp(logMoneyness), strike); });
 
-            beagle::boundary_condition_ptr_t linear = beagle::math::BoundaryCondition::linearBoundaryCondition();
-            solver->evolve(expiry,
-                           0.,
-                           numTimeSteps,
-                           stateVarSteps,
-                           linear,
-                           linear,
-                           initialCondition);
+            // Form time grid
+            int numTimeSteps = static_cast<int>(expiry * m_Settings.numberOfStateVariableSteps());
+            double timeStep = (0. - expiry) / numTimeSteps;
+            beagle::dbl_vec_t timeSteps(numTimeSteps + 1);
+            for (int i=0; i<numTimeSteps; ++i)
+            {
+              double end = expiry + (i+1) * timeStep / numTimeSteps;
+              double forward = m_Forward->value(end);
+              double lbc = payoff->intrinsicValue( forward * std::exp(stateVarSteps.front() - stateVarStep), strike);
+              double ubc = payoff->intrinsicValue( forward * std::exp(stateVarSteps.back() + stateVarStep), strike);
+              solver->evolve(end,
+                             timeStep,
+                             stateVarSteps,
+                             beagle::dbl_vec_t{lbc},
+                             beagle::dbl_vec_t{ubc},
+                             initialCondition);
 
-            beagle::real_function_ptr_t result = m_Settings.interpolationMethod()->formFunction(stateVarSteps, initialCondition);
+              if (pA)
+                std::transform(initialCondition.begin(),
+                               initialCondition.end(),
+                               stateVarSteps.cbegin(),
+                               initialCondition.begin(),
+                               [payoff, forward, strike](double value, double logMoneyness)
+                               { return std::max(value,
+                                                 payoff->intrinsicValue(forward * std::exp(logMoneyness), strike)); });
+            }
 
-            //for (int i=0; i<stateVarSteps.size(); ++i)
-            //  std::cout << stateVarSteps[i] << "\t" << initialCondition[i] << "\n";
-            //std::cout << "\n";
-
-            return result->value(0.);
+            return initialCondition[centralIndex] * m_Discounting->value(expiry);
           }
           else
             return 0.0;
