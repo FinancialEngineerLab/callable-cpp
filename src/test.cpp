@@ -23,7 +23,7 @@ void test1( void )
   //dividends.emplace_back( 5.5, 8.0 );
   //dividends.emplace_back( 6.5, 8.0 );
 
-  double expiry = .05;
+  double expiry = 1.;
   double strike = 100.;
   beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::put();
   beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption( expiry,
@@ -34,11 +34,11 @@ void test1( void )
                                                                                             payoff );
 
   beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
-                                            [](double arg) { return std::exp(-.3 * arg);});
+                                            [](double arg) { return std::exp(-.05 * arg);});
   beagle::real_function_ptr_t forward = beagle::math::RealFunction::createContinuousForwardAssetPriceFunction(
                                             100, discounting);
 
-  beagle::valuation::FiniteDifferenceDetails fdDetails( 100., .3, .3, 1501, 1901, 7.5, dividends,
+  beagle::valuation::FiniteDifferenceDetails fdDetails( 100., .05, .3, 1501, 1901, 7.5, dividends,
                                                         beagle::valuation::DividendPolicy::liquidator(),
                                                         beagle::math::InterpolationBuilder::linear());
 

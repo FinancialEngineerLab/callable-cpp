@@ -244,6 +244,7 @@ namespace beagle
 
             // Form time grid
             double termDF = m_Discounting->value(expiry);
+            double compDF(1.0);
             int numTimeSteps = static_cast<int>(expiry * m_Settings.numberOfStateVariableSteps());
             double timeStep = (0. - expiry) / numTimeSteps;
             beagle::dbl_vec_t timeSteps(numTimeSteps + 1);
@@ -268,16 +269,13 @@ namespace beagle
                 for (int i=0; i<numStateVarSteps; ++i)
                 {
                   double continuationValue = initialCondition[i];
-                  double intrinsicValue = payoff->intrinsicValue( forward * std::exp(stateVarSteps[i]), strike ) * endDF / termDF;
+                  double intrinsicValue = payoff->intrinsicValue( forward * std::exp(stateVarSteps[i]), strike ) * endDF / startDF;
                   initialCondition[i] = std::max(continuationValue, intrinsicValue);
-
-                  std::cout << "\n" << continuationValue << "\t" << intrinsicValue;
                 }
-
-                std::cout << "\n\n";
               }
             }
 
+            //std::cout << "\n" << termDF << "\t" << compDF << "\n\n";
             return initialCondition[centralIndex] * termDF;
           }
           else
