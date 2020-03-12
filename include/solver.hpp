@@ -19,8 +19,9 @@ namespace beagle
                           const beagle::dbl_vec_t& upperBoundaryCondition,
                           beagle::dbl_vec_t& initialCondition) const = 0;
     public:
-      static beagle::parabolic_pde_solver_ptr_t formOneDimParabolicValuationPDESolver(const beagle::real_2d_function_ptr_t& convection,
-                                                                                      const beagle::real_2d_function_ptr_t& diffusion);
+      static beagle::parabolic_pde_solver_ptr_t formOneDimParabolicValuationPDESolver(const beagle::real_2d_function_ptr_t& drift,
+                                                                                      const beagle::real_2d_function_ptr_t& vol,
+                                                                                      const beagle::real_2d_function_ptr_t& rate);
       static beagle::parabolic_pde_solver_ptr_t formOneDimFokkerPlanckPDESolver(const beagle::real_2d_function_ptr_t& convection,
                                                                                 const beagle::real_2d_function_ptr_t& diffusion);
     private:

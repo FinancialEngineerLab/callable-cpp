@@ -3,6 +3,8 @@
 #include "dividend_policy.hpp"
 #include "interpolation_builder.hpp"
 
+#include <iostream>
+
 namespace beagle
 {
   namespace valuation

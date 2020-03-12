@@ -109,6 +109,7 @@ namespace beagle
                                                                     const beagle::real_function_ptr_t& discounting,
                                                                     const beagle::real_2d_function_ptr_t& drift,
                                                                     const beagle::real_2d_function_ptr_t& volatility,
+                                                                    const beagle::real_2d_function_ptr_t& rate,
                                                                     const beagle::valuation::OneDimFiniteDifferenceSettings& settings);
     };
 
