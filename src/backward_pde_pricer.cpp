@@ -199,75 +199,76 @@ namespace beagle
           double strike = pO->strike();
           const beagle::payoff_ptr_t& payoff = pO->payoff();
 
+          // Calculate terminal forward and discount factor for later use
+          double termForward = m_Forward->value(expiry);
+          double termDF = m_Discounting->value(expiry);
+
           auto pDS = dynamic_cast<beagle::math::mixins::DividendSchedule*>(m_Forward.get());
           if (!pDS)
           {
+            // Determine the convection and diffusion terms in the backward PDE
             beagle::real_2d_function_ptr_t convection = beagle::math::RealTwoDimFunction::createBinaryFunction(
                               [this](double time, double logMoneyness)
                               {
-                                 double spot = m_Forward->value(time) * std::exp(logMoneyness);
-                                 double localVol = m_Vol->value(time, spot);
-                                 double drift = m_Drift->value(time, spot);
-                                 return drift - .5 * localVol * localVol;
+                                double spot = m_Forward->value(time) * std::exp(logMoneyness);
+                                double localVol = m_Vol->value(time, spot);
+                                double drift = m_Drift->value(time, spot);
+                                return drift - .5 * localVol * localVol;
                               } );
             beagle::real_2d_function_ptr_t diffusion = beagle::math::RealTwoDimFunction::createBinaryFunction(
-                             [this](double time, double logMoneyness)
-                             {
+                              [this](double time, double logMoneyness)
+                              {
                                 double spot = m_Forward->value(time) * std::exp(logMoneyness);
                                 double localVol = m_Vol->value(time, spot);
                                 return .5 * localVol * localVol;
-                             } );
+                              } );
 
             beagle::parabolic_pde_solver_ptr_t solver
               = beagle::math::OneDimParabolicPDESolver::formOneDimParabolicValuationPDESolver(convection, diffusion);
 
-            int numStateVarSteps = m_Settings.numberOfStateVariableSteps();
-            if (numStateVarSteps % 2 == 0)
-              numStateVarSteps += 1;
+            // Set up the state variable mesh
+            int numStateVars = m_Settings.numberOfStateVariableSteps();
+            if (numStateVars % 2 == 0)
+              numStateVars += 1;
 
-            double termForward = m_Forward->value(expiry);
             double atmVol = m_Vol->value(expiry, termForward);
-            double confidenceInterval = m_Settings.numberOfGaussianStandardDeviations() * atmVol * std::sqrt(expiry);
-            int centralIndex = numStateVarSteps / 2;
+            int centralIndex = numStateVars / 2;
+            double stateVarStep = m_Settings.numberOfGaussianStandardDeviations() * atmVol * std::sqrt(expiry) / centralIndex;
+            beagle::dbl_vec_t stateVars(numStateVars);
+            for (int i=0; i<numStateVars; ++i)
+              stateVars[i] = (i - centralIndex) * stateVarStep;
 
-            beagle::dbl_vec_t stateVarSteps(numStateVarSteps);
-            double stateVarStep = confidenceInterval / centralIndex;
-            for (int i=0; i<numStateVarSteps; ++i)
-              stateVarSteps[i] = (i - centralIndex) * stateVarStep;
-
-            double termDF = m_Discounting->value(expiry);
-            beagle::dbl_vec_t initialCondition(numStateVarSteps);
-            std::transform(stateVarSteps.cbegin(),
-                           stateVarSteps.cend(),
+            // Set the initial condition
+            beagle::dbl_vec_t initialCondition(numStateVars);
+            std::transform(stateVars.cbegin(),
+                           stateVars.cend(),
                            initialCondition.begin(),
                            [=](double logMoneyness)
                            { return payoff->intrinsicValue(termForward * std::exp(logMoneyness), strike)
                                     * termDF; });
 
-            // Form time grid
-            double compDF(1.0);
-            int numTimeSteps = static_cast<int>(expiry * m_Settings.numberOfStateVariableSteps());
-            double timeStep = (0. - expiry) / numTimeSteps;
-            beagle::dbl_vec_t timeSteps(numTimeSteps + 1);
-            for (int i=0; i<numTimeSteps; ++i)
+            // Perform the backward induction
+            int numTimes = static_cast<int>(expiry * m_Settings.numberOfStateVariableSteps());
+            double timeStep = (0. - expiry) / numTimes;
+            for (int i=0; i<numTimes; ++i)
             {
-              double end = expiry + (i+1) * timeStep / numTimeSteps;
-              double endDF = m_Discounting->value(end);
+              double end = expiry + (i+1) * timeStep / numTimes;
               double forward = m_Forward->value(end);
-              double lbc = payoff->intrinsicValue( forward * std::exp(stateVarSteps.front() - stateVarStep), strike );
-              double ubc = payoff->intrinsicValue( forward * std::exp(stateVarSteps.back() + stateVarStep), strike );
+              double lbc = payoff->intrinsicValue( forward * std::exp(stateVars.front() - stateVarStep), strike );
+              double ubc = payoff->intrinsicValue( forward * std::exp(stateVars.back() + stateVarStep), strike );
               solver->evolve(end,
                              timeStep,
-                             stateVarSteps,
+                             stateVars,
                              beagle::dbl_vec_t{lbc},
                              beagle::dbl_vec_t{ubc},
                              initialCondition);
 
               if (pA)
               {
-                for (int i=0; i<numStateVarSteps; ++i)
+                double endDF = m_Discounting->value(end);
+                for (int i=0; i<numTimes; ++i)
                 {
-                  double intrinsicValue = payoff->intrinsicValue( forward * std::exp(stateVarSteps[i]), strike ) * endDF / termDF;
+                  double intrinsicValue = payoff->intrinsicValue( forward * std::exp(stateVars[i]), strike ) * endDF;
                   initialCondition[i] = std::max(initialCondition[i], intrinsicValue);
                 }
               }
