@@ -25,7 +25,7 @@ void test1( void )
 
   double expiry = 1.;
   double strike = 100.;
-  beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::put();
+  beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::call();
   beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption( expiry,
                                                                                             strike,
                                                                                             payoff );

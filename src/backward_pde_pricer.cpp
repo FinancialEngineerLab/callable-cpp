@@ -235,24 +235,23 @@ namespace beagle
             for (int i=0; i<numStateVarSteps; ++i)
               stateVarSteps[i] = (i - centralIndex) * stateVarStep;
 
+            double termDF = m_Discounting->value(expiry);
             beagle::dbl_vec_t initialCondition(numStateVarSteps);
             std::transform(stateVarSteps.cbegin(),
                            stateVarSteps.cend(),
                            initialCondition.begin(),
                            [=](double logMoneyness)
-                           { return payoff->intrinsicValue(termForward * std::exp(logMoneyness), strike); });
+                           { return payoff->intrinsicValue(termForward * std::exp(logMoneyness), strike)
+                                    * termDF; });
 
             // Form time grid
-            double termDF = m_Discounting->value(expiry);
             double compDF(1.0);
             int numTimeSteps = static_cast<int>(expiry * m_Settings.numberOfStateVariableSteps());
             double timeStep = (0. - expiry) / numTimeSteps;
             beagle::dbl_vec_t timeSteps(numTimeSteps + 1);
             for (int i=0; i<numTimeSteps; ++i)
             {
-              double start = expiry + i * timeStep / numTimeSteps;
               double end = expiry + (i+1) * timeStep / numTimeSteps;
-              double startDF = m_Discounting->value(start);
               double endDF = m_Discounting->value(end);
               double forward = m_Forward->value(end);
               double lbc = payoff->intrinsicValue( forward * std::exp(stateVarSteps.front() - stateVarStep), strike );
@@ -268,15 +267,13 @@ namespace beagle
               {
                 for (int i=0; i<numStateVarSteps; ++i)
                 {
-                  double continuationValue = initialCondition[i];
-                  double intrinsicValue = payoff->intrinsicValue( forward * std::exp(stateVarSteps[i]), strike ) * endDF / startDF;
-                  initialCondition[i] = std::max(continuationValue, intrinsicValue);
+                  double intrinsicValue = payoff->intrinsicValue( forward * std::exp(stateVarSteps[i]), strike ) * endDF / termDF;
+                  initialCondition[i] = std::max(initialCondition[i], intrinsicValue);
                 }
               }
             }
 
-            //std::cout << "\n" << termDF << "\t" << compDF << "\n\n";
-            return initialCondition[centralIndex] * termDF;
+            return initialCondition[centralIndex];
           }
           else
             return 0.0;
