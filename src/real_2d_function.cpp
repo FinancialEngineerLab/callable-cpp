@@ -54,24 +54,17 @@ namespace beagle
         virtual double value( double argX,
                               double argY ) const override
         {
-          if (argX >= m_Params.back())
+          auto it = std::lower_bound(m_Params.cbegin(),
+                                     m_Params.cend(),
+                                     argX);
+
+          if (it == m_Params.cend())
             return m_Funcs.back()->value(argY);
           else
           {
-            auto it = m_Params.cbegin();
-            auto itEnd = m_Params.cend();
+            beagle::dbl_vec_t::difference_type diff = it - m_Params.cbegin();
             auto jt = m_Funcs.cbegin();
-            while (it != itEnd)
-            {
-              if (argX < *it)
-                break;
-              else
-              {
-                ++it;
-                ++jt;
-              }
-            }
-
+            std::advance(jt, diff);
             return (*jt)->value(argY);
           }
         }
