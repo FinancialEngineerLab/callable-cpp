@@ -28,7 +28,7 @@ void test1( void )
   double rate = .01;
   double vol = .3;
 
-  beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::put();
+  beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::call();
   beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption( expiry,
                                                                                             strike,
                                                                                             payoff );
@@ -262,9 +262,9 @@ void test4(void)
 
 int main( void )
 {
-  //test1();
+  test1();
   //test2();
-  test3();
+  //test3();
   //test4();
 
   return 0;

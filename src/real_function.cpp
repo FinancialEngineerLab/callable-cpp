@@ -99,25 +99,19 @@ namespace beagle
           const beagle::dbl_vec_t& xValues(xParameters());
           const beagle::dbl_vec_t& yValues(yParameters());
 
-          if (arg < xValues.front())
+          auto it = std::lower_bound(xValues.cbegin(),
+                                     xValues.cend(),
+                                     arg);
+
+          if (it == xValues.cbegin())
             return yValues.front();
-          else if (arg >= xValues.back())
+          else if (it == xValues.cend())
             return yValues.back();
           else
           {
-            auto it = xValues.cbegin() + 1;
-            auto itEnd = xValues.cend();
-            auto jt = yValues.cbegin() + 1;
-            while (it != itEnd)
-            {
-              if (arg < *it)
-                break;
-              else
-              {
-                ++it;
-                ++jt;
-              }
-            }
+            beagle::dbl_vec_t::difference_type diff = it - xValues.cbegin();
+            auto jt = yValues.cbegin();
+            std::advance(jt, diff);
 
             double xLeft = *(it - 1);
             double xRight = *it;
@@ -160,24 +154,17 @@ namespace beagle
           const beagle::dbl_vec_t& xValues(xParameters());
           const beagle::dbl_vec_t& yValues(yParameters());
 
-          if (arg >= xValues.back())
+          auto it = std::lower_bound(xValues.cbegin(),
+                                     xValues.cend(),
+                                     arg);
+
+          if (it == xValues.cend())
             return yValues.back();
           else
           {
-            auto it = xValues.cbegin();
-            auto itEnd = xValues.cend();
+            beagle::dbl_vec_t::difference_type diff = it - xValues.cbegin();
             auto jt = yValues.cbegin();
-            while (it != itEnd)
-            {
-              if (arg < *it)
-                break;
-              else
-              {
-                ++it;
-                ++jt;
-              }
-            }
-
+            std::advance(jt, diff);
             return *jt;
           }
         }

@@ -224,15 +224,15 @@ namespace beagle
             beagle::real_2d_function_ptr_t convection = beagle::math::RealTwoDimFunction::createBinaryFunction(
                               [this, fundingRate](double time, double logMoneyness)
                               {
-                                double spot =  std::exp(logMoneyness);
+                                double spot = m_Forward->value(time) * std::exp(logMoneyness);
                                 double localVol = m_Vol->value(time, spot);
                                 double drift = m_Drift->value(time, spot);
-                                return fundingRate->value(time) + drift - .5 * localVol * localVol;
+                                return drift - .5 * localVol * localVol;
                               } );
             beagle::real_2d_function_ptr_t diffusion = beagle::math::RealTwoDimFunction::createBinaryFunction(
                               [this](double time, double logMoneyness)
                               {
-                                double spot = std::exp(logMoneyness);
+                                double spot = m_Forward->value(time) * std::exp(logMoneyness);
                                 double localVol = m_Vol->value(time, spot);
                                 return .5 * localVol * localVol;
                               } );
@@ -244,7 +244,8 @@ namespace beagle
                               } );
 
             beagle::parabolic_pde_solver_ptr_t solver
-              = beagle::math::OneDimParabolicPDESolver::formOneDimParabolicValuationPDESolver(convection, diffusion, rate);
+              = beagle::math::OneDimParabolicPDESolver::formOneDimParabolicValuationPDESolver(convection, diffusion,
+                                                                                              beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0.));
 
             // Set up the state variable mesh
             int numStateVars = m_Settings.numberOfStateVariableSteps();
@@ -253,7 +254,7 @@ namespace beagle
 
             double atmVol = m_Vol->value(expiry, termForward);
             int centralIndex = numStateVars / 2;
-            double centralValue = std::log(termForward) + (m_Drift->value(expiry, termForward) - .5 * atmVol * atmVol) * expiry;
+            double centralValue = 0.;
             double stateVarStep = m_Settings.numberOfGaussianStandardDeviations() * atmVol * std::sqrt(expiry) / centralIndex;
             beagle::dbl_vec_t stateVars(numStateVars);
             for (int i=0; i<numStateVars; ++i)
@@ -265,7 +266,8 @@ namespace beagle
                            stateVars.cend(),
                            initialCondition.begin(),
                            [=](double logMoneyness)
-                           { return payoff->intrinsicValue(std::exp(logMoneyness), strike); });
+                           { return payoff->intrinsicValue(termForward * std::exp(logMoneyness), strike)
+                                    * termDF; });
 
             // Perform the backward induction
             int numTimes = static_cast<int>(expiry * m_Settings.numberOfStateVariableSteps());
@@ -273,8 +275,9 @@ namespace beagle
             for (int i=0; i<numTimes; ++i)
             {
               double end = expiry + (i+1) * timeStep / numTimes;
-              double lbc = payoff->intrinsicValue( std::exp(stateVars.front() - stateVarStep), strike );
-              double ubc = payoff->intrinsicValue( std::exp(stateVars.back() + stateVarStep), strike );
+              double forward = m_Forward->value(end);
+              double lbc = payoff->intrinsicValue( forward * std::exp(stateVars.front() - stateVarStep), strike );
+              double ubc = payoff->intrinsicValue( forward * std::exp(stateVars.back()  + stateVarStep), strike );
               solver->evolve(end,
                              timeStep,
                              stateVars,
@@ -284,6 +287,7 @@ namespace beagle
 
               if (pA)
               {
+                double df = m_Discounting->value(end);
                 std::transform(initialCondition.begin(),
                                initialCondition.end(),
                                stateVars.cbegin(),
@@ -291,17 +295,12 @@ namespace beagle
                                [=](double continuation, double logSpot)
                                {
                                  return std::max(continuation,
-                                                 payoff->intrinsicValue( std::exp(logSpot), strike ));
+                                                 payoff->intrinsicValue( forward * std::exp(logSpot), strike ) * termDF / df);
                                });
               }
             }
 
-            //for (int i=0; i<numStateVars; ++i)
-            //  std::cout << "\n" << stateVars[i] << ":\t\t" << initialCondition[i];
-            //std::cout << "\n\n";
-
-            beagle::real_function_ptr_t prices = m_Settings.interpolationMethod()->formFunction(stateVars, initialCondition);
-            return prices->value(std::log(m_Forward->value(.0)));
+            return initialCondition[centralIndex];
           }
           else
             return 0.0;
