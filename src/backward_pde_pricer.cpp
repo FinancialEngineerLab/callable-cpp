@@ -2,7 +2,6 @@
 #include "solver.hpp"
 
  #include <iostream>
-// std::ofstream out("interpolation.txt");
 
 namespace beagle
 {

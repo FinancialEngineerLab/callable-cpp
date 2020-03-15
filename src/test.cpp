@@ -225,7 +225,7 @@ void test3( void )
                                                                beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0.),
                                                                cev,
                                                                beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0.),
-                                                               beagle::valuation::OneDimFiniteDifferenceSettings(2000, 2001, 7.5) );
+                                                               beagle::valuation::OneDimFiniteDifferenceSettings(1500, 1501, 7.5) );
     beagle::pricer_ptr_t odfpeop  = beagle::valuation::Pricer::formOneDimensionalForwardPDEEuropeanOptionPricer(
                                                                fdDetails,
                                                                localVolSurface );
@@ -264,7 +264,7 @@ int main( void )
 {
   test1();
   //test2();
-  //test3();
+  test3();
   //test4();
 
   return 0;
