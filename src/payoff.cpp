@@ -16,10 +16,10 @@ namespace beagle
           virtual ~CallPayoff( void )
           { }
         public:
-          virtual double intrinsicValue( double spot,
-                                         double strike ) const override
+          virtual beagle::dbl_t intrinsicValue( beagle::dbl_t spot,
+                                         beagle::dbl_t strike ) const override
           {
-            return std::max( spot - strike, 0. );
+            return std::max<beagle::dbl_t>( spot - strike, 0. );
           }
           virtual bool isCall( void ) const override
           {
@@ -39,10 +39,10 @@ namespace beagle
           virtual ~PutPayoff( void )
           { }
         public:
-          virtual double intrinsicValue( double spot,
-                                         double strike ) const override
+          virtual beagle::dbl_t intrinsicValue( beagle::dbl_t spot,
+                                         beagle::dbl_t strike ) const override
           {
-            return std::max( strike - spot, 0. );
+            return std::max<beagle::dbl_t>( strike - spot, 0. );
           }
           virtual bool isCall( void ) const override
           {

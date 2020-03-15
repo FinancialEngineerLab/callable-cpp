@@ -5,49 +5,49 @@ namespace beagle
 {
   namespace util
   {
-    double pi( void )
+    beagle::dbl_t pi( void )
     {
-      static const double PI = 3.14159265358979323846;
+      static const beagle::dbl_t PI = 3.14159265358979323846;
       return PI;
     }
 
-    double rootTwo( void )
+    beagle::dbl_t rootTwo( void )
     {
-      static const double rootTwo = 1.41421356237;
+      static const beagle::dbl_t rootTwo = 1.41421356237;
       return rootTwo;
     }
 
-    double standardNormal( double arg )
+    beagle::dbl_t standardNormal( beagle::dbl_t arg )
     {
       return std::exp( -.5*arg*arg ) / std::sqrt( 2 * pi() );
     }
 
-    double cumulativeStandardNormal( double arg )
+    beagle::dbl_t cumulativeStandardNormal( beagle::dbl_t arg )
     {
       return .5 * ( 1. + std::erf( arg / rootTwo() ) );
     }
 
-    double bsCall( double strike,
-                   double forward,
-                   double expiry,
-                   double vol )
+    beagle::dbl_t bsCall( beagle::dbl_t strike,
+                   beagle::dbl_t forward,
+                   beagle::dbl_t expiry,
+                   beagle::dbl_t vol )
     {
-      double moneyness = std::log( forward / strike );
-      double totalDev = vol * std::sqrt( expiry );
-      double dOne = moneyness / totalDev + .5 * totalDev;
-      double dTwo = dOne - totalDev;
+      beagle::dbl_t moneyness = std::log( forward / strike );
+      beagle::dbl_t totalDev = vol * std::sqrt( expiry );
+      beagle::dbl_t dOne = moneyness / totalDev + .5 * totalDev;
+      beagle::dbl_t dTwo = dOne - totalDev;
 
       return forward * cumulativeStandardNormal( dOne ) - strike * cumulativeStandardNormal( dTwo );
     }
 
-    double bsVega( double strike,
-                   double forward,
-                   double expiry,
-                   double vol )
+    beagle::dbl_t bsVega( beagle::dbl_t strike,
+                   beagle::dbl_t forward,
+                   beagle::dbl_t expiry,
+                   beagle::dbl_t vol )
     {
-      double moneyness = std::log( forward / strike );
-      double totalDev = vol * std::sqrt( expiry );
-      double dOne = moneyness / totalDev + .5 * totalDev;
+      beagle::dbl_t moneyness = std::log( forward / strike );
+      beagle::dbl_t totalDev = vol * std::sqrt( expiry );
+      beagle::dbl_t dOne = moneyness / totalDev + .5 * totalDev;
 
       return forward * standardNormal( dOne ) * std::sqrt( expiry );
     }

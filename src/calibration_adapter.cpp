@@ -98,7 +98,7 @@ namespace beagle
           for (auto row : result)
             row.resize(parameters.size());
 
-          double bump = 1e-4;
+          beagle::dbl_t bump = 1e-4;
           for (beagle::dbl_vec_t::size_type j=0; j<parameters.size(); ++j)
           {
             dbl_vec_t forwardParams(parameters);
@@ -124,8 +124,8 @@ namespace beagle
       struct ForwardPDEPricerAdapter : public CalibrationAdapter
       {
         ForwardPDEPricerAdapter( const pricer_ptr_t& forwardPricer,
-                                 double start,
-                                 double end,
+                                 beagle::dbl_t start,
+                                 beagle::dbl_t end,
                                  const beagle::payoff_ptr_t& payoff,
                                  const beagle::dbl_vec_t& logStrikes,
                                  const beagle::dbl_vec_t& strikes,
@@ -179,7 +179,7 @@ namespace beagle
           std::transform(m_InterpStrikes.cbegin(),
                          m_InterpStrikes.cend(),
                          result.begin(),
-                         [&priceFunc](double strike)
+                         [&priceFunc](beagle::dbl_t strike)
                          { return priceFunc->value(strike); });
           return result;
         }
@@ -191,7 +191,7 @@ namespace beagle
             result[i].resize(parameters.size());
           }
 
-          double bump = 1e-4;
+          beagle::dbl_t bump = 1e-4;
           for (beagle::dbl_vec_t::size_type j=0; j<parameters.size(); ++j)
           {
             dbl_vec_t forwardParams(parameters);
@@ -213,8 +213,8 @@ namespace beagle
         }
       private:
         pricer_ptr_t m_Pricer;
-        double m_Start;
-        double m_End;
+        beagle::dbl_t m_Start;
+        beagle::dbl_t m_End;
         beagle::payoff_ptr_t m_Payoff;
         beagle::dbl_vec_t m_LogStrikes;
         beagle::dbl_vec_t m_Strikes;
@@ -253,8 +253,8 @@ namespace beagle
     }
 
     calibration_adapter_ptr_t CalibrationAdapter::forwardPDEPricerAdapter( const pricer_ptr_t& forwardPricer,
-                                                                           double start,
-                                                                           double end,
+                                                                           beagle::dbl_t start,
+                                                                           beagle::dbl_t end,
                                                                            const beagle::payoff_ptr_t& payoff,
                                                                            const beagle::dbl_vec_t& logStrikes,
                                                                            const beagle::dbl_vec_t& strikes,

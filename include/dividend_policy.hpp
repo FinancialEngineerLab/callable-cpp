@@ -12,10 +12,10 @@ namespace beagle
       DividendPolicy( void );
       virtual ~DividendPolicy( void );
     public:
-      virtual double exDividendStockPrice( double spot,
-                                           double dividend ) const;
-      virtual double dividendAmount( double spot,
-                                     double dividend ) const = 0;
+      virtual beagle::dbl_t exDividendStockPrice( beagle::dbl_t spot,
+                                           beagle::dbl_t dividend ) const;
+      virtual beagle::dbl_t dividendAmount( beagle::dbl_t spot,
+                                     beagle::dbl_t dividend ) const = 0;
     public:
       static beagle::dividend_policy_ptr_t liquidator( void );
       static beagle::dividend_policy_ptr_t survivor( void );

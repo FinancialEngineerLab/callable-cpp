@@ -11,8 +11,8 @@ namespace beagle
         struct EuropeanOption : public Option,
                                 public beagle::product::option::mixins::European
         {
-          EuropeanOption( double expiry,
-                          double strike,
+          EuropeanOption( beagle::dbl_t expiry,
+                          beagle::dbl_t strike,
                           const beagle::payoff_ptr_t& payoff ) :
             Option( expiry, strike, payoff )
           { }
@@ -29,8 +29,8 @@ namespace beagle
         struct AmericanOption : public Option,
                                 public beagle::product::option::mixins::American
         {
-          AmericanOption( double expiry,
-                          double strike,
+          AmericanOption( beagle::dbl_t expiry,
+                          beagle::dbl_t strike,
                           const beagle::payoff_ptr_t& payoff ) :
             Option( expiry, strike, payoff )
           { }
@@ -45,8 +45,8 @@ namespace beagle
         };
       }
 
-      Option::Option( double expiry,
-                      double strike,
+      Option::Option( beagle::dbl_t expiry,
+                      beagle::dbl_t strike,
                       const beagle::payoff_ptr_t& payoff ) :
         m_Expiry( expiry ),
         m_Strike( strike ),
@@ -56,12 +56,12 @@ namespace beagle
       Option::~Option( void )
       { }
 
-      double Option::expiry( void ) const
+      beagle::dbl_t Option::expiry( void ) const
       {
         return m_Expiry;
       }
 
-      double Option::strike( void ) const
+      beagle::dbl_t Option::strike( void ) const
       {
         return m_Strike;
       }
@@ -72,16 +72,16 @@ namespace beagle
       }
 
       beagle::product_ptr_t
-      Option::createEuropeanOption( double expiry,
-                                    double strike,
+      Option::createEuropeanOption( beagle::dbl_t expiry,
+                                    beagle::dbl_t strike,
                                     const beagle::payoff_ptr_t& payoff )
       {
         return std::make_shared<impl::EuropeanOption>( expiry, strike, payoff );
       }
 
       beagle::product_ptr_t
-      Option::createAmericanOption( double expiry,
-                                    double strike,
+      Option::createAmericanOption( beagle::dbl_t expiry,
+                                    beagle::dbl_t strike,
                                     const beagle::payoff_ptr_t& payoff )
       {
         return std::make_shared<impl::AmericanOption>( expiry, strike, payoff );

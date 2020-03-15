@@ -36,18 +36,18 @@ namespace beagle
 
       struct ConstantFunction : public RealFunction
       {
-        explicit ConstantFunction( double constant ) :
+        explicit ConstantFunction( beagle::dbl_t constant ) :
           m_Const( constant )
         { }
         virtual ~ConstantFunction( void )
         { }
       public:
-        virtual double value( double arg ) const override
+        virtual beagle::dbl_t value( beagle::dbl_t arg ) const override
         {
           return m_Const;
         }
       private:
-        double m_Const;
+        beagle::dbl_t m_Const;
       };
 
       struct CompositeFunction : public RealFunction
@@ -60,7 +60,7 @@ namespace beagle
         virtual ~CompositeFunction( void )
         { }
       public:
-        virtual double value( double arg ) const override
+        virtual beagle::dbl_t value( beagle::dbl_t arg ) const override
         {
           return m_F->value( m_G->value(arg) );
         }
@@ -77,7 +77,7 @@ namespace beagle
         virtual ~UnaryFunction(void)
         { }
       public:
-        virtual double value(double arg) const override
+        virtual beagle::dbl_t value(beagle::dbl_t arg) const override
         {
           return m_Func(arg);
         }
@@ -94,7 +94,7 @@ namespace beagle
         virtual ~LinearWithFlatExtrapolationInterpolatedFunction( void )
         { }
       public:
-        virtual double value( double arg ) const override
+        virtual beagle::dbl_t value( beagle::dbl_t arg ) const override
         {
           const beagle::dbl_vec_t& xValues(xParameters());
           const beagle::dbl_vec_t& yValues(yParameters());
@@ -113,10 +113,10 @@ namespace beagle
             auto jt = yValues.cbegin();
             std::advance(jt, diff);
 
-            double xLeft = *(it - 1);
-            double xRight = *it;
-            double yLeft = *(jt - 1);
-            double yRight = *jt;
+            beagle::dbl_t xLeft = *(it - 1);
+            beagle::dbl_t xRight = *it;
+            beagle::dbl_t yLeft = *(jt - 1);
+            beagle::dbl_t yRight = *jt;
             return yLeft + (arg - xLeft) / (xRight - xLeft) * (yRight - yLeft);
           }
         }
@@ -131,7 +131,7 @@ namespace beagle
         virtual ~NaturalCubicSplineWithFlatExtrapolationInterpolatedFunction( void )
         { }
       public:
-        virtual double value( double arg ) const override
+        virtual beagle::dbl_t value( beagle::dbl_t arg ) const override
         {
           const beagle::dbl_vec_t& xValues(xParameters());
           const beagle::dbl_vec_t& yValues(yParameters());
@@ -149,7 +149,7 @@ namespace beagle
         virtual ~PiecewiseConstantRightInterpolatedFunction( void )
         { }
       public:
-        virtual double value( double arg ) const override
+        virtual beagle::dbl_t value( beagle::dbl_t arg ) const override
         {
           const beagle::dbl_vec_t& xValues(xParameters());
           const beagle::dbl_vec_t& yValues(yParameters());
@@ -172,7 +172,7 @@ namespace beagle
 
       struct ContinuousForwardAssetPriceFunction : public RealFunction
       {
-        ContinuousForwardAssetPriceFunction( double spot,
+        ContinuousForwardAssetPriceFunction( beagle::dbl_t spot,
                                              const beagle::real_function_ptr_t& funding ) :
           m_Spot(spot),
           m_Funding(funding)
@@ -180,19 +180,19 @@ namespace beagle
         virtual ~ContinuousForwardAssetPriceFunction( void )
         { }
       public:
-        virtual double value( double arg ) const override
+        virtual beagle::dbl_t value( beagle::dbl_t arg ) const override
         {
           return m_Spot / m_Funding->value(arg);
         }
       private:
-        double m_Spot;
+        beagle::dbl_t m_Spot;
         beagle::real_function_ptr_t m_Funding;
       };
 
       struct GeneralForwardAssetPriceFunction : public RealFunction,
                                                 public mixins::DividendSchedule
       {
-        GeneralForwardAssetPriceFunction( double spot,
+        GeneralForwardAssetPriceFunction( beagle::dbl_t spot,
                                           const beagle::real_function_ptr_t& funding,
                                           const beagle::discrete_dividend_schedule_t& dividends ) :
           m_Spot(spot),
@@ -202,22 +202,22 @@ namespace beagle
         virtual ~GeneralForwardAssetPriceFunction( void )
         { }
       public:
-        virtual double value( double arg ) const override
+        virtual beagle::dbl_t value( beagle::dbl_t arg ) const override
         {
-          double factor = m_Funding->value(arg);
-          double forward = m_Spot / factor;
+          beagle::dbl_t factor = m_Funding->value(arg);
+          beagle::dbl_t forward = m_Spot / factor;
 
           auto it = std::lower_bound(m_Dividends.cbegin(),
                                      m_Dividends.cend(),
                                      arg,
                                      [](const beagle::discrete_dividend_schedule_t::value_type& pair,
-                                        double value)
+                                        beagle::dbl_t value)
                                      { return pair.first < value; });
           for (auto jt = m_Dividends.cbegin(); jt != it; ++jt)
           {
-            double exDivTime = jt->first;
-            double dividend = jt->second;
-            double exDivFactor = m_Funding->value(exDivTime);
+            beagle::dbl_t exDivTime = jt->first;
+            beagle::dbl_t dividend = jt->second;
+            beagle::dbl_t exDivFactor = m_Funding->value(exDivTime);
             forward -= dividend * exDivFactor / factor;
           }
 
@@ -228,7 +228,7 @@ namespace beagle
           return m_Dividends;
         }
       private:
-        double m_Spot;
+        beagle::dbl_t m_Spot;
         beagle::real_function_ptr_t m_Funding;
         beagle::discrete_dividend_schedule_t m_Dividends;
       };
@@ -242,7 +242,7 @@ namespace beagle
     { }
 
     beagle::real_function_ptr_t
-    RealFunction::createConstantFunction( double constant )
+    RealFunction::createConstantFunction( beagle::dbl_t constant )
     {
       return std::make_shared<impl::ConstantFunction>( constant );
     }
@@ -306,14 +306,14 @@ namespace beagle
     }
 
     beagle::real_function_ptr_t
-    RealFunction::createContinuousForwardAssetPriceFunction( double spot,
+    RealFunction::createContinuousForwardAssetPriceFunction( beagle::dbl_t spot,
                                                              const beagle::real_function_ptr_t& funding )
     {
       return std::make_shared<impl::ContinuousForwardAssetPriceFunction>( spot, funding );
     }
 
     beagle::real_function_ptr_t
-    RealFunction::createGeneralForwardAssetPriceFunction( double spot,
+    RealFunction::createGeneralForwardAssetPriceFunction( beagle::dbl_t spot,
                                                           const beagle::real_function_ptr_t& funding,
                                                           const beagle::discrete_dividend_schedule_t& dividends )
     {

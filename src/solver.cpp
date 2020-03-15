@@ -23,8 +23,8 @@ namespace beagle
         virtual ~OneDimParabolicValuationPDESolver(void)
         { }
       public:
-        virtual void evolve(double end,
-                            double timeStep,
+        virtual void evolve(beagle::dbl_t end,
+                            beagle::dbl_t timeStep,
                             const beagle::dbl_vec_t& stateVariables,
                             const beagle::dbl_vec_t& lbc,
                             const beagle::dbl_vec_t& ubc,
@@ -32,21 +32,21 @@ namespace beagle
         {
           // Assuming the state variable grid is uniform
           int numUnderlyingSteps = stateVariables.size();
-          double deltaX = (stateVariables.back() - stateVariables.front()) / (numUnderlyingSteps - 1);
+          beagle::dbl_t deltaX = (stateVariables.back() - stateVariables.front()) / (numUnderlyingSteps - 1);
 
           // Now, perform induction
           beagle::dbl_vec_t diag(numUnderlyingSteps);
           beagle::dbl_vec_t lower(numUnderlyingSteps);
           beagle::dbl_vec_t upper(numUnderlyingSteps);
 
-          double dTdX = timeStep / deltaX;
-          double dTdXdX = dTdX / deltaX;
+          beagle::dbl_t dTdX = timeStep / deltaX;
+          beagle::dbl_t dTdXdX = dTdX / deltaX;
 
           for (int j=0; j<numUnderlyingSteps; ++j)
           {
-            double rate = m_Rate->value(end, stateVariables[j]);
-            double convection = m_Convection->value(end, stateVariables[j]);
-            double diffusion = m_Diffusion->value(end, stateVariables[j]);
+            beagle::dbl_t rate = m_Rate->value(end, stateVariables[j]);
+            beagle::dbl_t convection = m_Convection->value(end, stateVariables[j]);
+            beagle::dbl_t diffusion = m_Diffusion->value(end, stateVariables[j]);
 
             diag[j]  = 1. - rate * timeStep - 2. * diffusion * dTdXdX;
             upper[j] =   .5 * convection * dTdX + diffusion * dTdXdX;
@@ -83,8 +83,8 @@ namespace beagle
         virtual ~OneDimFokkerPlanckPDESolver(void)
         { }
       public:
-        virtual void evolve(double end,
-                            double timeStep,
+        virtual void evolve(beagle::dbl_t end,
+                            beagle::dbl_t timeStep,
                             const beagle::dbl_vec_t& stateVariables,
                             const beagle::dbl_vec_t& lbc,
                             const beagle::dbl_vec_t& ubc,

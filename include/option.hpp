@@ -13,27 +13,27 @@ namespace beagle
       struct Option : public Product,
                       public beagle::product::mixins::Option
       {
-        Option(double expiry,
-               double strike,
+        Option(beagle::dbl_t expiry,
+               beagle::dbl_t strike,
                const beagle::payoff_ptr_t& payoff);
         virtual ~Option(void);
       public:
         virtual const std::string& name(void) const = 0;
       public:
-        virtual double strike(void) const;
-        virtual double expiry(void) const;
+        virtual beagle::dbl_t strike(void) const;
+        virtual beagle::dbl_t expiry(void) const;
         virtual const beagle::payoff_ptr_t& payoff(void) const;
       private:
-        double m_Expiry;
-        double m_Strike;
+        beagle::dbl_t m_Expiry;
+        beagle::dbl_t m_Strike;
         beagle::payoff_ptr_t m_Payoff;
 
       public:
-        static beagle::product_ptr_t createEuropeanOption(double expiry,
-                                                          double strike,
+        static beagle::product_ptr_t createEuropeanOption(beagle::dbl_t expiry,
+                                                          beagle::dbl_t strike,
                                                           const beagle::payoff_ptr_t& payoff);
-        static beagle::product_ptr_t createAmericanOption(double expiry,
-                                                          double strike,
+        static beagle::product_ptr_t createAmericanOption(beagle::dbl_t expiry,
+                                                          beagle::dbl_t strike,
                                                           const beagle::payoff_ptr_t& payoff);
       };
 

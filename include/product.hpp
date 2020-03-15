@@ -20,8 +20,8 @@ namespace beagle
       {
         virtual ~Option(void);
       public:
-        virtual double strike(void) const=0;
-        virtual double expiry(void) const=0;
+        virtual beagle::dbl_t strike(void) const=0;
+        virtual beagle::dbl_t expiry(void) const=0;
         virtual const beagle::payoff_ptr_t& payoff(void) const=0;
       };
     }
