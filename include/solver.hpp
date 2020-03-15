@@ -12,8 +12,8 @@ namespace beagle
       OneDimParabolicPDESolver(void);
       virtual ~OneDimParabolicPDESolver(void);
     public:
-      virtual void evolve(beagle::dbl_t end,
-                          beagle::dbl_t timeStep,
+      virtual void evolve(double end,
+                          double timeStep,
                           const beagle::dbl_vec_t& stateVariables,
                           const beagle::dbl_vec_t& lowerBoundaryCondition,
                           const beagle::dbl_vec_t& upperBoundaryCondition,

@@ -12,11 +12,11 @@ namespace beagle
       RealTwoDimFunction( void );
       virtual ~RealTwoDimFunction( void );
     public:
-      virtual beagle::dbl_t value( beagle::dbl_t argX,
-                            beagle::dbl_t argY ) const = 0;
+      virtual double value( double argX,
+                            double argY ) const = 0;
     public:
       static beagle::real_2d_function_ptr_t createBinaryFunction( const beagle::real_2d_func_t& func );
-      static beagle::real_2d_function_ptr_t createTwoDimConstantFunction( beagle::dbl_t constant );
+      static beagle::real_2d_function_ptr_t createTwoDimConstantFunction( double constant );
       static beagle::real_2d_function_ptr_t createPiecewiseConstantRightFunction(
                                   const beagle::dbl_vec_t& params,
                                   const beagle::real_function_ptr_coll_t& funcs );

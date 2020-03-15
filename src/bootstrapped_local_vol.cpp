@@ -34,8 +34,8 @@ namespace beagle
         virtual ~BootstrappedLocalVolatilityFunction( void )
         { }
       public:
-        virtual beagle::dbl_t value( beagle::dbl_t argX,
-                              beagle::dbl_t argY ) const override
+        virtual double value( double argX,
+                              double argY ) const override
         {
           if (!m_Func)
             doCalibration();
@@ -59,13 +59,13 @@ namespace beagle
             throw(std::string("Cast for OptionValueCollectionProvider failed!"));
           pOVCP->formInitialOptionValueCollection( m_Payoff, strikes, prices );
 
-          beagle::dbl_t start(0.0);
+          double start(0.0);
           beagle::real_function_ptr_t previousPrices;
           beagle::interp_builder_ptr_t priceInterp = beagle::math::InterpolationBuilder::linear();
           beagle::real_function_ptr_t localVol;
           for (beagle::dbl_vec_t::size_type i=0; i<m_Expiries.size(); ++i)
           {
-            beagle::dbl_t end = m_Expiries[i];
+            double end = m_Expiries[i];
 
             if (i != 0)
             {
@@ -75,7 +75,7 @@ namespace beagle
               std::transform(strikes.cbegin(),
                              strikes.cend(),
                              prices.begin(),
-                             [&previousPrices](beagle::dbl_t strike)
+                             [&previousPrices](double strike)
                              { return previousPrices->value(strike);} );
             }
 
@@ -99,7 +99,7 @@ namespace beagle
               std::transform(m_StrikesColl[i].cbegin(),
                              m_StrikesColl[i].cend(),
                              guesses.begin(),
-                             [&localVol](beagle::dbl_t logStrike)
+                             [&localVol](double logStrike)
                              { return localVol->value(logStrike); });
             }
             beagle::calibration_bound_constraint_coll_t constraints(guesses.size(),

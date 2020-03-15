@@ -25,8 +25,8 @@ namespace beagle
       static calibration_adapter_ptr_t pricerAdapter( const pricer_ptr_t& pricer,
                                                       const product_ptr_coll_t& products );
       static calibration_adapter_ptr_t forwardPDEPricerAdapter( const pricer_ptr_t& forwardPricer,
-                                                                beagle::dbl_t start,
-                                                                beagle::dbl_t end,
+                                                                double start,
+                                                                double end,
                                                                 const beagle::payoff_ptr_t& payoff,
                                                                 const beagle::dbl_vec_t& logStrikes,
                                                                 const beagle::dbl_vec_t& strikes,

@@ -12,9 +12,9 @@ namespace beagle
       RealFunction( void );
       virtual ~RealFunction( void );
     public:
-      virtual beagle::dbl_t value( beagle::dbl_t arg ) const = 0;
+      virtual double value( double arg ) const = 0;
     public:
-      static beagle::real_function_ptr_t createConstantFunction( beagle::dbl_t constant );
+      static beagle::real_function_ptr_t createConstantFunction( double constant );
       static beagle::real_function_ptr_t createUnaryFunction( const beagle::real_func_t& func );
       static beagle::real_function_ptr_t createCompositeFunction( const beagle::real_function_ptr_t& f,
                                                                   const beagle::real_function_ptr_t& g );
@@ -28,10 +28,10 @@ namespace beagle
                                                          const beagle::dbl_vec_t& xValues,
                                                          const beagle::dbl_vec_t& yValues );
       static beagle::real_function_ptr_t createContinuousForwardAssetPriceFunction(
-                                                         beagle::dbl_t spot,
+                                                         double spot,
                                                          const beagle::real_function_ptr_t& funding );
       static beagle::real_function_ptr_t createGeneralForwardAssetPriceFunction(
-                                                         beagle::dbl_t spot,
+                                                         double spot,
                                                          const beagle::real_function_ptr_t& funding,
                                                          const beagle::discrete_dividend_schedule_t& dividends );
     };
@@ -63,7 +63,7 @@ namespace beagle
                               const beagle::dbl_vec_t& yValues );
         virtual ~InterpolatedFunction( void );
       public:
-        virtual beagle::dbl_t value( beagle::dbl_t arg ) const = 0;
+        virtual double value( double arg ) const = 0;
         virtual const beagle::dbl_vec_t& xParameters( void ) const override;
         virtual const beagle::dbl_vec_t& yParameters( void ) const override;
       private:

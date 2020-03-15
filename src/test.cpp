@@ -23,10 +23,10 @@ void test1( void )
   //dividends.emplace_back( 5.5, 8.0 );
   //dividends.emplace_back( 6.5, 8.0 );
 
-  beagle::dbl_t expiry = 1.;
-  beagle::dbl_t strike = 100.;
-  beagle::dbl_t rate = .01;
-  beagle::dbl_t vol = .3;
+  double expiry = 1.;
+  double strike = 100.;
+  double rate = .01;
+  double vol = .3;
 
   beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::put();
   beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption( expiry,
@@ -37,7 +37,7 @@ void test1( void )
                                                                                             payoff );
 
   beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
-                                            [=](beagle::dbl_t arg) { return std::exp(-rate * arg);});
+                                            [=](double arg) { return std::exp(-rate * arg);});
   beagle::real_function_ptr_t forward = beagle::math::RealFunction::createContinuousForwardAssetPriceFunction(
                                             100, discounting);
 
@@ -180,8 +180,8 @@ void test3( void )
   // dividends.emplace_back( 5.5, 8.0 );
   // dividends.emplace_back( 6.5, 8.0 );
 
-  beagle::dbl_t expiry = 1.;
-  beagle::dbl_t strike = 100.;
+  double expiry = 1.;
+  double strike = 100.;
   beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::put();
   beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption( expiry,
                                                                                             strike,
@@ -190,19 +190,19 @@ void test3( void )
                                                                                             strike,
                                                                                             payoff );
 
-  beagle::dbl_t spot = 100.;
-  beagle::dbl_t rate = .01;
+  double spot = 100.;
+  double rate = .01;
 
   beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
-                                            [=](beagle::dbl_t arg) { return std::exp(-rate * arg);});
+                                            [=](double arg) { return std::exp(-rate * arg);});
   beagle::real_function_ptr_t forward = beagle::math::RealFunction::createContinuousForwardAssetPriceFunction(
                                             spot, discounting);
 
   // CEV modeling
-  beagle::dbl_t alpha = .3;
-  beagle::dbl_t beta = .5;
+  double alpha = .3;
+  double beta = .5;
   beagle::real_function_ptr_t localVolFunction = beagle::math::RealFunction::createUnaryFunction(
-                                                              [alpha, beta](beagle::dbl_t x) { return alpha * std::pow(x, beta - 1.); } );
+                                                              [alpha, beta](double x) { return alpha * std::pow(x, beta - 1.); } );
   beagle::real_2d_function_ptr_t localVolSurface =
             beagle::math::RealTwoDimFunction::createPiecewiseConstantRightFunction( beagle::dbl_vec_t(1U, 1.),
                                                                                     beagle::real_function_ptr_coll_t(1U, localVolFunction) );
@@ -218,7 +218,7 @@ void test3( void )
                                                                localVolSurface );
 
     beagle::real_2d_function_ptr_t cev = beagle::math::RealTwoDimFunction::createBinaryFunction(
-                                                 [=](beagle::dbl_t time, beagle::dbl_t price){ return alpha * std::pow(price, beta - 1.); } );
+                                                 [=](double time, double price){ return alpha * std::pow(price, beta - 1.); } );
     beagle::pricer_ptr_t odbpop2  = beagle::valuation::Pricer::formOneDimBackwardPDEOptionPricer(
                                                                forward,
                                                                discounting,

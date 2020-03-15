@@ -32,7 +32,7 @@ namespace beagle
 
     };
 
-    struct CalibrationFunctor : public Functor<beagle::dbl_t>
+    struct CalibrationFunctor : public Functor<double>
     {
       CalibrationFunctor( const dbl_vec_t& targets,
                           const calibration_adapter_ptr_t& adapter,

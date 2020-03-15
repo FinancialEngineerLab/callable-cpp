@@ -13,7 +13,7 @@ namespace beagle
                                                             public beagle::valuation::mixins::OptionValueCollectionProvider,
                                                             public beagle::valuation::mixins::CloneWithNewLocalVolatilitySurface
       {
-        using two_dbl_t = std::pair<beagle::dbl_t, beagle::dbl_t>;
+        using two_dbl_t = std::pair<double, double>;
 
         OneDimensionalForwardPDEEuropeanOptionPricer( const FiniteDifferenceDetails& fdDetails,
                                                       const beagle::real_2d_function_ptr_t& volatility ) :
@@ -31,10 +31,10 @@ namespace beagle
           std::transform( strikes.cbegin(),
                           strikes.cend(),
                           prices.begin(),
-                          [&payoff, this](beagle::dbl_t strike) {return payoff->intrinsicValue(finiteDifferenceDetails().spot(), strike);}  );
+                          [&payoff, this](double strike) {return payoff->intrinsicValue(finiteDifferenceDetails().spot(), strike);}  );
         }
-        virtual void optionValueCollection( beagle::dbl_t start,
-                                            beagle::dbl_t end,
+        virtual void optionValueCollection( double start,
+                                            double end,
                                             const beagle::payoff_ptr_t& payoff,
                                             const beagle::dbl_vec_t& logStrikes,
                                             const beagle::dbl_vec_t& strikes,
@@ -52,7 +52,7 @@ namespace beagle
                                                       std::exp(logStrikes.back()) );
 
           int timeSteps = times.size();
-          beagle::dbl_t deltaX = logStrikes[1] - logStrikes[0];
+          double deltaX = logStrikes[1] - logStrikes[0];
 
           int strikeSize = strikes.size();
           beagle::dbl_vec_t diag(strikeSize);
@@ -68,15 +68,15 @@ namespace beagle
           auto jtEnd = exDividendIndices.cend();
           for (int i=0; i<timeSteps-1; ++i)
           {
-            beagle::dbl_t thisTime = times[i+1];
-            beagle::dbl_t deltaT = thisTime - times[i];
+            double thisTime = times[i+1];
+            double deltaT = thisTime - times[i];
             for (int j=0; j<strikeSize; ++j)
             {
-              beagle::dbl_t vol = m_Volatility->value(thisTime, strikes[j]);
-              beagle::dbl_t volOverDeltaX = vol / deltaX;
-              beagle::dbl_t volOverDeltaXSquared = volOverDeltaX * volOverDeltaX;
-              beagle::dbl_t mu = finiteDifferenceDetails().rate() + .5 * vol * vol;
-              beagle::dbl_t muOverDeltaX = mu / deltaX;
+              double vol = m_Volatility->value(thisTime, strikes[j]);
+              double volOverDeltaX = vol / deltaX;
+              double volOverDeltaXSquared = volOverDeltaX * volOverDeltaX;
+              double mu = finiteDifferenceDetails().rate() + .5 * vol * vol;
+              double muOverDeltaX = mu / deltaX;
               diag[j]  = 1. + deltaT * volOverDeltaXSquared;
               upper[j] =   deltaT * .5 * (muOverDeltaX - volOverDeltaXSquared);
               lower[j] = - deltaT * .5 * (muOverDeltaX + volOverDeltaXSquared);
@@ -100,18 +100,18 @@ namespace beagle
               beagle::real_function_ptr_t interpFunc = finiteDifferenceDetails().interpolation()->formFunction( strikes, prices );
               beagle::dbl_vec_t shiftedStrikes(strikes.size());
 
-              beagle::dbl_t dividendAmount = it->second;
+              double dividendAmount = it->second;
               std::transform( strikes.cbegin(),
                               strikes.cend(),
                               shiftedStrikes.begin(),
-                              [this, dividendAmount](beagle::dbl_t strike) { 
+                              [this, dividendAmount](double strike) { 
                                 return strike + finiteDifferenceDetails().dividendPolicy()->dividendAmount(finiteDifferenceDetails().spot(), dividendAmount);
                               } );
 
               std::transform( shiftedStrikes.cbegin(),
                               shiftedStrikes.cend(),
                               prices.begin(),
-                              [&interpFunc](beagle::dbl_t strike) { 
+                              [&interpFunc](double strike) { 
                                 return interpFunc->value(strike);
                               } );
 
@@ -120,7 +120,7 @@ namespace beagle
             }
           }
         }
-        virtual beagle::dbl_t value( const beagle::product_ptr_t& product ) const override
+        virtual double value( const beagle::product_ptr_t& product ) const override
         {
           if (auto pA = dynamic_cast<beagle::product::option::mixins::American*>(product.get()))
             throw(std::string("Cannot price an American option with forward PDE European option pricer!"));
@@ -129,8 +129,8 @@ namespace beagle
           if (!pO)
             throw(std::string("The incoming product is not an option!"));
 
-          beagle::dbl_t expiry = pO->expiry();
-          beagle::dbl_t strike = pO->strike();
+          double expiry = pO->expiry();
+          double strike = pO->strike();
           const beagle::payoff_ptr_t& payoff = pO->payoff();
 
           beagle::dbl_vec_t logStrikes;
@@ -153,12 +153,12 @@ namespace beagle
       private:
         two_dbl_t boundaryCondition( const beagle::payoff_ptr_t& payoff,
                                      const two_dbl_t& boundaryStrikes,
-                                     beagle::dbl_t timeToExpiry ) const
+                                     double timeToExpiry ) const
         {
-          beagle::dbl_t minStrike = boundaryStrikes.first;
-          beagle::dbl_t maxStrike = boundaryStrikes.second;
+          double minStrike = boundaryStrikes.first;
+          double maxStrike = boundaryStrikes.second;
 
-          beagle::dbl_t discounting = std::exp(-finiteDifferenceDetails().rate() * timeToExpiry);
+          double discounting = std::exp(-finiteDifferenceDetails().rate() * timeToExpiry);
           return std::make_pair( payoff->intrinsicValue(finiteDifferenceDetails().spot(), minStrike * discounting ),
                                  payoff->intrinsicValue(finiteDifferenceDetails().spot(), maxStrike * discounting ) );
         }
@@ -168,7 +168,7 @@ namespace beagle
 
       struct OneDimForwardPDEEuroOptionPricer : public Pricer
       {
-        OneDimForwardPDEEuroOptionPricer(beagle::dbl_t spot,
+        OneDimForwardPDEEuroOptionPricer(double spot,
                                          const beagle::real_2d_function_ptr_t& drift,
                                          const beagle::real_2d_function_ptr_t& volatility,
                                          const beagle::real_function_ptr_t& rate,
@@ -184,12 +184,12 @@ namespace beagle
         virtual ~OneDimForwardPDEEuroOptionPricer( void )
         { }
       public:
-        virtual beagle::dbl_t value(const beagle::product_ptr_t& product) const
+        virtual double value(const beagle::product_ptr_t& product) const
         {
           return 0.0;
         }
       private:
-        beagle::dbl_t m_Spot;
+        double m_Spot;
         beagle::real_2d_function_ptr_t m_Drift;
         beagle::real_2d_function_ptr_t m_Vol;
         beagle::real_function_ptr_t m_Rate;
@@ -207,7 +207,7 @@ namespace beagle
     }
 
     beagle::pricer_ptr_t
-    Pricer::formOneDimForwardPDEEuroOptionPricer(beagle::dbl_t spot,
+    Pricer::formOneDimForwardPDEEuroOptionPricer(double spot,
                                                  const beagle::real_2d_function_ptr_t& convection,
                                                  const beagle::real_2d_function_ptr_t& diffusion,
                                                  const beagle::real_function_ptr_t& rate,

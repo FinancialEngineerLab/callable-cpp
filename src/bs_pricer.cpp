@@ -12,9 +12,9 @@ namespace beagle
       struct BlackScholesClosedFormEuropeanOptionPricer : public Pricer,
                                                           public beagle::valuation::mixins::CloneWithNewModelParameters
       {
-        BlackScholesClosedFormEuropeanOptionPricer( beagle::dbl_t spot,
-                                                    beagle::dbl_t rate,
-                                                    beagle::dbl_t volatility,
+        BlackScholesClosedFormEuropeanOptionPricer( double spot,
+                                                    double rate,
+                                                    double volatility,
                                                     const beagle::discrete_dividend_schedule_t& dividends ) :
           m_Spot( spot ),
           m_Rate( rate ),
@@ -24,7 +24,7 @@ namespace beagle
         ~BlackScholesClosedFormEuropeanOptionPricer( void )
         { }
       public:
-        virtual beagle::dbl_t value( const beagle::product_ptr_t& product ) const override
+        virtual double value( const beagle::product_ptr_t& product ) const override
         {
           auto pE = dynamic_cast<beagle::product::option::mixins::European*>(product.get());
           if (!pE)
@@ -34,15 +34,15 @@ namespace beagle
           if (!pO)
             throw(std::string("The incoming product is not an option!"));
 
-          beagle::dbl_t expiry = pO->expiry();
-          beagle::dbl_t strike = pO->strike();
+          double expiry = pO->expiry();
+          double strike = pO->strike();
 
-          beagle::dbl_t adjustedSpot;
-          beagle::dbl_t adjustedStrike;
+          double adjustedSpot;
+          double adjustedStrike;
           calculateAdjustedSpotAndStrike( expiry, strike, adjustedSpot, adjustedStrike );
 
-          beagle::dbl_t discounting = std::exp( - m_Rate * expiry );
-          beagle::dbl_t result = util::bsCall( adjustedStrike, adjustedSpot / discounting, expiry, m_Volatility ) * discounting;
+          double discounting = std::exp( - m_Rate * expiry );
+          double result = util::bsCall( adjustedStrike, adjustedSpot / discounting, expiry, m_Volatility ) * discounting;
 
           if (pO->payoff()->isCall())
             return result;
@@ -57,10 +57,10 @@ namespace beagle
           return beagle::valuation::Pricer::formBlackScholesClosedFormEuropeanOptionPricer(m_Spot, m_Rate, parameters.front(), m_Dividends);
         }
       private:
-        void calculateAdjustedSpotAndStrike( beagle::dbl_t expiry,
-                                             beagle::dbl_t strike,
-                                             beagle::dbl_t& adjustedSpot,
-                                             beagle::dbl_t& adjustedStrike ) const
+        void calculateAdjustedSpotAndStrike( double expiry,
+                                             double strike,
+                                             double& adjustedSpot,
+                                             double& adjustedStrike ) const
         {
           adjustedSpot = m_Spot;
           adjustedStrike = strike;
@@ -69,64 +69,64 @@ namespace beagle
             return;
           else
           {
-            beagle::dbl_t expRateT = std::exp( m_Rate * expiry );
-            beagle::dbl_t rootT = std::sqrt( expiry );
-            beagle::dbl_t sigmaRootT = m_Volatility * rootT;
-            beagle::dbl_t dOne = std::log( m_Spot * expRateT / strike ) / sigmaRootT + .5 * sigmaRootT;
-            beagle::dbl_t dTwo = dOne - sigmaRootT;
+            double expRateT = std::exp( m_Rate * expiry );
+            double rootT = std::sqrt( expiry );
+            double sigmaRootT = m_Volatility * rootT;
+            double dOne = std::log( m_Spot * expRateT / strike ) / sigmaRootT + .5 * sigmaRootT;
+            double dTwo = dOne - sigmaRootT;
 
-            beagle::dbl_t nDOne = util::cumulativeStandardNormal(dOne);
-            beagle::dbl_t nDTwo = util::cumulativeStandardNormal(dTwo);
-            beagle::dbl_t denominator = nDOne - nDTwo;
+            double nDOne = util::cumulativeStandardNormal(dOne);
+            double nDTwo = util::cumulativeStandardNormal(dTwo);
+            double denominator = nDOne - nDTwo;
 
-            beagle::dbl_t phiDOne = util::standardNormal(dOne);
-            beagle::dbl_t phiDTwo = util::standardNormal(dTwo);
-            beagle::dbl_t phiDiff = phiDOne - phiDTwo;
-            beagle::dbl_t crossDiff = phiDOne * nDTwo - phiDTwo * nDOne;
+            double phiDOne = util::standardNormal(dOne);
+            double phiDTwo = util::standardNormal(dTwo);
+            double phiDiff = phiDOne - phiDTwo;
+            double crossDiff = phiDOne * nDTwo - phiDTwo * nDOne;
 
-            beagle::dbl_t gamma = m_Spot * sigmaRootT * phiDOne * denominator * denominator * denominator;
-            beagle::dbl_t a = - crossDiff * crossDiff;
-            beagle::dbl_t b = phiDiff * crossDiff;
-            beagle::dbl_t c = - phiDiff * phiDiff;
-            beagle::dbl_t d = phiDOne * denominator * denominator;
+            double gamma = m_Spot * sigmaRootT * phiDOne * denominator * denominator * denominator;
+            double a = - crossDiff * crossDiff;
+            double b = phiDiff * crossDiff;
+            double c = - phiDiff * phiDiff;
+            double d = phiDOne * denominator * denominator;
 
             auto numDivs = m_Dividends.size();
             for (discrete_dividend_schedule_t::size_type i = 0U; i < numDivs; ++i)
             {
-              beagle::dbl_t exDivTimeI = m_Dividends[i].first;
-              beagle::dbl_t divAmountI = m_Dividends[i].second;
+              double exDivTimeI = m_Dividends[i].first;
+              double divAmountI = m_Dividends[i].second;
 
               if (exDivTimeI <= expiry)
               {
                 /// First order term
-                beagle::dbl_t discountingExDivTimeI = std::exp( - m_Rate * exDivTimeI );
-                beagle::dbl_t dI = dOne - m_Volatility * exDivTimeI / rootT;
-                beagle::dbl_t nDI = util::cumulativeStandardNormal(dI);
+                double discountingExDivTimeI = std::exp( - m_Rate * exDivTimeI );
+                double dI = dOne - m_Volatility * exDivTimeI / rootT;
+                double nDI = util::cumulativeStandardNormal(dI);
 
-                beagle::dbl_t numeratorA =  nDI - nDTwo;
-                beagle::dbl_t numeratorB = denominator - numeratorA;
+                double numeratorA =  nDI - nDTwo;
+                double numeratorB = denominator - numeratorA;
 
-                beagle::dbl_t aI = - discountingExDivTimeI * numeratorA / denominator;
-                beagle::dbl_t bI = expRateT * discountingExDivTimeI * numeratorB / denominator;
+                double aI = - discountingExDivTimeI * numeratorA / denominator;
+                double bI = expRateT * discountingExDivTimeI * numeratorB / denominator;
 
                 adjustedSpot += aI * divAmountI;
                 adjustedStrike += bI * divAmountI;
 
                 for (discrete_dividend_schedule_t::size_type j = i; j < numDivs; ++j)
                 {
-                  beagle::dbl_t exDivTimeJ = m_Dividends[j].first;
-                  beagle::dbl_t divAmountJ = m_Dividends[j].second;
+                  double exDivTimeJ = m_Dividends[j].first;
+                  double divAmountJ = m_Dividends[j].second;
 
                   if (exDivTimeJ <= expiry)
                   {
-                    beagle::dbl_t discountingExDivTimeJ = std::exp( - m_Rate * exDivTimeJ );
-                    beagle::dbl_t dJ = dOne - m_Volatility * exDivTimeJ / rootT;
-                    beagle::dbl_t nDJ = util::cumulativeStandardNormal(dJ);
+                    double discountingExDivTimeJ = std::exp( - m_Rate * exDivTimeJ );
+                    double dJ = dOne - m_Volatility * exDivTimeJ / rootT;
+                    double nDJ = util::cumulativeStandardNormal(dJ);
 
-                    beagle::dbl_t aIJ = a + b * (nDI + nDJ) + c * nDI * nDJ;
+                    double aIJ = a + b * (nDI + nDJ) + c * nDI * nDJ;
 
-                    beagle::dbl_t dIJ = dOne - m_Volatility * (exDivTimeI + exDivTimeJ) / rootT;
-                    beagle::dbl_t phiDIJ = util::standardNormal(dIJ);
+                    double dIJ = dOne - m_Volatility * (exDivTimeI + exDivTimeJ) / rootT;
+                    double phiDIJ = util::standardNormal(dIJ);
                     aIJ += d * std::exp(m_Volatility*m_Volatility*exDivTimeI) * phiDIJ;
 
                     aIJ /= gamma;
@@ -144,17 +144,17 @@ namespace beagle
           }
         }
       private:
-        beagle::dbl_t m_Spot;
-        beagle::dbl_t m_Rate;
-        beagle::dbl_t m_Volatility;
+        double m_Spot;
+        double m_Rate;
+        double m_Volatility;
         beagle::discrete_dividend_schedule_t m_Dividends;
       };
     }
 
     beagle::pricer_ptr_t
-    Pricer::formBlackScholesClosedFormEuropeanOptionPricer( beagle::dbl_t spot,
-                                                            beagle::dbl_t rate,
-                                                            beagle::dbl_t volatility,
+    Pricer::formBlackScholesClosedFormEuropeanOptionPricer( double spot,
+                                                            double rate,
+                                                            double volatility,
                                                             const beagle::discrete_dividend_schedule_t& dividends )
     {
       return std::make_shared<impl::BlackScholesClosedFormEuropeanOptionPricer>( spot, rate, volatility, dividends );

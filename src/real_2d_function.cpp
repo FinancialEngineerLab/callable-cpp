@@ -15,8 +15,8 @@ namespace beagle
         virtual ~BinaryFunction(void)
         { }
       public:
-        virtual beagle::dbl_t value(beagle::dbl_t argX,
-                             beagle::dbl_t argY) const override
+        virtual double value(double argX,
+                             double argY) const override
         {
           return m_Func(argX, argY);
         }
@@ -26,19 +26,19 @@ namespace beagle
 
       struct TwoDimConstantFunction : public RealTwoDimFunction
       {
-        explicit TwoDimConstantFunction( beagle::dbl_t constant ) :
+        explicit TwoDimConstantFunction( double constant ) :
           m_Const( constant )
         { }
         virtual ~TwoDimConstantFunction( void )
         { }
       public:
-        virtual beagle::dbl_t value( beagle::dbl_t argX,
-                              beagle::dbl_t argY ) const override
+        virtual double value( double argX,
+                              double argY ) const override
         {
           return m_Const;
         }
       private:
-        beagle::dbl_t m_Const;
+        double m_Const;
       };
 
       struct PiecewiseConstantRightFunction : public RealTwoDimFunction
@@ -51,8 +51,8 @@ namespace beagle
         virtual ~PiecewiseConstantRightFunction( void )
         { }
       public:
-        virtual beagle::dbl_t value( beagle::dbl_t argX,
-                              beagle::dbl_t argY ) const override
+        virtual double value( double argX,
+                              double argY ) const override
         {
           auto it = std::lower_bound(m_Params.cbegin(),
                                      m_Params.cend(),
@@ -88,7 +88,7 @@ namespace beagle
     }
 
     beagle::real_2d_function_ptr_t
-    RealTwoDimFunction::createTwoDimConstantFunction( beagle::dbl_t constant )
+    RealTwoDimFunction::createTwoDimConstantFunction( double constant )
     {
       return std::make_shared<impl::TwoDimConstantFunction>( constant );
     }

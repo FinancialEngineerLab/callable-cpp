@@ -10,8 +10,6 @@
 
 namespace beagle
 {
-  using dbl_t = long double;
-
   namespace product
   {
     struct Product;
@@ -68,14 +66,14 @@ namespace beagle
 
   using calibration_adapter_ptr_t = std::shared_ptr<calibration::CalibrationAdapter>;
 
-  using dbl_vec_t = std::vector<beagle::dbl_t>;
+  using dbl_vec_t = std::vector<double>;
   using dbl_vec_vec_t = std::vector<dbl_vec_t>;
   using dbl_mat_t = dbl_vec_vec_t;
   using int_vec_t = std::vector<int>;
-  using discrete_dividend_schedule_t = std::vector< std::pair<beagle::dbl_t, beagle::dbl_t> >;
+  using discrete_dividend_schedule_t = std::vector< std::pair<double, double> >;
 
-  using real_func_t = std::function<beagle::dbl_t(beagle::dbl_t)>;
-  using real_2d_func_t = std::function<beagle::dbl_t(beagle::dbl_t, beagle::dbl_t)>;
+  using real_func_t = std::function<double(double)>;
+  using real_2d_func_t = std::function<double(double, double)>;
 }
 
 
