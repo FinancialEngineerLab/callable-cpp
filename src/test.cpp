@@ -64,6 +64,13 @@ void test1( void )
     beagle::pricer_ptr_t odfpeop  = beagle::valuation::Pricer::formOneDimensionalForwardPDEEuropeanOptionPricer(
                                                                fdDetails,
                                                                beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(fdDetails.volatility()) );
+    beagle::pricer_ptr_t odfpeop2  = beagle::valuation::Pricer::formOneDimForwardPDEEuroOptionPricer(
+                                                               forward,
+                                                               discounting,
+                                                               beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0.),
+                                                               beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(vol),
+                                                               beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0),
+                                                               beagle::valuation::OneDimFiniteDifferenceSettings(1501, 1901, 7.5) );
 
     std::cout << "European option price (CF)   is: " << bscfeop->value( euroOption ) << std::endl;
     std::cout << "European option price (FD-B) is: " << odbpop->value( euroOption ) << std::endl;
@@ -71,6 +78,7 @@ void test1( void )
     std::cout << "American option price (FD-B) is: " << odbpop->value( amerOption ) << std::endl;
     std::cout << "American option price (FD-B) is: " << odbpop2->value( amerOption ) << std::endl;
     std::cout << "European option price (FD-F) is: " << odfpeop->value( euroOption ) << std::endl;
+    std::cout << "European option price (FD-F) is: " << odfpeop2->value( euroOption ) << std::endl;
 
     std::cout << "\nEnd of Test 1\n";
   }
@@ -260,12 +268,93 @@ void test4(void)
   std::cout << "\nEnd of Test 4:\n\n";
 }
 
+void test5( void )
+{
+  std::cout << "\nStart of Test 5:\n\n";
+
+  double spot = 50;
+  double r = .04;
+  double q = .02;
+  double sigma = .3;
+
+  double c = .05;
+  double p = 2.;
+
+  beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::call();
+
+  // Model parameters
+  beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
+                                            [=](double arg) { return std::exp(-r * arg);});
+  beagle::real_function_ptr_t forward = beagle::math::RealFunction::createContinuousForwardAssetPriceFunction(
+                                            spot,
+                                            beagle::math::RealFunction::createUnaryFunction(
+                                            [=](double arg) { return std::exp(-(r - q) * arg);}));
+  beagle::real_2d_function_ptr_t drift = beagle::math::RealTwoDimFunction::createBinaryFunction(
+                                            [=](double time, double price){ return c * std::pow(price / spot, -p); } );
+  beagle::real_2d_function_ptr_t volatility = beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(sigma);
+  beagle::real_2d_function_ptr_t rate = drift;
+
+  beagle::dbl_vec_t expiries{.25}; //, .5, 1.,}; // 2., 3., 4., 5.};
+  for (double expiry : expiries)
+  {
+    double strike = forward->value(expiry);
+    beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption( expiry,
+                                                                                              strike,
+                                                                                              payoff );
+    beagle::product_ptr_t riskyBond = beagle::product::option::Option::createEuropeanOption( expiry,
+                                                                                             0.,
+                                                                                             beagle::product::option::Payoff::digitalCall() );
+
+    beagle::pricer_ptr_t odbpop  = beagle::valuation::Pricer::formOneDimBackwardPDEOptionPricer(
+                                                               forward,
+                                                               discounting,
+                                                               drift,
+                                                               volatility,
+                                                               rate,
+                                                               beagle::valuation::OneDimFiniteDifferenceSettings(1501, 1901, 7.5) );
+    double price = odbpop->value( euroOption );
+    double bondPrice = odbpop->value(riskyBond);
+    std::cout << expiry << "\t"
+              << price << "\t"
+              << beagle::util::impliedBlackVolatility(price,
+                                                      strike,
+                                                      forward->value(expiry),
+                                                      expiry,
+                                                      discounting ) << "\t"
+              << bondPrice << "\t"
+              << -std::log(bondPrice) / expiry - r << "\n";
+
+    beagle::pricer_ptr_t odfpeop  = beagle::valuation::Pricer::formOneDimForwardPDEEuroOptionPricer(
+                                                               forward,
+                                                               discounting,
+                                                               drift,
+                                                               volatility,
+                                                               rate,
+                                                               beagle::valuation::OneDimFiniteDifferenceSettings(1501, 1901, 7.5) );
+    price = odfpeop->value( euroOption );
+    bondPrice = odfpeop->value(riskyBond);
+    std::cout << expiry << "\t"
+              << price << "\t"
+              << beagle::util::impliedBlackVolatility(price,
+                                                      strike,
+                                                      forward->value(expiry),
+                                                      expiry,
+                                                      discounting ) << "\t"
+              << bondPrice << "\t"
+              << -std::log(bondPrice) / expiry - r << "\n\n";
+  
+  }
+
+  std::cout << "\nEnd of Test 5\n";
+}
+
 int main( void )
 {
-  test1();
+  //test1();
   //test2();
-  test3();
+  //test3();
   //test4();
+  test5();
 
   return 0;
 }

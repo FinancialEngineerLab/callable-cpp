@@ -23,7 +23,8 @@ namespace beagle
                                                                                       const beagle::real_2d_function_ptr_t& vol,
                                                                                       const beagle::real_2d_function_ptr_t& rate);
       static beagle::parabolic_pde_solver_ptr_t formOneDimFokkerPlanckPDESolver(const beagle::real_2d_function_ptr_t& convection,
-                                                                                const beagle::real_2d_function_ptr_t& diffusion);
+                                                                                const beagle::real_2d_function_ptr_t& diffusion,
+                                                                                const beagle::real_2d_function_ptr_t& rate);
     private:
       beagle::real_2d_function_ptr_t m_Convection;
       beagle::real_2d_function_ptr_t m_Diffusion;

@@ -252,7 +252,7 @@ namespace beagle
 
             double atmVol = m_Vol->value(expiry, termForward);
             int centralIndex = numStateVars / 2;
-            double centralValue = std::log(m_Forward->value(0.0));
+            double centralValue = std::log(m_Forward->value(0.));
             double stateVarStep = m_Settings.numberOfGaussianStandardDeviations() * atmVol * std::sqrt(expiry) / centralIndex;
             beagle::dbl_vec_t stateVars(numStateVars);
             for (int i=0; i<numStateVars; ++i)
@@ -272,6 +272,7 @@ namespace beagle
             for (int i=0; i<numTimes; ++i)
             {
               double end = expiry + (i+1) * timeStep / numTimes;
+              double forward = m_Forward->value(end);
               double lbc = payoff->intrinsicValue( std::exp(stateVars.front() - stateVarStep), strike );
               double ubc = payoff->intrinsicValue( std::exp(stateVars.back() + stateVarStep), strike );
               solver->evolve(end,
@@ -295,11 +296,6 @@ namespace beagle
               }
             }
 
-            //for (int i=0; i<numStateVars; ++i)
-            //  std::cout << "\n" << stateVars[i] << ":\t\t" << initialCondition[i];
-            //std::cout << "\n\n";
-
-            beagle::real_function_ptr_t prices = m_Settings.interpolationMethod()->formFunction(stateVars, initialCondition);
             return initialCondition[centralIndex];
           }
           else

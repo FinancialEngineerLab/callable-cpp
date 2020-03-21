@@ -1,4 +1,5 @@
 #include "util.hpp"
+#include "real_function.hpp"
 #include <Eigen/Dense>
 
 namespace beagle
@@ -50,6 +51,33 @@ namespace beagle
       double dOne = moneyness / totalDev + .5 * totalDev;
 
       return forward * standardNormal( dOne ) * std::sqrt( expiry );
+    }
+    
+    double impliedBlackVolatility( double price,
+                                   double strike,
+                                   double forward,
+                                   double expiry,
+                                   const beagle::real_function_ptr_t& discounting )
+    {
+      double target = price / discounting->value(expiry);
+
+      double result = .5;
+      double value = util::bsCall( strike, forward, expiry, result );
+
+      double tol = 1e-8;
+      int maxIter = 100;
+      int count = 0;
+
+      while ( std::fabs( value - target ) > tol && count < maxIter )
+      {
+        result -= ( util::bsCall( strike, forward, expiry, result ) - target ) / util::bsVega( strike, forward, expiry, result );
+        if (result < 0.)
+          result *= -1.;
+        value = util::bsCall( strike, forward, expiry, result );
+        ++count;
+      }
+
+      return result;
     }
 
     void tridiagonalSolve( beagle::dbl_vec_t& rhs,
