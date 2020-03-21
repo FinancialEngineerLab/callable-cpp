@@ -273,15 +273,11 @@ namespace beagle
                              initialCondition);
             }
  
-            double norm(.0);
             double result(.0);
             for (int i=0; i<numStateVars; ++i)
             {
-              norm += stateVarStep * initialCondition[i];
               result += stateVarStep * initialCondition[i] * payoff->intrinsicValue(std::exp(stateVars[i]), strike);
             }
-
-            out << norm << "\n\n";
 
             return result;
           }

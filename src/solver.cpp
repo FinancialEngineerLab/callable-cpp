@@ -103,12 +103,21 @@ namespace beagle
           for (int j=0; j<numUnderlyingSteps; ++j)
           {
             double rate = .0; // m_Rate->value(end, stateVariables[j]);
-            double convection = m_Convection->value(end, stateVariables[j]);
-            double diffusion = m_Diffusion->value(end, stateVariables[j]);
 
-            diag[j]  = 1. + rate * timeStep + 2. * diffusion * dTdXdX;
-            upper[j] =   .5 * convection * dTdX - diffusion * dTdXdX;
-            lower[j] = - .5 * convection * dTdX - diffusion * dTdXdX;
+            diag[j]  = 1.
+                     + m_Rate->value(end, stateVariables[j]) * timeStep
+                     + 2. * m_Diffusion->value(end, stateVariables[j]) * dTdXdX;
+            if (j == 0)
+              lower[j] = .0;
+            else
+              lower[j] = - .5 * m_Convection->value(end, stateVariables[j-1]) * dTdX
+                         - m_Diffusion->value(end, stateVariables[j-1]) * dTdXdX;
+
+            if (j == numUnderlyingSteps-1)
+              upper[j] = .0;
+            else
+              upper[j] =   .5 * m_Convection->value(end, stateVariables[j+1]) * dTdX 
+                         - m_Diffusion->value(end, stateVariables[j+1]) * dTdXdX;
           }
 
           initialCondition[0] -= lower[0] * lbc[0];

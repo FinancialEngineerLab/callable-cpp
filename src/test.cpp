@@ -294,7 +294,7 @@ void test5( void )
   beagle::real_2d_function_ptr_t volatility = beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(sigma);
   beagle::real_2d_function_ptr_t rate = drift;
 
-  beagle::dbl_vec_t expiries{.25}; //, .5, 1.,}; // 2., 3., 4., 5.};
+  beagle::dbl_vec_t expiries{.25, .5, 1., 2., 3., 4., 5.};
   for (double expiry : expiries)
   {
     double strike = forward->value(expiry);
