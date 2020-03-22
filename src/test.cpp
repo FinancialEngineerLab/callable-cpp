@@ -353,16 +353,16 @@ void test6( void )
 {
   std::cout << "\nStart of Test 6:\n\n";
 
+  // Model parameters 1
   double spot = 50;
   double r = .04;
   double q = .02;
   double sigma = .25;
 
   double c = .02;
-  double p = 0.;
+  double p = 2.;
   double rec = 0.4;
 
-  // Model parameters
   beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
                                             [=](double arg) { return std::exp(-r * arg);});
   beagle::real_function_ptr_t forward = beagle::math::RealFunction::createContinuousForwardAssetPriceFunction(
@@ -375,8 +375,16 @@ void test6( void )
   beagle::real_2d_function_ptr_t rate = drift;
   beagle::real_2d_function_ptr_t recovery = beagle::math::RealTwoDimFunction::createBinaryFunction(
                                             [=](double time, double price){ return -100. * rec * rate->value(time, price); } );
+  beagle::pricer_ptr_t odbpbp  = beagle::valuation::Pricer::formOneDimBackwardPDEBondPricer(
+                                                              forward,
+                                                              discounting,
+                                                              drift,
+                                                              volatility,
+                                                              rate,
+                                                              recovery,
+                                                              beagle::valuation::OneDimFiniteDifferenceSettings(1501, 1901, 7.5) );
 
-  // Create a fixed coupon bond
+  // Create a fixed coupon bond: 5-year maturity, 1.5% coupon, semi-annual
   beagle::bond_cashflows_t cashflows;
   cashflows.emplace_back(0.5,    .75);
   cashflows.emplace_back(1.0,    .75);
@@ -390,7 +398,45 @@ void test6( void )
   cashflows.emplace_back(5.0, 100.75);
 
   beagle::product_ptr_t fcb = beagle::product::bond::Bond::createFixedCouponBond(cashflows);
-  beagle::pricer_ptr_t odbpbp  = beagle::valuation::Pricer::formOneDimBackwardPDEBondPricer(
+  std::cout << "The bond price is: " << odbpbp->value(fcb) << "\n";
+
+  // Model parameters 2
+  sigma = .4;
+  c = .03;
+  p = 2.;
+
+  drift = beagle::math::RealTwoDimFunction::createBinaryFunction(
+                                            [=](double time, double price){ return c * std::pow(price / spot, -p); } );
+  volatility = beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(sigma);
+  rate = drift;
+  recovery = beagle::math::RealTwoDimFunction::createBinaryFunction(
+                                            [=](double time, double price){ return -100. * rec * rate->value(time, price); } );
+  
+  // Create a fixed coupon bond: 10-year maturity, 3% coupon, semi-annual
+  cashflows.clear();
+  cashflows.emplace_back( 0.5,   1.5);
+  cashflows.emplace_back( 1.0,   1.5);
+  cashflows.emplace_back( 1.5,   1.5);
+  cashflows.emplace_back( 2.0,   1.5);
+  cashflows.emplace_back( 2.5,   1.5);
+  cashflows.emplace_back( 3.0,   1.5);
+  cashflows.emplace_back( 3.5,   1.5);
+  cashflows.emplace_back( 4.0,   1.5);
+  cashflows.emplace_back( 4.5,   1.5);
+  cashflows.emplace_back( 5.0,   1.5);
+  cashflows.emplace_back( 5.5,   1.5);
+  cashflows.emplace_back( 6.0,   1.5);
+  cashflows.emplace_back( 6.5,   1.5);
+  cashflows.emplace_back( 7.0,   1.5);
+  cashflows.emplace_back( 7.5,   1.5);
+  cashflows.emplace_back( 8.0,   1.5);
+  cashflows.emplace_back( 8.5,   1.5);
+  cashflows.emplace_back( 9.0,   1.5);
+  cashflows.emplace_back( 9.5,   1.5);
+  cashflows.emplace_back(10.0, 101.5);
+
+  fcb = beagle::product::bond::Bond::createFixedCouponBond(cashflows);
+  odbpbp  = beagle::valuation::Pricer::formOneDimBackwardPDEBondPricer(
                                                               forward,
                                                               discounting,
                                                               drift,
