@@ -337,115 +337,124 @@ namespace beagle
           if (!pB)
             throw(std::string("The incoming product is not a bond!"));
 
-          return 0.0;
+          double notional = pB->standardFaceValue();
+          const beagle::bond_cashflows_t& cashflows = pB->cashflows();
 
-          //auto pA = dynamic_cast<beagle::product::option::mixins::American*>(product.get());
+          beagle::dbl_vec_t paymentTimes(cashflows.size() + 1U, 0.0);
+          std::transform(cashflows.cbegin(),
+                         cashflows.cend(),
+                         paymentTimes.begin() + 1,
+                         [](const std::pair<double, double>& p)
+                         { return p.first; });
 
-          //double expiry = pO->expiry();
-          //double strike = pO->strike();
-          //const beagle::payoff_ptr_t& payoff = pO->payoff();
+          beagle::dbl_vec_t paymentAmounts(cashflows.size() + 1U, 0.0);
+          std::transform(cashflows.cbegin(),
+                         cashflows.cend(),
+                         paymentAmounts.begin() + 1,
+                         [](const std::pair<double, double>& p)
+                         { return p.second; });
 
-          //// Calculate terminal forward and discount factor for later use
-          //double termForward = m_Forward->value(expiry);
-          //double termDF = m_Discounting->value(expiry);
+          double expiry = cashflows.back().first;
+          double termForward = m_Forward->value(expiry);
 
-          //auto pDS = dynamic_cast<beagle::math::mixins::DividendSchedule*>(m_Forward.get());
-          //if (!pDS)
-          //{
-          //  // Determine the convection and diffusion terms in the backward PDE
-          //  beagle::real_function_ptr_t fundingRate = beagle::math::RealFunction::createUnaryFunction(
-          //                    [this](double time)
-          //                    {
-          //                      double bump = 1e-6;
-          //                      return std::log(m_Forward->value(time+bump) / m_Forward->value(time)) / bump;
-          //                    } );
-          //  beagle::real_function_ptr_t discountingRate = beagle::math::RealFunction::createUnaryFunction(
-          //                    [this](double time)
-          //                    {
-          //                      double bump = 1e-6;
-          //                      return - std::log(m_Discounting->value(time+bump) / m_Discounting->value(time)) / bump;
-          //                    } );
-          //  beagle::real_2d_function_ptr_t convection = beagle::math::RealTwoDimFunction::createBinaryFunction(
-          //                    [this, fundingRate](double time, double logMoneyness)
-          //                    {
-          //                      double spot =  std::exp(logMoneyness);
-          //                      double localVol = m_Vol->value(time, spot);
-          //                      double drift = m_Drift->value(time, spot);
-          //                      return fundingRate->value(time) + drift - .5 * localVol * localVol;
-          //                    } );
-          //  beagle::real_2d_function_ptr_t diffusion = beagle::math::RealTwoDimFunction::createBinaryFunction(
-          //                    [this](double time, double logMoneyness)
-          //                    {
-          //                      double spot = std::exp(logMoneyness);
-          //                      double localVol = m_Vol->value(time, spot);
-          //                      return .5 * localVol * localVol;
-          //                    } );
-          //  beagle::real_2d_function_ptr_t rate = beagle::math::RealTwoDimFunction::createBinaryFunction(
-          //                    [this, discountingRate](double time, double logMoneyness)
-          //                    {
-          //                      double spot = std::exp(logMoneyness);
-          //                      return discountingRate->value(time) + m_Rate->value(time, spot);
-          //                    } );
+          // Determine the convection and diffusion terms in the backward PDE
+          beagle::real_function_ptr_t fundingRate = beagle::math::RealFunction::createUnaryFunction(
+                            [this](double time)
+                            {
+                              double bump = 1e-6;
+                              return std::log(m_Forward->value(time+bump) / m_Forward->value(time)) / bump;
+                            } );
+          beagle::real_function_ptr_t discountingRate = beagle::math::RealFunction::createUnaryFunction(
+                            [this](double time)
+                            {
+                              double bump = 1e-6;
+                              return - std::log(m_Discounting->value(time+bump) / m_Discounting->value(time)) / bump;
+                            } );
+          beagle::real_2d_function_ptr_t convection = beagle::math::RealTwoDimFunction::createBinaryFunction(
+                            [this, fundingRate](double time, double logMoneyness)
+                            {
+                              double spot =  std::exp(logMoneyness);
+                              double localVol = m_Vol->value(time, spot);
+                              double drift = m_Drift->value(time, spot);
+                              return fundingRate->value(time) + drift - .5 * localVol * localVol;
+                            } );
+          beagle::real_2d_function_ptr_t diffusion = beagle::math::RealTwoDimFunction::createBinaryFunction(
+                            [this](double time, double logMoneyness)
+                            {
+                              double spot = std::exp(logMoneyness);
+                              double localVol = m_Vol->value(time, spot);
+                              return .5 * localVol * localVol;
+                            } );
+          beagle::real_2d_function_ptr_t rate = beagle::math::RealTwoDimFunction::createBinaryFunction(
+                            [this, discountingRate](double time, double logMoneyness)
+                            {
+                              double spot = std::exp(logMoneyness);
+                              return discountingRate->value(time) + m_Rate->value(time, spot);
+                            } );
+          beagle::real_2d_function_ptr_t recovery = beagle::math::RealTwoDimFunction::createBinaryFunction(
+                            [this](double time, double logMoneyness)
+                            {
+                              double spot = std::exp(logMoneyness);
+                              return m_Recovery->value(time, spot);
+                            } );
 
-          //  beagle::parabolic_pde_solver_ptr_t solver
-          //    = beagle::math::OneDimParabolicPDESolver::formOneDimParabolicValuationPDESolver(convection, diffusion, rate,
-          //                                                                                    beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0.));
+          beagle::parabolic_pde_solver_ptr_t solver
+            = beagle::math::OneDimParabolicPDESolver::formOneDimParabolicValuationPDESolver(convection, diffusion, rate, recovery);
 
-          //  // Set up the state variable mesh
-          //  int numStateVars = m_Settings.numberOfStateVariableSteps();
-          //  if (numStateVars % 2 == 0)
-          //    numStateVars += 1;
+          // Set up the state variable mesh
+          int numStateVars = m_Settings.numberOfStateVariableSteps();
+          if (numStateVars % 2 == 0)
+            numStateVars += 1;
 
-          //  double atmVol = m_Vol->value(expiry, termForward);
-          //  int centralIndex = numStateVars / 2;
-          //  double centralValue = std::log(m_Forward->value(0.));
-          //  double stateVarStep = m_Settings.numberOfGaussianStandardDeviations() * atmVol * std::sqrt(expiry) / centralIndex;
-          //  beagle::dbl_vec_t stateVars(numStateVars);
-          //  for (int i=0; i<numStateVars; ++i)
-          //    stateVars[i] = centralValue + (i - centralIndex) * stateVarStep;
+          double atmVol = m_Vol->value(expiry, termForward);
+          int centralIndex = numStateVars / 2;
+          double centralValue = std::log(m_Forward->value(0.));
+          double stateVarStep = m_Settings.numberOfGaussianStandardDeviations() * atmVol * std::sqrt(expiry) / centralIndex;
+          beagle::dbl_vec_t stateVars(numStateVars);
+          for (int i=0; i<numStateVars; ++i)
+            stateVars[i] = centralValue + (i - centralIndex) * stateVarStep;
 
-          //  // Set the initial condition
-          //  beagle::dbl_vec_t initialCondition(numStateVars);
-          //  std::transform(stateVars.cbegin(),
-          //                 stateVars.cend(),
-          //                 initialCondition.begin(),
-          //                 [=](double logMoneyness)
-          //                 { return payoff->intrinsicValue(std::exp(logMoneyness), strike); });
+          // Set the initial condition
+          beagle::dbl_vec_t initialCondition(numStateVars);
+          std::transform(stateVars.cbegin(),
+                         stateVars.cend(),
+                         initialCondition.begin(),
+                         [=](double logMoneyness)
+                         { return paymentAmounts.back(); });
 
-          //  // Perform the backward induction
-          //  int numTimes = static_cast<int>(expiry * m_Settings.numberOfStateVariableSteps());
-          //  double timeStep = (0. - expiry) / numTimes;
-          //  for (int i=0; i<numTimes; ++i)
-          //  {
-          //    double end = expiry + (i+1) * timeStep / numTimes;
-          //    double forward = m_Forward->value(end);
-          //    double lbc = payoff->intrinsicValue( std::exp(stateVars.front() - stateVarStep), strike );
-          //    double ubc = payoff->intrinsicValue( std::exp(stateVars.back() + stateVarStep), strike );
-          //    solver->evolve(end,
-          //                   timeStep,
-          //                   stateVars,
-          //                   beagle::dbl_vec_t{lbc},
-          //                   beagle::dbl_vec_t{ubc},
-          //                   initialCondition);
+          int numCashflows = cashflows.size();
+          for (int j=0; j<numCashflows; ++j)
+          {
+            double start = paymentTimes[numCashflows-j];
+            double end = paymentTimes[numCashflows-j-1];
+                        
+            // Perform the backward induction
+            int numTimes = static_cast<int>((start - end) * m_Settings.numberOfStateVariableSteps());
+            double timeStep = (end - expiry) / numTimes;
+            for (int i=0; i<numTimes; ++i)
+            {
+              double thisTime = start + (i+1) * timeStep / numTimes;
+              double df = m_Discounting->value(thisTime);
+              double lbc = 0.;
+              double ubc = notional * df;
+              solver->evolve(thisTime,
+                             timeStep,
+                             stateVars,
+                             beagle::dbl_vec_t{lbc},
+                             beagle::dbl_vec_t{ubc},
+                             initialCondition);
+            }
+            
+            std::cout << initialCondition[centralIndex] << "\n";
+            std::transform(initialCondition.begin(),
+                           initialCondition.end(),
+                           initialCondition.begin(),
+                           [=](double price)
+                           { return price + paymentAmounts[numCashflows-j-1]; });
+            std::cout << initialCondition[centralIndex] << "\n";
+          }
 
-          //    if (pA)
-          //    {
-          //      std::transform(initialCondition.begin(),
-          //                     initialCondition.end(),
-          //                     stateVars.cbegin(),
-          //                     initialCondition.begin(),
-          //                     [=](double continuation, double logSpot)
-          //                     {
-          //                       return std::max(continuation,
-          //                                       payoff->intrinsicValue( std::exp(logSpot), strike ));
-          //                     });
-          //    }
-          //  }
-
-          //  return initialCondition[centralIndex];
-          //}
-          //else
-          //  return 0.0;
+          return initialCondition[centralIndex];
         }
       private:
         beagle::real_function_ptr_t m_Forward;

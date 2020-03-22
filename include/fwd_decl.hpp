@@ -80,8 +80,8 @@ namespace beagle
   using real_func_t = std::function<double(double)>;
   using real_2d_func_t = std::function<double(double, double)>;
 
-  // payment time, coupon rate, and accrual fraction
-  using bond_cashflows_t = std::vector<std::tuple<double, double, double>>;
+  // payment time and cash amount with a face value of 100.0
+  using bond_cashflows_t = std::vector<std::pair<double, double>>;
 }
 
 
