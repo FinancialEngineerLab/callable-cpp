@@ -24,6 +24,14 @@ namespace beagle
         virtual double expiry(void) const=0;
         virtual const beagle::payoff_ptr_t& payoff(void) const=0;
       };
+
+      struct Bond
+      {
+        virtual ~Bond(void);
+      public:
+        virtual double standardFaceValue(void) const;
+        virtual const beagle::bond_cashflows_t& cashflows(void) const=0;
+      };
     }
   }
 }

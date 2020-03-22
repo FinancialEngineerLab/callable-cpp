@@ -15,10 +15,12 @@ namespace beagle
       {
         OneDimParabolicValuationPDESolver(const beagle::real_2d_function_ptr_t& convection,
                                           const beagle::real_2d_function_ptr_t& diffusion,
-                                          const beagle::real_2d_function_ptr_t& rate) :
+                                          const beagle::real_2d_function_ptr_t& rate,
+                                          const beagle::real_2d_function_ptr_t& source) :
           m_Convection(convection),
           m_Diffusion(diffusion),
-          m_Rate(rate)
+          m_Rate(rate),
+          m_Source(source)
         { }
         virtual ~OneDimParabolicValuationPDESolver(void)
         { }
@@ -47,10 +49,12 @@ namespace beagle
             double rate = m_Rate->value(end, stateVariables[j]);
             double convection = m_Convection->value(end, stateVariables[j]);
             double diffusion = m_Diffusion->value(end, stateVariables[j]);
+            double source = m_Source->value(end, stateVariables[j]);
 
             diag[j]  = 1. - rate * timeStep - 2. * diffusion * dTdXdX;
             upper[j] =   .5 * convection * dTdX + diffusion * dTdXdX;
             lower[j] = - .5 * convection * dTdX + diffusion * dTdXdX;
+            initialCondition[j] += source * timeStep;
           }
 
           initialCondition[0] -= lower[0] * lbc[0];
@@ -67,6 +71,7 @@ namespace beagle
         beagle::real_2d_function_ptr_t m_Convection;
         beagle::real_2d_function_ptr_t m_Diffusion;
         beagle::real_2d_function_ptr_t m_Rate;
+        beagle::real_2d_function_ptr_t m_Source;
       };
 
       struct OneDimFokkerPlanckPDESolver : public OneDimParabolicPDESolver
@@ -146,9 +151,10 @@ namespace beagle
     beagle::parabolic_pde_solver_ptr_t
     OneDimParabolicPDESolver::formOneDimParabolicValuationPDESolver(const beagle::real_2d_function_ptr_t& convection,
                                                                     const beagle::real_2d_function_ptr_t& diffusion,
-                                                                    const beagle::real_2d_function_ptr_t& rate)
+                                                                    const beagle::real_2d_function_ptr_t& rate,
+                                                                    const beagle::real_2d_function_ptr_t& source)
     {
-      return std::make_shared<impl::OneDimParabolicValuationPDESolver>(convection, diffusion, rate);
+      return std::make_shared<impl::OneDimParabolicValuationPDESolver>(convection, diffusion, rate, source);
     }
 
     beagle::parabolic_pde_solver_ptr_t

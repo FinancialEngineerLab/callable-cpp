@@ -11,6 +11,14 @@ namespace beagle
     {
       Option::~Option(void)
       { }
+
+      Bond::~Bond(void)
+      { }
+
+      double Bond::standardFaceValue(void) const
+      {
+        return 100.0;
+      }
     }
   }
 }
