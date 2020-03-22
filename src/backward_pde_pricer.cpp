@@ -430,13 +430,13 @@ namespace beagle
                         
             // Perform the backward induction
             int numTimes = static_cast<int>((start - end) * m_Settings.numberOfStateVariableSteps());
-            double timeStep = (end - expiry) / numTimes;
+            double timeStep = (end - start) / numTimes;
             for (int i=0; i<numTimes; ++i)
             {
               double thisTime = start + (i+1) * timeStep / numTimes;
               double df = m_Discounting->value(thisTime);
-              double lbc = 0.;
-              double ubc = notional * df;
+              double lbc = notional;
+              double ubc = notional;
               solver->evolve(thisTime,
                              timeStep,
                              stateVars,
@@ -445,13 +445,11 @@ namespace beagle
                              initialCondition);
             }
             
-            std::cout << initialCondition[centralIndex] << "\n";
             std::transform(initialCondition.begin(),
                            initialCondition.end(),
                            initialCondition.begin(),
                            [=](double price)
                            { return price + paymentAmounts[numCashflows-j-1]; });
-            std::cout << initialCondition[centralIndex] << "\n";
           }
 
           return initialCondition[centralIndex];

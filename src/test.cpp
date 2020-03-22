@@ -276,10 +276,10 @@ void test5( void )
   double spot = 50;
   double r = .04;
   double q = .02;
-  double sigma = .3;
+  double sigma = .25;
 
-  double c = .05;
-  double p = 2.;
+  double c = .02;
+  double p = 0.;
 
   beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::call();
 
@@ -295,7 +295,7 @@ void test5( void )
   beagle::real_2d_function_ptr_t volatility = beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(sigma);
   beagle::real_2d_function_ptr_t rate = drift;
 
-  beagle::dbl_vec_t expiries{.25, .5, 1., 2., 3., 4., 5.};
+  beagle::dbl_vec_t expiries{5.}; //{.25, .5, 1., 2., 3., 4., 5.};
   for (double expiry : expiries)
   {
     double strike = forward->value(expiry);
@@ -353,14 +353,14 @@ void test6( void )
 {
   std::cout << "\nStart of Test 6:\n\n";
 
-  double spot = 60;
+  double spot = 50;
   double r = .04;
-  double q = .0;
+  double q = .02;
   double sigma = .25;
 
-  double c = -.025;
+  double c = .02;
   double p = 0.;
-  double rec = 0.;
+  double rec = 0.4;
 
   // Model parameters
   beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
@@ -398,7 +398,7 @@ void test6( void )
                                                               rate,
                                                               recovery,
                                                               beagle::valuation::OneDimFiniteDifferenceSettings(1501, 1901, 7.5) );
-  std::cout << odbpbp->value(fcb) << "\n";
+  std::cout << "The bond price is: " << odbpbp->value(fcb) << "\n";
 
   std::cout << "\nEnd of Test 6\n";
 }
