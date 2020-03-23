@@ -10,9 +10,23 @@ namespace beagle
       {
         struct FixedCouponBond : public Bond
         {
-          FixedCouponBond(const beagle::bond_cashflows_t& cashflows) :
-            Bond(cashflows)
-          { }
+          FixedCouponBond(double expiry,
+                          double coupon,
+                          int frequency)
+          {
+            m_Cashflows.clear();
+
+            double accrual = 1. / frequency;
+            double couponAmount = standardFaceValue() * coupon * accrual;
+
+            int numPayments = std::ceil(expiry * frequency);
+            for (int i=numPayments; i>1; --i)
+            {
+              m_Cashflows.emplace_back(expiry - (i-1) * accrual, couponAmount);
+            }
+
+            m_Cashflows.emplace_back(expiry, standardFaceValue() + couponAmount);
+          }
           virtual ~FixedCouponBond( void )
           { }
         public:
@@ -21,25 +35,27 @@ namespace beagle
             static std::string ss("FixedCouponBond");
             return ss;
           }
+          virtual const beagle::bond_cashflows_t& cashflows(void) const override
+          {
+            return m_Cashflows;
+          }
+        private:
+          beagle::bond_cashflows_t m_Cashflows;
         };
       }
 
-      Bond::Bond(const beagle::bond_cashflows_t& cashflows) :
-        m_Cashflows(cashflows)
+      Bond::Bond(void)
       { }
 
       Bond::~Bond( void )
       { }
 
-      const beagle::bond_cashflows_t& Bond::cashflows(void) const
-      {
-        return m_Cashflows;
-      }
-
       beagle::product_ptr_t
-      Bond::createFixedCouponBond(const beagle::bond_cashflows_t& cashflows)
+      Bond::createFixedCouponBond(double expiry,
+                                  double coupon,
+                                  int frequency)
       {
-        return std::make_shared<impl::FixedCouponBond>(cashflows);
+        return std::make_shared<impl::FixedCouponBond>(expiry, coupon, frequency);
       }
     }
   }

@@ -13,14 +13,16 @@ namespace beagle
       struct Bond : public Product,
                     public beagle::product::mixins::Bond
       {
-        Bond(const beagle::bond_cashflows_t& cashflows);
+        Bond(void);
         virtual ~Bond(void);
       public:
         virtual const std::string& name(void) const=0;
       public:
-        virtual const beagle::bond_cashflows_t& cashflows(void) const override;
+        virtual const beagle::bond_cashflows_t& cashflows(void) const=0;
       public:
-        static beagle::product_ptr_t createFixedCouponBond(const beagle::bond_cashflows_t& cashflows);
+        static beagle::product_ptr_t createFixedCouponBond(double expiry,
+                                                           double coupon,
+                                                           int frequency);
       private:
         beagle::bond_cashflows_t m_Cashflows;
 
