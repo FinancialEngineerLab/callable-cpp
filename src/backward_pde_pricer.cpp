@@ -464,6 +464,15 @@ namespace beagle
                          [=](double logMoneyness)
                          { return std::exp(logMoneyness); });
 
+          if (pConv)
+          {
+            for (int k=0; k<numStateVars; ++k)
+            {
+              double conversionValue = conversionRatio->value(expiry) * spots[k];
+              initialCondition[k] = std::max(initialCondition[k], conversionValue);
+            }
+          }
+
           int numCashflows = cashflows.size();
           for (int j=0; j<numCashflows; ++j)
           {
@@ -475,7 +484,7 @@ namespace beagle
             double timeStep = (end - start) / numTimes;
             for (int i=0; i<numTimes; ++i)
             {
-              double thisTime = start + (i+1) * timeStep / numTimes;
+              double thisTime = start + (end - start) * (i+1) / numTimes;
               double df = m_Discounting->value(thisTime);
               double lbc = notional;
               double ubc = notional;
@@ -486,35 +495,37 @@ namespace beagle
                              beagle::dbl_vec_t{ubc},
                              initialCondition);
 
-              bool isPutDate(jt != jtEnd && std::fabs(jt->first - thisTime) < std::fabs(timeStep / 2.));
-              bool isCallDate(thisTime - callStart > 0.);
-              for (int j=0; j<numStateVars; ++j)
+              // Put date
+              if (jt != jtEnd && std::fabs(jt->first - thisTime) < std::fabs(timeStep / 2.))
               {
-                double spot = spots[j];
-                double price = initialCondition[j];
+                for (int k=0; k<numStateVars; ++k)
+                  initialCondition[k] = std::max(initialCondition[k], jt->second);
 
-                // Encouter a put date
-                if (isPutDate && price < jt->second)
-                  initialCondition[j] = jt->second;
-
-                if (pConv)
-                {
-                  double conversionValue = conversionRatio->value(thisTime) * spots[j];
-                  if (price < conversionValue)
-                    initialCondition[j] = conversionValue;
-
-                  if (isCallDate)
-                  {
-                    double callValue = callPrice->value(thisTime);
-                    double maximum = std::max(callValue, conversionValue);
-                    if (price > maximum)
-                      initialCondition[j] = maximum;
-                  }
-                }
+                ++jt;
               }
 
-              if (isPutDate)
-                ++jt;
+              // Conversion
+              if (pConv && pC && thisTime - callStart >= 0.)
+              {
+                for (int k=0; k<numStateVars; ++k)
+                {
+                  double conversionValue = conversionRatio->value(thisTime) * spots[k];
+                  double callValue = callPrice->value(thisTime);
+                  double accrual = (thisTime - paymentTimes[numCashflows-j-1]) 
+                                 / (paymentTimes[numCashflows-j] - paymentTimes[numCashflows-j-1])
+                                 * paymentAmounts[numCashflows-j-1];
+                  double max = std::max(conversionValue, callValue + accrual);
+                  initialCondition[k] = std::min(initialCondition[k], max);
+                }
+              }
+              else if (pConv)
+              {
+                for (int k=0; k<numStateVars; ++k)
+                {
+                  double conversionValue = conversionRatio->value(thisTime) * spots[k];
+                  initialCondition[k] = std::max(initialCondition[k], conversionValue);
+                }
+              }
             }
             
             std::transform(initialCondition.begin(),

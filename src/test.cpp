@@ -360,76 +360,6 @@ void test6( void )
   double sigma = .25;
 
   double c = .02;
-  double p = 2.;
-  double rec = 0.4;
-
-  beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
-                                            [=](double arg) { return std::exp(-r * arg);});
-  beagle::real_function_ptr_t forward = beagle::math::RealFunction::createContinuousForwardAssetPriceFunction(
-                                            spot,
-                                            beagle::math::RealFunction::createUnaryFunction(
-                                            [=](double arg) { return std::exp(-(r - q) * arg);}));
-  beagle::real_2d_function_ptr_t drift = beagle::math::RealTwoDimFunction::createBinaryFunction(
-                                            [=](double time, double price){ return c * std::pow(price / spot, -p); } );
-  beagle::real_2d_function_ptr_t volatility = beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(sigma);
-  beagle::real_2d_function_ptr_t rate = drift;
-  beagle::real_2d_function_ptr_t recovery = beagle::math::RealTwoDimFunction::createBinaryFunction(
-                                            [=](double time, double price){ return -100. * rec * rate->value(time, price); } );
-  beagle::pricer_ptr_t odbpbp  = beagle::valuation::Pricer::formOneDimBackwardPDEBondPricer(
-                                                              forward,
-                                                              discounting,
-                                                              drift,
-                                                              volatility,
-                                                              rate,
-                                                              recovery,
-                                                              beagle::valuation::OneDimFiniteDifferenceSettings(52, 250, 7.5) );
-
-  // Create a fixed coupon bond: 5-year maturity, 1.5% coupon, semi-annual
-  beagle::product_ptr_t fcb = beagle::product::bond::Bond::createFixedCouponBond(5., .015, 2);
-  std::cout << "The bond price is: " << odbpbp->value(fcb) << "\n";
-
-  // Model parameters 2
-  sigma = .4;
-  c = .03;
-  p = 2.;
-
-  drift = beagle::math::RealTwoDimFunction::createBinaryFunction(
-                                            [=](double time, double price){ return c * std::pow(price / spot, -p); } );
-  volatility = beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(sigma);
-  rate = drift;
-  recovery = beagle::math::RealTwoDimFunction::createBinaryFunction(
-                                            [=](double time, double price){ return -100. * rec * rate->value(time, price); } );
-  odbpbp  = beagle::valuation::Pricer::formOneDimBackwardPDEBondPricer(
-                                                              forward,
-                                                              discounting,
-                                                              drift,
-                                                              volatility,
-                                                              rate,
-                                                              recovery,
-                                                              beagle::valuation::OneDimFiniteDifferenceSettings(1501, 1901, 7.5) );
-  
-  // Create a fixed coupon bond: 10-year maturity, 3% coupon, semi-annual
-  fcb = beagle::product::bond::Bond::createFixedCouponBond(10, .03, 2);
-  std::cout << "The bond price is: " << odbpbp->value(fcb) << "\n";
-
-  // Create a zero coupon bond: 5-year maturity
-  beagle::product_ptr_t zcb = beagle::product::bond::Bond::createZeroCouponBond(5.);
-  std::cout << "The bond price is: " << odbpbp->value(zcb) << "\n";
-
-  std::cout << "\nEnd of Test 6\n";
-}
-
-void test7( void )
-{
-  std::cout << "\nStart of Test 7:\n\n";
-
-  // Model parameters 1
-  double spot = 50;
-  double r = .04;
-  double q = .02;
-  double sigma = .25;
-
-  double c = .02;
   double p = 0.;
   double rec = 0.4;
 
@@ -453,6 +383,76 @@ void test7( void )
                                                               rate,
                                                               recovery,
                                                               beagle::valuation::OneDimFiniteDifferenceSettings(52, 250, 7.5) );
+
+  // Create a fixed coupon bond: 5-year maturity, 1.5% coupon, semi-annual
+  beagle::product_ptr_t fcb = beagle::product::bond::Bond::createFixedCouponBond(5., .015, 2);
+  std::cout << "The bond price is: " << odbpbp->value(fcb) << "\n";
+
+  // Model parameters 2
+  sigma = .4;
+  c = .03;
+  p = 0.;
+
+  drift = beagle::math::RealTwoDimFunction::createBinaryFunction(
+                                            [=](double time, double price){ return c * std::pow(price / spot, -p); } );
+  volatility = beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(sigma);
+  rate = drift;
+  recovery = beagle::math::RealTwoDimFunction::createBinaryFunction(
+                                            [=](double time, double price){ return -100. * rec * rate->value(time, price); } );
+  odbpbp  = beagle::valuation::Pricer::formOneDimBackwardPDEBondPricer(
+                                                              forward,
+                                                              discounting,
+                                                              drift,
+                                                              volatility,
+                                                              rate,
+                                                              recovery,
+                                                              beagle::valuation::OneDimFiniteDifferenceSettings(52, 250, 7.5) );
+  
+  // Create a fixed coupon bond: 10-year maturity, 3% coupon, semi-annual
+  fcb = beagle::product::bond::Bond::createFixedCouponBond(10, .03, 2);
+  std::cout << "The bond price is: " << odbpbp->value(fcb) << "\n";
+
+  // Create a zero coupon bond: 5-year maturity
+  beagle::product_ptr_t zcb = beagle::product::bond::Bond::createZeroCouponBond(5.);
+  std::cout << "The bond price is: " << odbpbp->value(zcb) << "\n";
+
+  std::cout << "\nEnd of Test 6\n";
+}
+
+void test7( void )
+{
+  std::cout << "\nStart of Test 7:\n\n";
+
+  // Model parameters 1
+  double spot = 50;
+  double r = .04;
+  double q = .02;
+  double sigma = .25;
+
+  double c = .02;
+  double p = 2.;
+  double rec = 0.4;
+
+  beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
+                                            [=](double arg) { return std::exp(-r * arg);});
+  beagle::real_function_ptr_t forward = beagle::math::RealFunction::createContinuousForwardAssetPriceFunction(
+                                            spot,
+                                            beagle::math::RealFunction::createUnaryFunction(
+                                            [=](double arg) { return std::exp(-(r - q) * arg);}));
+  beagle::real_2d_function_ptr_t drift = beagle::math::RealTwoDimFunction::createBinaryFunction(
+                                            [=](double time, double price){ return c * std::pow(price / spot, -p); } );
+  beagle::real_2d_function_ptr_t volatility = beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(sigma);
+  beagle::real_2d_function_ptr_t rate = drift;
+  beagle::real_2d_function_ptr_t recovery = beagle::math::RealTwoDimFunction::createBinaryFunction(
+                                            [=](double time, double price){ return -100. * rec * rate->value(time, price); } );
+  beagle::pricer_ptr_t odbpbp  = beagle::valuation::Pricer::formOneDimBackwardPDEBondPricer(
+                                                              forward,
+                                                              discounting,
+                                                              drift,
+                                                              volatility,
+                                                              rate,
+                                                              recovery,
+                                                              beagle::valuation::OneDimFiniteDifferenceSettings(100, 500, 7.5) );
 try {
   // Create a fixed coupon bond: 5-year maturity, 1.5% coupon, semi-annual
   beagle::callable_schedule_t callSchedule;
@@ -474,7 +474,7 @@ try {
   // Model parameters 2
   sigma = .4;
   c = .03;
-  p = 0.;
+  p = 2.;
 
   drift = beagle::math::RealTwoDimFunction::createBinaryFunction(
                                             [=](double time, double price){ return c * std::pow(price / spot, -p); } );
@@ -489,7 +489,7 @@ try {
                                                               volatility,
                                                               rate,
                                                               recovery,
-                                                              beagle::valuation::OneDimFiniteDifferenceSettings(52, 250, 7.5) );
+                                                              beagle::valuation::OneDimFiniteDifferenceSettings(100, 500, 7.5) );
   
   // Create a fixed coupon bond: 10-year maturity, 3% coupon, semi-annual
   beagle::callable_schedule_t callSchedule;
