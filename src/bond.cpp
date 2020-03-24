@@ -86,7 +86,11 @@ namespace beagle
           ConvertibleBond(const beagle::product_ptr_t& underlyingBond,
                           const beagle::real_function_ptr_t& conversionRatio,
                           const beagle::callable_schedule_t& callSchedule,
-                          const beagle::puttable_schedule_t& putSchedule)
+                          const beagle::puttable_schedule_t& putSchedule) :
+            m_UnderlyingBond(underlyingBond),
+            m_ConversonRatio(conversionRatio),
+            m_CallSchedule(callSchedule),
+            m_PutSchedule(putSchedule)
           { }
           virtual ~ConvertibleBond( void )
           { }

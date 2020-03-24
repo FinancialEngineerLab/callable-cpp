@@ -1,5 +1,6 @@
 #include "one_dim_pde_pricer.hpp"
 #include "solver.hpp"
+#include "bond.hpp"
 
  #include <iostream>
 
@@ -333,12 +334,34 @@ namespace beagle
       public:
         virtual double value(const beagle::product_ptr_t& product) const
         {
+          // Extract bond cash flows
           auto pB = dynamic_cast<beagle::product::mixins::Bond*>(product.get());
           if (!pB)
             throw(std::string("The incoming product is not a bond!"));
 
           double notional = pB->standardFaceValue();
           const beagle::bond_cashflows_t& cashflows = pB->cashflows();
+
+          // Extract call schedule
+          beagle::callable_schedule_t callSchedule;
+          auto pC = dynamic_cast<beagle::product::bond::mixins::Callable*>(product.get());
+          if (pC)
+            callSchedule = pC->callSchedule();
+
+          // Extract put schedule
+          beagle::puttable_schedule_t putSchedule;
+          auto pP = dynamic_cast<beagle::product::bond::mixins::Puttable*>(product.get());
+          if (pP)
+            putSchedule = pP->putSchedule();
+
+          auto jt = putSchedule.crbegin();
+          auto jtEnd = putSchedule.crend();
+
+          // Extract conversion ratio
+          beagle::real_function_ptr_t conversionRatio;
+          auto pConv = dynamic_cast<beagle::product::bond::mixins::Convertible*>(product.get());
+          if (pConv)
+            conversionRatio = pConv->conversionRatio();
 
           beagle::dbl_vec_t paymentTimes(cashflows.size() + 1U, 0.0);
           std::transform(cashflows.cbegin(),
@@ -356,6 +379,17 @@ namespace beagle
 
           double expiry = cashflows.back().first;
           double termForward = m_Forward->value(expiry);
+
+          if (callSchedule.size() > 1U)
+            throw(std::string("Multiple call period is not supported currently!"));
+
+          double callStart(2.*expiry);
+          beagle::real_function_ptr_t callPrice(beagle::math::RealFunction::createConstantFunction(100 * notional));
+          if (callSchedule.size() == 1U)
+          {
+            callStart = std::get<0>(callSchedule.front());
+            callPrice = std::get<1>(callSchedule.front());
+          }
 
           // Determine the convection and diffusion terms in the backward PDE
           beagle::real_function_ptr_t fundingRate = beagle::math::RealFunction::createUnaryFunction(
@@ -421,6 +455,14 @@ namespace beagle
                          initialCondition.begin(),
                          [=](double logMoneyness)
                          { return paymentAmounts.back(); });
+          
+          // Store spot prices for speed
+          beagle::dbl_vec_t spots(numStateVars);
+          std::transform(stateVars.cbegin(),
+                         stateVars.cend(),
+                         spots.begin(),
+                         [=](double logMoneyness)
+                         { return std::exp(logMoneyness); });
 
           int numCashflows = cashflows.size();
           for (int j=0; j<numCashflows; ++j)
@@ -443,6 +485,36 @@ namespace beagle
                              beagle::dbl_vec_t{lbc},
                              beagle::dbl_vec_t{ubc},
                              initialCondition);
+
+              bool isPutDate(jt != jtEnd && std::fabs(jt->first - thisTime) < std::fabs(timeStep / 2.));
+              bool isCallDate(thisTime - callStart > 0.);
+              for (int j=0; j<numStateVars; ++j)
+              {
+                double spot = spots[j];
+                double price = initialCondition[j];
+
+                // Encouter a put date
+                if (isPutDate && price < jt->second)
+                  initialCondition[j] = jt->second;
+
+                if (pConv)
+                {
+                  double conversionValue = conversionRatio->value(thisTime) * spots[j];
+                  if (price < conversionValue)
+                    initialCondition[j] = conversionValue;
+
+                  if (isCallDate)
+                  {
+                    double callValue = callPrice->value(thisTime);
+                    double maximum = std::max(callValue, conversionValue);
+                    if (price > maximum)
+                      initialCondition[j] = maximum;
+                  }
+                }
+              }
+
+              if (isPutDate)
+                ++jt;
             }
             
             std::transform(initialCondition.begin(),
