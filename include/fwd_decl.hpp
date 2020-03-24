@@ -26,7 +26,6 @@ namespace beagle
     }
   }
 
-
   namespace math
   {
     struct RealFunction;
@@ -75,13 +74,20 @@ namespace beagle
   using dbl_vec_vec_t = std::vector<dbl_vec_t>;
   using dbl_mat_t = dbl_vec_vec_t;
   using int_vec_t = std::vector<int>;
-  using discrete_dividend_schedule_t = std::vector< std::pair<double, double> >;
+
+  using two_dbl_t = std::pair<double, double>;
+  using discrete_dividend_schedule_t = std::vector<two_dbl_t>;
 
   using real_func_t = std::function<double(double)>;
   using real_2d_func_t = std::function<double(double, double)>;
 
   // payment time and cash amount with a face value of 100.0
-  using bond_cashflows_t = std::vector<std::pair<double, double>>;
+  using bond_cashflows_t = std::vector<two_dbl_t>;
+  using puttable_schedule_t = std::vector<two_dbl_t>;
+
+  // For each callable schedule entry, the two doubles indicate the 
+  // start and end of the call period.
+  using callable_schedule_t = std::vector<std::tuple<double, beagle::real_function_ptr_t, double>>;
 }
 
 

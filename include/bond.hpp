@@ -20,13 +20,42 @@ namespace beagle
       public:
         virtual const beagle::bond_cashflows_t& cashflows(void) const=0;
       public:
+        static beagle::product_ptr_t createZeroCouponBond(double expiry);
         static beagle::product_ptr_t createFixedCouponBond(double expiry,
                                                            double coupon,
                                                            int frequency);
+        static beagle::product_ptr_t createConvertibleBond(const beagle::product_ptr_t& underlyingBond,
+                                                           const beagle::real_function_ptr_t& conversionRatio,
+                                                           const beagle::callable_schedule_t& callSchedule,
+                                                           const beagle::puttable_schedule_t& putSchedule);
       private:
         beagle::bond_cashflows_t m_Cashflows;
 
       };
+
+      namespace mixins
+      {
+        struct Callable
+        {
+          virtual ~Callable( void );
+        public:
+          virtual const beagle::callable_schedule_t& callSchedule( void ) const=0;
+        };
+        
+        struct Puttable
+        {
+          virtual ~Puttable( void );
+        public:
+          virtual const beagle::puttable_schedule_t& putSchedule( void ) const=0;
+        };
+
+        struct Convertible
+        {
+          virtual ~Convertible( void );
+        public:
+          virtual const beagle::real_function_ptr_t& conversionRatio( void ) const=0;
+        };
+      }
     }
   }
 }
