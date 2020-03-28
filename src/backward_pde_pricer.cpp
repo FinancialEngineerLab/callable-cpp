@@ -469,7 +469,6 @@ namespace beagle
                                                expiry,
                                                initialCondition);
 
-
           int numCouponflows = couponTimes.size() - 1U;
           for (int j=0; j<numCouponflows; ++j)
           {
