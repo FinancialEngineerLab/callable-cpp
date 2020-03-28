@@ -82,7 +82,8 @@ namespace beagle
   using real_2d_func_t = std::function<double(double, double)>;
 
   // payment time and cash amount with a face value of 100.0
-  using bond_cashflows_t = std::vector<two_dbl_t>;
+  using coupon_flows_t = std::vector<two_dbl_t>;
+  using notional_flows_t = std::vector<two_dbl_t>;
   using puttable_schedule_t = std::vector<two_dbl_t>;
 
   // For each callable schedule entry, the two doubles indicate the 

@@ -2,7 +2,8 @@
 #include "solver.hpp"
 #include "bond.hpp"
 
- #include <iostream>
+#include <iostream>
+#include <iterator>
 
 namespace beagle
 {
@@ -335,60 +336,51 @@ namespace beagle
         virtual double value(const beagle::product_ptr_t& product) const
         {
           // Extract bond cash flows
-          auto pB = dynamic_cast<beagle::product::mixins::Bond*>(product.get());
-          if (!pB)
+          auto pBond = dynamic_cast<beagle::product::mixins::Bond*>(product.get());
+          if (!pBond)
             throw(std::string("The incoming product is not a bond!"));
 
-          double notional = pB->standardFaceValue();
-          const beagle::bond_cashflows_t& cashflows = pB->cashflows();
+          double notional = pBond->standardFaceValue();
+          const beagle::coupon_flows_t& couponFlows = pBond->couponFlows();
+          const beagle::notional_flows_t& notionalFlows = pBond->notionalFlows();
 
-          // Extract call schedule
+          if (notionalFlows.size() != 1U)
+            throw(std::string("Cannot value a bond with notional structures!"));
+
+          // Extract optionality features
           beagle::callable_schedule_t callSchedule;
-          auto pC = dynamic_cast<beagle::product::bond::mixins::Callable*>(product.get());
-          if (pC)
-            callSchedule = pC->callSchedule();
-
-          // Extract put schedule
           beagle::puttable_schedule_t putSchedule;
-          auto pP = dynamic_cast<beagle::product::bond::mixins::Puttable*>(product.get());
-          if (pP)
-            putSchedule = pP->putSchedule();
-
-          auto jt = putSchedule.crbegin();
-          auto jtEnd = putSchedule.crend();
-
-          // Extract conversion ratio
           beagle::real_function_ptr_t conversionRatio;
-          auto pConv = dynamic_cast<beagle::product::bond::mixins::Convertible*>(product.get());
-          if (pConv)
-            conversionRatio = pConv->conversionRatio();
+          bool isCallable(false);
+          bool isPuttable(false);
+          bool isConvertible(false);
+          determineCallablePutableConvertibleFeatures(product,
+                                                      callSchedule,
+                                                      putSchedule,
+                                                      conversionRatio,
+                                                      isCallable,
+                                                      isPuttable,
+                                                      isConvertible);
 
-          beagle::dbl_vec_t paymentTimes(cashflows.size() + 1U, 0.0);
-          std::transform(cashflows.cbegin(),
-                         cashflows.cend(),
-                         paymentTimes.begin() + 1,
+          beagle::dbl_vec_t couponTimes(couponFlows.size() + 1U, 0.0);
+          std::transform(couponFlows.cbegin(),
+                         couponFlows.cend(),
+                         couponTimes.begin() + 1,
                          [](const std::pair<double, double>& p)
                          { return p.first; });
 
-          beagle::dbl_vec_t paymentAmounts(cashflows.size() + 1U, 0.0);
-          std::transform(cashflows.cbegin(),
-                         cashflows.cend(),
-                         paymentAmounts.begin() + 1,
+          beagle::dbl_vec_t couponAmounts(couponFlows.size() + 1U, 0.0);
+          std::transform(couponFlows.cbegin(),
+                         couponFlows.cend(),
+                         couponAmounts.begin() + 1,
                          [](const std::pair<double, double>& p)
                          { return p.second; });
 
-          double expiry = cashflows.back().first;
-          double termForward = m_Forward->value(expiry);
-
-          if (callSchedule.size() > 1U)
-            throw(std::string("Multiple call period is not supported currently!"));
-
-          double callStart(2.*expiry);
-          beagle::real_function_ptr_t callPrice(beagle::math::RealFunction::createConstantFunction(100 * notional));
-          if (callSchedule.size() == 1U)
+          double expiry = notionalFlows.back().first;
+          if (couponFlows.empty())
           {
-            callStart = std::get<0>(callSchedule.front());
-            callPrice = std::get<1>(callSchedule.front());
+            couponTimes.push_back(expiry);
+            couponAmounts.push_back(0.0);
           }
 
           // Determine the convection and diffusion terms in the backward PDE
@@ -440,6 +432,7 @@ namespace beagle
           if (numStateVars % 2 == 0)
             numStateVars += 1;
 
+          double termForward = m_Forward->value(expiry);
           double atmVol = m_Vol->value(expiry, termForward);
           int centralIndex = numStateVars / 2;
           double centralValue = std::log(m_Forward->value(0.));
@@ -454,7 +447,7 @@ namespace beagle
                          stateVars.cend(),
                          initialCondition.begin(),
                          [=](double logMoneyness)
-                         { return paymentAmounts.back(); });
+                         { return notionalFlows.back().second; });
           
           // Store spot prices for speed
           beagle::dbl_vec_t spots(numStateVars);
@@ -464,20 +457,31 @@ namespace beagle
                          [=](double logMoneyness)
                          { return std::exp(logMoneyness); });
 
-          if (pConv)
-          {
-            for (int k=0; k<numStateVars; ++k)
-            {
-              double conversionValue = conversionRatio->value(expiry) * spots[k];
-              initialCondition[k] = std::max(initialCondition[k], conversionValue);
-            }
-          }
+          applyEarlyExerciseBoundaryConditions(spots,
+                                               callSchedule,
+                                               putSchedule,
+                                               conversionRatio,
+                                               isCallable,
+                                               isPuttable,
+                                               isConvertible,
+                                               couponTimes,
+                                               couponAmounts,
+                                               expiry,
+                                               initialCondition);
 
-          int numCashflows = cashflows.size();
-          for (int j=0; j<numCashflows; ++j)
+
+          int numCouponflows = couponTimes.size() - 1U;
+          for (int j=0; j<numCouponflows; ++j)
           {
-            double start = paymentTimes[numCashflows-j];
-            double end = paymentTimes[numCashflows-j-1];
+            // Pick up coupon
+            std::transform(initialCondition.begin(),
+                           initialCondition.end(),
+                           initialCondition.begin(),
+                           [=](double price)
+                           { return price + couponAmounts[numCouponflows-j]; });
+            
+            double start = couponTimes[numCouponflows-j];
+            double end = couponTimes[numCouponflows-j-1];
                         
             // Perform the backward induction
             int numTimes = static_cast<int>((start - end) * m_Settings.numberOfStateVariableSteps());
@@ -485,7 +489,6 @@ namespace beagle
             for (int i=0; i<numTimes; ++i)
             {
               double thisTime = start + (end - start) * (i+1) / numTimes;
-              double df = m_Discounting->value(thisTime);
               double lbc = notional;
               double ubc = notional;
               solver->evolve(thisTime,
@@ -495,47 +498,124 @@ namespace beagle
                              beagle::dbl_vec_t{ubc},
                              initialCondition);
 
-              // Put date
-              if (jt != jtEnd && std::fabs(jt->first - thisTime) < std::fabs(timeStep / 2.))
-              {
-                for (int k=0; k<numStateVars; ++k)
-                  initialCondition[k] = std::max(initialCondition[k], jt->second);
-
-                ++jt;
-              }
-
-              // Conversion
-              if (pConv && pC && thisTime - callStart >= 0.)
-              {
-                for (int k=0; k<numStateVars; ++k)
-                {
-                  double conversionValue = conversionRatio->value(thisTime) * spots[k];
-                  double callValue = callPrice->value(thisTime);
-                  double accrual = (thisTime - paymentTimes[numCashflows-j-1]) 
-                                 / (paymentTimes[numCashflows-j] - paymentTimes[numCashflows-j-1])
-                                 * paymentAmounts[numCashflows-j-1];
-                  double max = std::max(conversionValue, callValue + accrual);
-                  initialCondition[k] = std::min(initialCondition[k], max);
-                }
-              }
-              else if (pConv)
-              {
-                for (int k=0; k<numStateVars; ++k)
-                {
-                  double conversionValue = conversionRatio->value(thisTime) * spots[k];
-                  initialCondition[k] = std::max(initialCondition[k], conversionValue);
-                }
-              }
+              applyEarlyExerciseBoundaryConditions(spots,
+                                                   callSchedule,
+                                                   putSchedule,
+                                                   conversionRatio,
+                                                   isCallable,
+                                                   isPuttable,
+                                                   isConvertible,
+                                                   couponTimes,
+                                                   couponAmounts,
+                                                   thisTime,
+                                                   initialCondition);
             }
-            
-            std::transform(initialCondition.begin(),
-                           initialCondition.end(),
-                           initialCondition.begin(),
-                           [=](double price)
-                           { return price + paymentAmounts[numCashflows-j-1]; });
           }
 
           return initialCondition[centralIndex];
+        }
+      private:
+        void determineCallablePutableConvertibleFeatures( const beagle::product_ptr_t& product,
+                                                          beagle::callable_schedule_t& callSchedule,
+                                                          beagle::puttable_schedule_t& putSchedule,
+                                                          beagle::real_function_ptr_t& convRatio,
+                                                          bool& isCallable,
+                                                          bool& isPuttable,
+                                                          bool& isConvertible ) const
+        {
+          auto pCall = dynamic_cast<beagle::product::bond::mixins::Callable*>(product.get());
+          if (pCall)
+          {
+            callSchedule = pCall->callSchedule();
+            isCallable = true;
+
+            if (callSchedule.size() > 1U)
+              throw(std::string("Multiple call period is not supported currently!"));
+          }
+          
+          auto pPut = dynamic_cast<beagle::product::bond::mixins::Puttable*>(product.get());
+          if (pPut)
+          {
+            putSchedule = pPut->putSchedule();
+            isPuttable = true;
+          }
+          
+          auto pConv = dynamic_cast<beagle::product::bond::mixins::Convertible*>(product.get());
+          if (pConv)
+          {
+            convRatio = pConv->conversionRatio();
+            isConvertible = true;
+          }
+        }
+        void applyEarlyExerciseBoundaryConditions(const beagle::dbl_vec_t& spots,
+                                                  const beagle::callable_schedule_t& callSchedule,
+                                                  const beagle::puttable_schedule_t& putSchedule,
+                                                  const beagle::real_function_ptr_t& convRatio,
+                                                  bool isCallable,
+                                                  bool isPuttable,
+                                                  bool isConvertible,
+                                                  const beagle::dbl_vec_t& couponTimes,
+                                                  const beagle::dbl_vec_t& couponAmounts,
+                                                  double time,
+                                                  beagle::dbl_vec_t& prices) const
+        {
+          int sz = prices.size();
+
+          // Put date
+          if (isPuttable)
+          {
+            auto jt = std::find_if(putSchedule.cbegin(),
+                                   putSchedule.cend(),
+                                   [time](const puttable_schedule_t::value_type& val)
+                                   { return std::fabs(val.first - time) < .001; });
+
+            if (jt != putSchedule.cend())
+            {
+              for (int k=0; k<sz; ++k)
+                prices[k] = std::max(prices[k], jt->second);
+            }
+          }
+
+          if (isCallable)
+          {
+            double callPeriodStart = std::get<0>(callSchedule.front());
+            double callPeriodEnd   = std::get<2>(callSchedule.front());
+            const beagle::real_function_ptr_t& callPrice = std::get<1>(callSchedule.front());
+
+            // In the callable period
+            if (time - callPeriodStart >= .0 && time - callPeriodEnd <= .0)
+            {
+              // Callable and convertible
+              if (isConvertible)
+              {
+                for (int k=0; k<sz; ++k)
+                {
+                  double conversionValue = convRatio->value(time) * spots[k];
+                  double callValue = callPrice->value(time);
+                  prices[k] = std::min(prices[k],
+                                       std::max(conversionValue, callValue));
+                }
+              }
+              // Callable only
+              else
+              {
+                for (int k=0; k<sz; ++k)
+                {
+                  double callValue = callPrice->value(time);
+                  prices[k] = std::min(prices[k], callValue);
+                }
+              }
+            }
+          }
+          
+          if (isConvertible)
+          {
+            for (int k=0; k<sz; ++k)
+            {
+              double conversionValue = convRatio->value(time) * spots[k];
+              prices[k] = std::max(prices[k], conversionValue);
+            }
+          }
         }
       private:
         beagle::real_function_ptr_t m_Forward;

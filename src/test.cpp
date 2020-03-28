@@ -276,10 +276,10 @@ void test5( void )
   double spot = 50;
   double r = .04;
   double q = .02;
-  double sigma = .3;
+  double sigma = .4;
 
-  double c = .02;
-  double p = 0.5;
+  double c = .03;
+  double p = 2.;
 
   beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::call();
 
@@ -295,7 +295,7 @@ void test5( void )
   beagle::real_2d_function_ptr_t volatility = beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(sigma);
   beagle::real_2d_function_ptr_t rate = drift;
 
-  beagle::dbl_vec_t expiries{.25, .5, 1., 2., 3., 4., 5.};
+  beagle::dbl_vec_t expiries{5.}; //{.25, .5, 1., 2., 3., 4., 5.};
   for (double expiry : expiries)
   {
     double strike = forward->value(expiry);
@@ -312,7 +312,7 @@ void test5( void )
                                                                drift,
                                                                volatility,
                                                                rate,
-                                                               beagle::valuation::OneDimFiniteDifferenceSettings(1501, 1901, 7.5) );
+                                                               beagle::valuation::OneDimFiniteDifferenceSettings(100, 500, 4.5) );
     double price = odbpop->value( euroOption );
     double bondPrice = odbpop->value(riskyBond);
     std::cout << expiry << "\t"
@@ -331,7 +331,7 @@ void test5( void )
                                                                drift,
                                                                volatility,
                                                                rate,
-                                                               beagle::valuation::OneDimFiniteDifferenceSettings(52, 250, 7.5) );
+                                                               beagle::valuation::OneDimFiniteDifferenceSettings(100, 500, 4.5) );
     price = odfpeop->value( euroOption );
     bondPrice = odfpeop->value(riskyBond);
     std::cout << expiry << "\t"
@@ -360,7 +360,7 @@ void test6( void )
   double sigma = .25;
 
   double c = .02;
-  double p = 0.;
+  double p = 2.;
   double rec = 0.4;
 
   beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
@@ -382,7 +382,7 @@ void test6( void )
                                                               volatility,
                                                               rate,
                                                               recovery,
-                                                              beagle::valuation::OneDimFiniteDifferenceSettings(52, 250, 7.5) );
+                                                              beagle::valuation::OneDimFiniteDifferenceSettings(100, 500, 4.5) );
 
   // Create a fixed coupon bond: 5-year maturity, 1.5% coupon, semi-annual
   beagle::product_ptr_t fcb = beagle::product::bond::Bond::createFixedCouponBond(5., .015, 2);
@@ -391,7 +391,7 @@ void test6( void )
   // Model parameters 2
   sigma = .4;
   c = .03;
-  p = 0.;
+  p = 2.;
 
   drift = beagle::math::RealTwoDimFunction::createBinaryFunction(
                                             [=](double time, double price){ return c * std::pow(price / spot, -p); } );
@@ -406,7 +406,7 @@ void test6( void )
                                                               volatility,
                                                               rate,
                                                               recovery,
-                                                              beagle::valuation::OneDimFiniteDifferenceSettings(52, 250, 7.5) );
+                                                              beagle::valuation::OneDimFiniteDifferenceSettings(100, 500, 4.5) );
   
   // Create a fixed coupon bond: 10-year maturity, 3% coupon, semi-annual
   fcb = beagle::product::bond::Bond::createFixedCouponBond(10, .03, 2);
@@ -452,11 +452,11 @@ void test7( void )
                                                               volatility,
                                                               rate,
                                                               recovery,
-                                                              beagle::valuation::OneDimFiniteDifferenceSettings(100, 500, 7.5) );
+                                                              beagle::valuation::OneDimFiniteDifferenceSettings(100, 500, 4.5) );
 try {
   // Create a fixed coupon bond: 5-year maturity, 1.5% coupon, semi-annual
   beagle::callable_schedule_t callSchedule;
-  callSchedule.emplace_back(3., beagle::math::RealFunction::createConstantFunction(100.), 100.);
+  callSchedule.emplace_back(3., beagle::math::RealFunction::createConstantFunction(100.), 5.);
 
   beagle::puttable_schedule_t putSchedule;
   putSchedule.emplace_back(4., 100.);
@@ -466,7 +466,7 @@ try {
   beagle::product_ptr_t fcb = beagle::product::bond::Bond::createFixedCouponBond(5., .015, 2);
   beagle::product_ptr_t cb = beagle::product::bond::Bond::createConvertibleBond(fcb, conversionRatio, callSchedule, putSchedule);
 
-  std::cout << "The bond price is: " << odbpbp->value(cb) << "\n";
+  std::cout << "The convertible bond price is: " << odbpbp->value(cb) << " for p = " << p << "\n";
 } catch (const std::string& what) {
   std::cout << what << "\n";
 }
@@ -489,11 +489,11 @@ try {
                                                               volatility,
                                                               rate,
                                                               recovery,
-                                                              beagle::valuation::OneDimFiniteDifferenceSettings(100, 500, 7.5) );
+                                                              beagle::valuation::OneDimFiniteDifferenceSettings(100, 500, 4.5) );
   
   // Create a fixed coupon bond: 10-year maturity, 3% coupon, semi-annual
   beagle::callable_schedule_t callSchedule;
-  callSchedule.emplace_back(5., beagle::math::RealFunction::createConstantFunction(100.), 100.);
+  callSchedule.emplace_back(5., beagle::math::RealFunction::createConstantFunction(100.), 10.);
 
   beagle::puttable_schedule_t putSchedule;
   putSchedule.emplace_back(6., 100.);
@@ -503,7 +503,7 @@ try {
 
   beagle::product_ptr_t fcb = beagle::product::bond::Bond::createFixedCouponBond(10, .03, 2);
   beagle::product_ptr_t cb = beagle::product::bond::Bond::createConvertibleBond(fcb, conversionRatio, callSchedule, putSchedule);
-  std::cout << "The bond price is: " << odbpbp->value(cb) << "\n";
+  std::cout << "The convertible bond price is: " << odbpbp->value(cb) << " for p = " << p << "\n";
 
   std::cout << "\nEnd of Test 7\n";
 }
@@ -515,7 +515,7 @@ int main( void )
   //test3();
   //test4();
   //test5();
-  test6();
+  //test6();
   test7();
 
   return 0;

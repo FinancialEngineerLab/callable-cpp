@@ -18,14 +18,6 @@ namespace beagle
                                       double numGaussianStandardDeviations,
                                       const beagle::interp_builder_ptr_t& interp,
                                       const beagle::dividend_policy_ptr_t& policy );
-    //public:
-    //  void formTimeSteps( double start,
-    //                      double end,
-    //                      beagle::dbl_vec_t& times,
-    //                      beagle::int_vec_t& exDividendIndices ) const;
-    //  void formStateVariableSteps(double expiry,
-    //                              beagle::dbl_vec_t& logStateVariables,
-    //                              beagle::dbl_vec_t& stateVariables) const;
     public:
       int numberOfTimeSteps( void ) const;
       int numberOfStateVariableSteps( void ) const;

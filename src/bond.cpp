@@ -24,8 +24,9 @@ namespace beagle
         {
           ZeroCouponBond(double expiry)
           {
-            m_Cashflows.clear();
-            m_Cashflows.emplace_back(expiry, standardFaceValue());
+            m_Couponflows.clear();
+            m_Notionalflows.clear();
+            m_Notionalflows.emplace_back(expiry, standardFaceValue());
           }
           virtual ~ZeroCouponBond( void )
           { }
@@ -35,12 +36,17 @@ namespace beagle
             static std::string ss("ZeroCouponBond");
             return ss;
           }
-          virtual const beagle::bond_cashflows_t& cashflows(void) const override
+          virtual const beagle::coupon_flows_t& couponFlows(void) const override
           {
-            return m_Cashflows;
+            return m_Couponflows;
+          }
+          virtual const beagle::notional_flows_t& notionalFlows(void) const override
+          {
+            return m_Notionalflows;
           }
         private:
-          beagle::bond_cashflows_t m_Cashflows;
+          beagle::coupon_flows_t m_Couponflows;
+          beagle::notional_flows_t m_Notionalflows;
         };
 
         struct FixedCouponBond : public Bond
@@ -49,18 +55,19 @@ namespace beagle
                           double coupon,
                           int frequency)
           {
-            m_Cashflows.clear();
+            m_Couponflows.clear();
+            m_Notionalflows.clear();
 
             double accrual = 1. / frequency;
             double couponAmount = standardFaceValue() * coupon * accrual;
 
             int numPayments = std::ceil(expiry * frequency);
-            for (int i=numPayments; i>1; --i)
+            for (int i=0; i<numPayments; ++i)
             {
-              m_Cashflows.emplace_back(expiry - (i-1) * accrual, couponAmount);
+              m_Couponflows.emplace_back(expiry - (numPayments-i-1) * accrual, couponAmount);
             }
 
-            m_Cashflows.emplace_back(expiry, standardFaceValue() + couponAmount);
+            m_Notionalflows.emplace_back(expiry, standardFaceValue());
           }
           virtual ~FixedCouponBond( void )
           { }
@@ -70,12 +77,17 @@ namespace beagle
             static std::string ss("FixedCouponBond");
             return ss;
           }
-          virtual const beagle::bond_cashflows_t& cashflows(void) const override
+          virtual const beagle::coupon_flows_t& couponFlows(void) const override
           {
-            return m_Cashflows;
+            return m_Couponflows;
+          }
+          virtual const beagle::notional_flows_t& notionalFlows(void) const override
+          {
+            return m_Notionalflows;
           }
         private:
-          beagle::bond_cashflows_t m_Cashflows;
+          beagle::coupon_flows_t m_Couponflows;
+          beagle::notional_flows_t m_Notionalflows;
         };
 
         struct ConvertibleBond : public Bond,
@@ -100,10 +112,15 @@ namespace beagle
             static std::string ss("ConvertibleBond");
             return ss;
           }
-          virtual const beagle::bond_cashflows_t& cashflows(void) const override
+          virtual const beagle::coupon_flows_t& couponFlows(void) const override
           {
             auto pB = dynamic_cast<beagle::product::mixins::Bond*>(m_UnderlyingBond.get());
-            return pB->cashflows();
+            return pB->couponFlows();
+          }
+          virtual const beagle::notional_flows_t& notionalFlows(void) const override
+          {
+            auto pB = dynamic_cast<beagle::product::mixins::Bond*>(m_UnderlyingBond.get());
+            return pB->notionalFlows();
           }
           virtual const beagle::callable_schedule_t& callSchedule( void ) const override
           {

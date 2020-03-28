@@ -30,7 +30,8 @@ namespace beagle
         virtual ~Bond(void);
       public:
         virtual double standardFaceValue(void) const;
-        virtual const beagle::bond_cashflows_t& cashflows(void) const=0;
+        virtual const beagle::coupon_flows_t& couponFlows(void) const=0;
+        virtual const beagle::notional_flows_t& notionalFlows(void) const=0;
       };
     }
   }

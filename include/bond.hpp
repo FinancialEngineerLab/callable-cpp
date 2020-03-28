@@ -18,7 +18,8 @@ namespace beagle
       public:
         virtual const std::string& name(void) const=0;
       public:
-        virtual const beagle::bond_cashflows_t& cashflows(void) const=0;
+        virtual const beagle::coupon_flows_t& couponFlows(void) const=0;
+        virtual const beagle::notional_flows_t& notionalFlows(void) const=0;
       public:
         static beagle::product_ptr_t createZeroCouponBond(double expiry);
         static beagle::product_ptr_t createFixedCouponBond(double expiry,
@@ -29,7 +30,7 @@ namespace beagle
                                                            const beagle::callable_schedule_t& callSchedule,
                                                            const beagle::puttable_schedule_t& putSchedule);
       private:
-        beagle::bond_cashflows_t m_Cashflows;
+        beagle::coupon_flows_t m_Cashflows;
 
       };
 
