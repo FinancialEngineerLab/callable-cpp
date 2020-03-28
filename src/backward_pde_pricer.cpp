@@ -464,8 +464,6 @@ namespace beagle
                                                isCallable,
                                                isPuttable,
                                                isConvertible,
-                                               couponTimes,
-                                               couponAmounts,
                                                expiry,
                                                initialCondition);
 
@@ -504,8 +502,6 @@ namespace beagle
                                                    isCallable,
                                                    isPuttable,
                                                    isConvertible,
-                                                   couponTimes,
-                                                   couponAmounts,
                                                    thisTime,
                                                    initialCondition);
             }
@@ -553,8 +549,6 @@ namespace beagle
                                                   bool isCallable,
                                                   bool isPuttable,
                                                   bool isConvertible,
-                                                  const beagle::dbl_vec_t& couponTimes,
-                                                  const beagle::dbl_vec_t& couponAmounts,
                                                   double time,
                                                   beagle::dbl_vec_t& prices) const
         {
