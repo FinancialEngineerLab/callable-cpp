@@ -430,7 +430,7 @@ void test7( void )
   double sigma = .25;
 
   double c = .02;
-  double p = 2.;
+  double p = .5;
   double rec = 0.4;
 
   beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
@@ -456,7 +456,7 @@ void test7( void )
 try {
   // Create a fixed coupon bond: 5-year maturity, 1.5% coupon, semi-annual
   beagle::callable_schedule_t callSchedule;
-  callSchedule.emplace_back(3., beagle::math::RealFunction::createConstantFunction(100.), 5.);
+  callSchedule.emplace_back(3., beagle::math::RealFunction::createConstantFunction(106.), 5.);
 
   beagle::puttable_schedule_t putSchedule;
   putSchedule.emplace_back(4., 100.);
@@ -474,7 +474,7 @@ try {
   // Model parameters 2
   sigma = .4;
   c = .03;
-  p = 2.;
+  p = .5;
 
   drift = beagle::math::RealTwoDimFunction::createBinaryFunction(
                                             [=](double time, double price){ return c * std::pow(price / spot, -p); } );
@@ -493,7 +493,7 @@ try {
   
   // Create a fixed coupon bond: 10-year maturity, 3% coupon, semi-annual
   beagle::callable_schedule_t callSchedule;
-  callSchedule.emplace_back(5., beagle::math::RealFunction::createConstantFunction(100.), 10.);
+  callSchedule.emplace_back(5., beagle::math::RealFunction::createConstantFunction(108.), 10.);
 
   beagle::puttable_schedule_t putSchedule;
   putSchedule.emplace_back(6., 100.);
