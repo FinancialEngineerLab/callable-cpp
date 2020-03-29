@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+# Figure 2, panel A
 plt.figure(1)
 plt.title("Panel A, p = 2")
 
@@ -24,6 +25,7 @@ plt.ylabel('Implied volatility')
 plt.grid()
 plt.savefig("fig_2_panel_A.png")
 
+# Figure 2, panel B
 plt.figure(2)
 plt.title("Panel B, c = 5%")
 
@@ -45,6 +47,7 @@ plt.ylabel('Implied volatility')
 plt.grid()
 plt.savefig("fig_2_panel_B.png")
 
+# Figure 3, panel A
 plt.figure(3)
 plt.title("Panel A, T = 0.5")
 
@@ -66,6 +69,8 @@ plt.ylabel('Implied volatility')
 plt.grid()
 plt.savefig("fig_3_panel_A.png")
 
+
+# Figure 3, panel B
 plt.figure(4)
 plt.title("Panel B, T = 5")
 
@@ -87,6 +92,7 @@ plt.ylabel('Implied volatility')
 plt.grid()
 plt.savefig("fig_3_panel_B.png")
 
+# Figure 4
 plt.figure(5)
 
 moneynesses = [0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4, 1.5 ]
@@ -105,6 +111,8 @@ plt.ylabel('Implied volatility')
 plt.grid()
 plt.savefig("fig_4.png")
 
+
+# Figure 5, panel A
 plt.figure(6)
 plt.title("Panel A, p = 2")
 
@@ -126,6 +134,7 @@ plt.ylabel('Risky spread, s')
 plt.grid()
 plt.savefig("fig_5_panel_A.png")
 
+# Figure 5, panel B
 plt.figure(7)
 plt.title("Panel B, c = 5%")
 
@@ -147,6 +156,8 @@ plt.ylabel('Risky spread, s')
 plt.grid()
 plt.savefig("fig_5_panel_B.png")
 
+
+# Figure 6
 plt.figure(8)
 
 expiries = [0.25, 0.5, 1, 2, 3, 4, 5, 7, 10,  15 , 20,  25,  30  ]
