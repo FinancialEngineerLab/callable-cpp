@@ -563,8 +563,7 @@ void generateAndersenBuffumFigureTwo( void )
                                                                  volatility,
                                                                  rate,
                                                                  beagle::valuation::OneDimFiniteDifferenceSettings(52, 150, 4.5) );
-      double price = odbpop->value( euroOption );
-      double bondPrice = odbpop->value(riskyBond);
+
       outA << beagle::util::impliedBlackVolatility(odbpop->value(euroOption),
                                                    strike,
                                                    strike,
@@ -609,8 +608,7 @@ void generateAndersenBuffumFigureTwo( void )
                                                                  volatility,
                                                                  rate,
                                                                  beagle::valuation::OneDimFiniteDifferenceSettings(52, 150, 4.5) );
-      double price = odbpop->value( euroOption );
-      double bondPrice = odbpop->value(riskyBond);
+
       outB << beagle::util::impliedBlackVolatility(odbpop->value(euroOption),
                                                    strike,
                                                    strike,
@@ -619,6 +617,337 @@ void generateAndersenBuffumFigureTwo( void )
     }
 
     outB << "]\n";
+  }
+}
+
+void generateAndersenBuffumFigureThree( void )
+{
+  double spot = 50;
+  double r = .04;
+  double q = .02;
+  double sigma = .3;
+  double p = 2.;
+
+  // Call option valuation with discounting, funding, and volatility
+  beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::call();
+  beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
+                                            [=](double arg) { return std::exp(-r * arg);});
+  beagle::real_function_ptr_t forward = beagle::math::RealFunction::createContinuousForwardAssetPriceFunction(
+                                            spot,
+                                            beagle::math::RealFunction::createUnaryFunction(
+                                            [=](double arg) { return std::exp(-(r - q) * arg);}));
+  beagle::real_2d_function_ptr_t volatility = beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(sigma);
+
+  // Generate implied volatility smile
+  beagle::dbl_vec_t cs{.02, .05, .1};
+  beagle::dbl_vec_t moneynesses{.6, .7, .8, .9, 1., 1.1, 1.2, 1.3, 1.4, 1.5};
+
+  // Panel A
+  double expiry = .5;
+
+  std::ofstream outA(".\\figure\\fig_3_panel_A.txt");
+  outA << "[";
+  for (double moneyness : moneynesses)
+    outA << moneyness << ", ";
+  outA << "]\n";
+
+  for (double c : cs)
+  {
+    outA << "[";
+    for (double moneyness : moneynesses)
+    {
+      beagle::real_2d_function_ptr_t drift = beagle::math::RealTwoDimFunction::createBinaryFunction(
+                                                [=](double time, double price){ return c * std::pow(price / spot, -p); } );
+      beagle::real_2d_function_ptr_t rate = drift;
+
+      double strike = forward->value(expiry) * moneyness;
+      beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption( expiry,
+                                                                                                strike,
+                                                                                                payoff );
+      beagle::product_ptr_t riskyBond = beagle::product::option::Option::createEuropeanOption( expiry,
+                                                                                               0.,
+                                                                                               beagle::product::option::Payoff::digitalCall() );
+
+      beagle::pricer_ptr_t odbpop  = beagle::valuation::Pricer::formOneDimBackwardPDEOptionPricer(
+                                                                 forward,
+                                                                 discounting,
+                                                                 drift,
+                                                                 volatility,
+                                                                 rate,
+                                                                 beagle::valuation::OneDimFiniteDifferenceSettings(365, 150, 4.5) );
+
+      outA << beagle::util::impliedBlackVolatility(odbpop->value(euroOption),
+                                                   strike,
+                                                   forward->value(expiry),
+                                                   expiry,
+                                                   discounting ) << ", ";
+    }
+
+    outA << "]\n";
+  }
+
+  // Panel B
+  expiry = 5.;
+
+  std::ofstream outB(".\\figure\\fig_3_panel_B.txt");
+  outB << "[";
+  for (double moneyness : moneynesses)
+    outB << moneyness << ", ";
+  outB << "]\n";
+
+  for (double c : cs)
+  {
+    outB << "[";
+    for (double moneyness : moneynesses)
+    {
+      beagle::real_2d_function_ptr_t drift = beagle::math::RealTwoDimFunction::createBinaryFunction(
+                                                [=](double time, double price){ return c * std::pow(price / spot, -p); } );
+      beagle::real_2d_function_ptr_t rate = drift;
+
+      double strike = forward->value(expiry) * moneyness;
+      beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption( expiry,
+                                                                                                strike,
+                                                                                                payoff );
+      beagle::product_ptr_t riskyBond = beagle::product::option::Option::createEuropeanOption( expiry,
+                                                                                               0.,
+                                                                                               beagle::product::option::Payoff::digitalCall() );
+
+      beagle::pricer_ptr_t odbpop  = beagle::valuation::Pricer::formOneDimBackwardPDEOptionPricer(
+                                                                 forward,
+                                                                 discounting,
+                                                                 drift,
+                                                                 volatility,
+                                                                 rate,
+                                                                 beagle::valuation::OneDimFiniteDifferenceSettings(52, 150, 4.5) );
+
+      outB << beagle::util::impliedBlackVolatility(odbpop->value(euroOption),
+                                                   strike,
+                                                   forward->value(expiry),
+                                                   expiry,
+                                                   discounting ) << ", ";
+    }
+
+    outB << "]\n";
+  }
+}
+
+void generateAndersenBuffumFigureFour( void )
+{
+  double spot = 50;
+  double r = .04;
+  double q = .02;
+  double sigma = .3;
+  double expiry = 1;
+  double c = .05;
+
+  // Call option valuation with discounting, funding, and volatility
+  beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::call();
+  beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
+                                            [=](double arg) { return std::exp(-r * arg);});
+  beagle::real_function_ptr_t forward = beagle::math::RealFunction::createContinuousForwardAssetPriceFunction(
+                                            spot,
+                                            beagle::math::RealFunction::createUnaryFunction(
+                                            [=](double arg) { return std::exp(-(r - q) * arg);}));
+  beagle::real_2d_function_ptr_t volatility = beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(sigma);
+
+  // Generate implied volatility smile
+  beagle::dbl_vec_t ps{0., 2.};
+  beagle::dbl_vec_t moneynesses{.6, .7, .8, .9, 1., 1.1, 1.2, 1.3, 1.4, 1.5};
+
+  // Panel A
+
+  std::ofstream outA(".\\figure\\fig_4.txt");
+  outA << "[";
+  for (double moneyness : moneynesses)
+    outA << moneyness << ", ";
+  outA << "]\n";
+
+  for (double p : ps)
+  {
+    outA << "[";
+    for (double moneyness : moneynesses)
+    {
+      beagle::real_2d_function_ptr_t drift = beagle::math::RealTwoDimFunction::createBinaryFunction(
+                                                [=](double time, double price){ return c * std::pow(price / spot, -p); } );
+      beagle::real_2d_function_ptr_t rate = drift;
+
+      double strike = forward->value(expiry) * moneyness;
+      beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption( expiry,
+                                                                                                strike,
+                                                                                                payoff );
+      beagle::product_ptr_t riskyBond = beagle::product::option::Option::createEuropeanOption( expiry,
+                                                                                               0.,
+                                                                                               beagle::product::option::Payoff::digitalCall() );
+
+      beagle::pricer_ptr_t odbpop  = beagle::valuation::Pricer::formOneDimBackwardPDEOptionPricer(
+                                                                 forward,
+                                                                 discounting,
+                                                                 drift,
+                                                                 volatility,
+                                                                 rate,
+                                                                 beagle::valuation::OneDimFiniteDifferenceSettings(300, 150, 4.5) );
+
+      outA << beagle::util::impliedBlackVolatility(odbpop->value(euroOption),
+                                                   strike,
+                                                   forward->value(expiry),
+                                                   expiry,
+                                                   discounting ) << ", ";
+    }
+
+    outA << "]\n";
+  }
+}
+
+void generateAndersenBuffumFigureFive( void )
+{
+  double spot = 50;
+  double r = .04;
+  double q = .02;
+  double sigma = .3;
+
+  // Call option valuation with discounting, funding, and volatility
+  beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::digitalCall();
+  beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
+                                            [=](double arg) { return std::exp(-r * arg);});
+  beagle::real_function_ptr_t forward = beagle::math::RealFunction::createContinuousForwardAssetPriceFunction(
+                                            spot,
+                                            beagle::math::RealFunction::createUnaryFunction(
+                                            [=](double arg) { return std::exp(-(r - q) * arg);}));
+  beagle::real_2d_function_ptr_t volatility = beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(sigma);
+
+  // Generate implied volatilities for a series of expiries
+  beagle::dbl_vec_t expiries{.25, .5, 1., 2., 3., 4., 5., 7., 10., 15., 20., 25., 30.};
+
+  // Panel A
+  double p = 2.;
+  beagle::dbl_vec_t cs{.02, .05, .1};
+
+  std::ofstream outA(".\\figure\\fig_5_panel_A.txt");
+  outA << "[";
+  for (double expiry : expiries)
+    outA << expiry << ", ";
+  outA << "]\n";
+
+  for (double c : cs)
+  {
+    outA << "[";
+    for (double expiry : expiries)
+    {
+      beagle::real_2d_function_ptr_t drift = beagle::math::RealTwoDimFunction::createBinaryFunction(
+                                                [=](double time, double price){ return c * std::pow(price / spot, -p); } );
+      beagle::real_2d_function_ptr_t rate = drift;
+
+      beagle::product_ptr_t riskyBond = beagle::product::option::Option::createEuropeanOption( expiry,
+                                                                                               0.,
+                                                                                               payoff );
+
+      beagle::pricer_ptr_t odbpop  = beagle::valuation::Pricer::formOneDimBackwardPDEOptionPricer(
+                                                                 forward,
+                                                                 discounting,
+                                                                 drift,
+                                                                 volatility,
+                                                                 rate,
+                                                                 beagle::valuation::OneDimFiniteDifferenceSettings(52, 150, 4.5) );
+
+      outA << -std::log(odbpop->value(riskyBond)) / expiry - r << ", ";
+    }
+
+    outA << "]\n";
+  }
+
+  // Panel B
+  double c = .05;
+  beagle::dbl_vec_t ps{0., 2., 3.};
+
+  std::ofstream outB(".\\figure\\fig_5_panel_B.txt");
+  outB << "[";
+  for (double expiry : expiries)
+    outB << expiry << ", ";
+  outB << "]\n";
+
+  for (double p : ps)
+  {
+    outB << "[";
+    for (double expiry : expiries)
+    {
+      beagle::real_2d_function_ptr_t drift = beagle::math::RealTwoDimFunction::createBinaryFunction(
+                                                [=](double time, double price){ return c * std::pow(price / spot, -p); } );
+      beagle::real_2d_function_ptr_t rate = drift;
+
+      beagle::product_ptr_t riskyBond = beagle::product::option::Option::createEuropeanOption( expiry,
+                                                                                               0.,
+                                                                                               payoff );
+
+      beagle::pricer_ptr_t odbpop  = beagle::valuation::Pricer::formOneDimBackwardPDEOptionPricer(
+                                                                 forward,
+                                                                 discounting,
+                                                                 drift,
+                                                                 volatility,
+                                                                 rate,
+                                                                 beagle::valuation::OneDimFiniteDifferenceSettings(52, 150, 4.5) );
+
+      outB << -std::log(odbpop->value(riskyBond)) / expiry - r << ", ";
+    }
+
+    outB << "]\n";
+  }
+}
+
+void generateAndersenBuffumFigureSix( void )
+{
+  double spot = 50;
+  double r = .04;
+  double q = .02;
+  double p = 2.;
+  double c = .1;
+
+  // Call option valuation with discounting, funding, and volatility
+  beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::digitalCall();
+  beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
+                                            [=](double arg) { return std::exp(-r * arg);});
+  beagle::real_function_ptr_t forward = beagle::math::RealFunction::createContinuousForwardAssetPriceFunction(
+                                            spot,
+                                            beagle::math::RealFunction::createUnaryFunction(
+                                            [=](double arg) { return std::exp(-(r - q) * arg);}));
+  beagle::real_2d_function_ptr_t drift = beagle::math::RealTwoDimFunction::createBinaryFunction(
+                                            [=](double time, double price){ return c * std::pow(price / spot, -p); } );
+  beagle::real_2d_function_ptr_t rate = drift;
+
+  // Generate implied volatilities for a series of expiries
+  beagle::dbl_vec_t expiries{.25, .5, 1., 2., 3., 4., 5., 7., 10., 15., 20., 25., 30.};
+
+  // Panel A
+  beagle::dbl_vec_t sigmas{.15, .3, .5};
+
+  std::ofstream outA(".\\figure\\fig_6.txt");
+  outA << "[";
+  for (double expiry : expiries)
+    outA << expiry << ", ";
+  outA << "]\n";
+
+  for (double sigma : sigmas)
+  {
+    beagle::real_2d_function_ptr_t volatility = beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(sigma);
+
+    outA << "[";
+    for (double expiry : expiries)
+    {
+      beagle::product_ptr_t riskyBond = beagle::product::option::Option::createEuropeanOption( expiry,
+                                                                                               0.,
+                                                                                               payoff );
+
+      beagle::pricer_ptr_t odbpop  = beagle::valuation::Pricer::formOneDimBackwardPDEOptionPricer(
+                                                                 forward,
+                                                                 discounting,
+                                                                 drift,
+                                                                 volatility,
+                                                                 rate,
+                                                                 beagle::valuation::OneDimFiniteDifferenceSettings(52, 150, 4.5) );
+
+      outA << -std::log(odbpop->value(riskyBond)) / expiry - r << ", ";
+    }
+
+    outA << "]\n";
   }
 }
 
@@ -631,7 +960,11 @@ int main( void )
   //test5();
   //test6();
   //test7();
-  generateAndersenBuffumFigureTwo();
+  //generateAndersenBuffumFigureTwo();
+  //generateAndersenBuffumFigureThree();
+  //generateAndersenBuffumFigureFour();
+  //generateAndersenBuffumFigureFive();
+  //generateAndersenBuffumFigureSix();
 
   return 0;
 }
