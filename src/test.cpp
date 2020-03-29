@@ -562,7 +562,7 @@ void generateAndersenBuffumFigureTwo( void )
                                                                  drift,
                                                                  volatility,
                                                                  rate,
-                                                                 beagle::valuation::OneDimFiniteDifferenceSettings(52, 150, 4.5) );
+                                                                 beagle::valuation::OneDimFiniteDifferenceSettings(365, 750, 4.5) );
 
       outA << beagle::util::impliedBlackVolatility(odbpop->value(euroOption),
                                                    strike,
@@ -607,7 +607,7 @@ void generateAndersenBuffumFigureTwo( void )
                                                                  drift,
                                                                  volatility,
                                                                  rate,
-                                                                 beagle::valuation::OneDimFiniteDifferenceSettings(52, 150, 4.5) );
+                                                                 beagle::valuation::OneDimFiniteDifferenceSettings(365, 750, 4.5) );
 
       outB << beagle::util::impliedBlackVolatility(odbpop->value(euroOption),
                                                    strike,
@@ -674,7 +674,7 @@ void generateAndersenBuffumFigureThree( void )
                                                                  drift,
                                                                  volatility,
                                                                  rate,
-                                                                 beagle::valuation::OneDimFiniteDifferenceSettings(365, 150, 4.5) );
+                                                                 beagle::valuation::OneDimFiniteDifferenceSettings(365, 750, 4.5) );
 
       outA << beagle::util::impliedBlackVolatility(odbpop->value(euroOption),
                                                    strike,
@@ -718,7 +718,7 @@ void generateAndersenBuffumFigureThree( void )
                                                                  drift,
                                                                  volatility,
                                                                  rate,
-                                                                 beagle::valuation::OneDimFiniteDifferenceSettings(52, 150, 4.5) );
+                                                                 beagle::valuation::OneDimFiniteDifferenceSettings(365, 750, 4.5) );
 
       outB << beagle::util::impliedBlackVolatility(odbpop->value(euroOption),
                                                    strike,
@@ -785,7 +785,7 @@ void generateAndersenBuffumFigureFour( void )
                                                                  drift,
                                                                  volatility,
                                                                  rate,
-                                                                 beagle::valuation::OneDimFiniteDifferenceSettings(300, 150, 4.5) );
+                                                                 beagle::valuation::OneDimFiniteDifferenceSettings(365, 750, 4.5) );
 
       outA << beagle::util::impliedBlackVolatility(odbpop->value(euroOption),
                                                    strike,
@@ -847,7 +847,7 @@ void generateAndersenBuffumFigureFive( void )
                                                                  drift,
                                                                  volatility,
                                                                  rate,
-                                                                 beagle::valuation::OneDimFiniteDifferenceSettings(52, 150, 4.5) );
+                                                                 beagle::valuation::OneDimFiniteDifferenceSettings(365, 750, 4.5) );
 
       outA << -std::log(odbpop->value(riskyBond)) / expiry - r << ", ";
     }
@@ -884,7 +884,7 @@ void generateAndersenBuffumFigureFive( void )
                                                                  drift,
                                                                  volatility,
                                                                  rate,
-                                                                 beagle::valuation::OneDimFiniteDifferenceSettings(52, 150, 4.5) );
+                                                                 beagle::valuation::OneDimFiniteDifferenceSettings(365, 750, 4.5) );
 
       outB << -std::log(odbpop->value(riskyBond)) / expiry - r << ", ";
     }
@@ -942,7 +942,7 @@ void generateAndersenBuffumFigureSix( void )
                                                                  drift,
                                                                  volatility,
                                                                  rate,
-                                                                 beagle::valuation::OneDimFiniteDifferenceSettings(52, 150, 4.5) );
+                                                                 beagle::valuation::OneDimFiniteDifferenceSettings(365, 750, 4.5) );
 
       outA << -std::log(odbpop->value(riskyBond)) / expiry - r << ", ";
     }
@@ -960,11 +960,11 @@ int main( void )
   //test5();
   //test6();
   //test7();
-  //generateAndersenBuffumFigureTwo();
-  //generateAndersenBuffumFigureThree();
-  //generateAndersenBuffumFigureFour();
-  //generateAndersenBuffumFigureFive();
-  //generateAndersenBuffumFigureSix();
+  generateAndersenBuffumFigureTwo();
+  generateAndersenBuffumFigureThree();
+  generateAndersenBuffumFigureFour();
+  generateAndersenBuffumFigureFive();
+  generateAndersenBuffumFigureSix();
 
   return 0;
 }
