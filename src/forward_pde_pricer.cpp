@@ -1,9 +1,6 @@
 #include "one_dim_pde_pricer.hpp"
 #include "solver.hpp"
 
-#include <fstream>
-std::ofstream out("distribution.txt");
-
 namespace beagle
 {
   namespace valuation
@@ -45,10 +42,6 @@ namespace beagle
           beagle::int_vec_t exDividendIndices;
           finiteDifferenceDetails().formTimeSteps( start, end, times, exDividendIndices );
 
-          // for (auto price : prices)
-          //   out << price << " ";
-          // out << std::endl;
-
           two_dbl_t boundaryStrikes = std::make_pair( std::exp(logStrikes.front()),
                                                       std::exp(logStrikes.back()) );
 
@@ -88,10 +81,6 @@ namespace beagle
                                                           end - thisTime );
             prices[0]            -= deltaT * lower[0] * boundaryValues.first;
             prices[strikeSize-1] -= deltaT * upper[strikeSize-1] * boundaryValues.second;
-
-            // for (auto price : prices)
-            //   out << price << " ";
-            // out << std::endl;
 
             beagle::util::tridiagonalSolve( prices, diag, upper, lower );
 

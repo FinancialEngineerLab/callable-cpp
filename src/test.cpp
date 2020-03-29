@@ -10,6 +10,7 @@
 #include "round_trip.hpp"
 
 #include <iostream>
+#include <fstream>
 
 void test1( void )
 {
@@ -508,6 +509,119 @@ try {
   std::cout << "\nEnd of Test 7\n";
 }
 
+void generateAndersenBuffumFigureTwo( void )
+{
+  double spot = 50;
+  double r = .04;
+  double q = .02;
+  double sigma = .3;
+
+  // Call option valuation with discounting, funding, and volatility
+  beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::call();
+  beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
+                                            [=](double arg) { return std::exp(-r * arg);});
+  beagle::real_function_ptr_t forward = beagle::math::RealFunction::createContinuousForwardAssetPriceFunction(
+                                            spot,
+                                            beagle::math::RealFunction::createUnaryFunction(
+                                            [=](double arg) { return std::exp(-(r - q) * arg);}));
+  beagle::real_2d_function_ptr_t volatility = beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(sigma);
+
+  // Generate implied volatilities for a series of expiries
+  beagle::dbl_vec_t expiries{.25, .5, 1., 2., 3., 4., 5., 7., 10., 15., 20., 25., 30.};
+
+  // Panel A
+  double p = 2.;
+  beagle::dbl_vec_t cs{0., .03, .05, .1};
+
+  std::ofstream outA(".\\figure\\fig_2_panel_A.txt");
+  outA << "[";
+  for (double expiry : expiries)
+    outA << expiry << ", ";
+  outA << "]\n";
+
+  for (double c : cs)
+  {
+    outA << "[";
+    for (double expiry : expiries)
+    {
+      beagle::real_2d_function_ptr_t drift = beagle::math::RealTwoDimFunction::createBinaryFunction(
+                                                [=](double time, double price){ return c * std::pow(price / spot, -p); } );
+      beagle::real_2d_function_ptr_t rate = drift;
+
+      double strike = forward->value(expiry);
+      beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption( expiry,
+                                                                                                strike,
+                                                                                                payoff );
+      beagle::product_ptr_t riskyBond = beagle::product::option::Option::createEuropeanOption( expiry,
+                                                                                               0.,
+                                                                                               beagle::product::option::Payoff::digitalCall() );
+
+      beagle::pricer_ptr_t odbpop  = beagle::valuation::Pricer::formOneDimBackwardPDEOptionPricer(
+                                                                 forward,
+                                                                 discounting,
+                                                                 drift,
+                                                                 volatility,
+                                                                 rate,
+                                                                 beagle::valuation::OneDimFiniteDifferenceSettings(52, 150, 4.5) );
+      double price = odbpop->value( euroOption );
+      double bondPrice = odbpop->value(riskyBond);
+      outA << beagle::util::impliedBlackVolatility(odbpop->value(euroOption),
+                                                   strike,
+                                                   strike,
+                                                   expiry,
+                                                   discounting ) << ", ";
+    }
+
+    outA << "]\n";
+  }
+
+  // Panel B
+  double c = .05;
+  beagle::dbl_vec_t ps{0., .5, 2.};
+
+  std::ofstream outB(".\\figure\\fig_2_panel_B.txt");
+  outB << "[";
+  for (double expiry : expiries)
+    outB << expiry << ", ";
+  outB << "]\n";
+
+  for (double p : ps)
+  {
+    outB << "[";
+    for (double expiry : expiries)
+    {
+      beagle::real_2d_function_ptr_t drift = beagle::math::RealTwoDimFunction::createBinaryFunction(
+                                                [=](double time, double price){ return c * std::pow(price / spot, -p); } );
+      beagle::real_2d_function_ptr_t rate = drift;
+
+      double strike = forward->value(expiry);
+      beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption( expiry,
+                                                                                                strike,
+                                                                                                payoff );
+      beagle::product_ptr_t riskyBond = beagle::product::option::Option::createEuropeanOption( expiry,
+                                                                                               0.,
+                                                                                               beagle::product::option::Payoff::digitalCall() );
+
+      beagle::pricer_ptr_t odbpop  = beagle::valuation::Pricer::formOneDimBackwardPDEOptionPricer(
+                                                                 forward,
+                                                                 discounting,
+                                                                 drift,
+                                                                 volatility,
+                                                                 rate,
+                                                                 beagle::valuation::OneDimFiniteDifferenceSettings(52, 150, 4.5) );
+      double price = odbpop->value( euroOption );
+      double bondPrice = odbpop->value(riskyBond);
+      outB << beagle::util::impliedBlackVolatility(odbpop->value(euroOption),
+                                                   strike,
+                                                   strike,
+                                                   expiry,
+                                                   discounting ) << ", ";
+    }
+
+    outB << "]\n";
+  }
+}
+
 int main( void )
 {
   //test1();
@@ -516,7 +630,8 @@ int main( void )
   //test4();
   //test5();
   //test6();
-  test7();
+  //test7();
+  generateAndersenBuffumFigureTwo();
 
   return 0;
 }
