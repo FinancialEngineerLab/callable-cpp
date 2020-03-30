@@ -175,7 +175,7 @@ namespace beagle
         virtual ~OneDimForwardPDEEuroOptionPricer( void )
         { }
       public:
-        virtual double value(const beagle::product_ptr_t& product) const
+        virtual double value(const beagle::product_ptr_t& product) const override
         {
           auto pO = dynamic_cast<beagle::product::mixins::Option*>(product.get());
           if (!pO)
@@ -187,48 +187,50 @@ namespace beagle
           double strike = pO->strike();
           const beagle::payoff_ptr_t& payoff = pO->payoff();
 
-          // Calculate terminal forward and discount factor for later use
-          double termForward = m_Forward->value(expiry);
-          double termDF = m_Discounting->value(expiry);
-
-          auto pDS = dynamic_cast<beagle::math::mixins::DividendSchedule*>(m_Forward.get());
-          if (!pDS)
-          {
-            // Set up the state variable mesh
-            int numStateVars = m_Settings.numberOfStateVariableSteps();
-            if (numStateVars % 2 == 0)
-              numStateVars += 1;
-
-            double atmVol = m_Vol->value(expiry, termForward);
-            int centralIndex = numStateVars / 2;
-            double centralValue = std::log(m_Forward->value(0.0));
-            double stateVarStep = m_Settings.numberOfGaussianStandardDeviations() * atmVol * std::sqrt(expiry) / centralIndex;
-            beagle::dbl_vec_t stateVars(numStateVars);
-            for (int i=0; i<numStateVars; ++i)
-              stateVars[i] = centralValue + (i - centralIndex) * stateVarStep;
-
-            // Set the initial condition
-            beagle::dbl_vec_t initialCondition(numStateVars, 0.0);
-            initialCondition[centralIndex] = 1. / stateVarStep;
-
-            // Perform the forwardward induction
-            evolve(0., expiry, stateVars, initialCondition);
+          // Set the initial condition and perform the forwardward induction
+          beagle::dbl_vec_t stateVars;
+          beagle::dbl_vec_t initialCondition;
+          formInitialCondition(expiry, stateVars, initialCondition);
+          evolve(0., expiry, stateVars, initialCondition);
  
-            double result(.0);
-            for (int i=0; i<numStateVars; ++i)
-            {
-              result += stateVarStep * initialCondition[i] * payoff->intrinsicValue(std::exp(stateVars[i]), strike);
-            }
-
-            return result;
+          double result(.0);
+          int numStateVars = stateVars.size();
+          double stateVarStep = (stateVars.back() - stateVars.front()) / (numStateVars - 1);
+          for (int i=0; i<numStateVars; ++i)
+          {
+            result += stateVarStep * initialCondition[i] * payoff->intrinsicValue(std::exp(stateVars[i]), strike);
           }
-          else
-            return 0.0;
+
+          return result;
+        }
+        virtual void formInitialCondition(double expiry,
+                                          beagle::dbl_vec_t& stateVars,
+                                          beagle::dbl_vec_t& density) const override
+        {
+          double termForward = m_Forward->value(expiry);
+
+          // Set up the state variable mesh
+          int numStateVars = m_Settings.numberOfStateVariableSteps();
+          if (numStateVars % 2 == 0)
+            numStateVars += 1;
+
+          double atmVol = m_Vol->value(expiry, termForward);
+          int centralIndex = numStateVars / 2;
+          double centralValue = std::log(m_Forward->value(0.0));
+          double stateVarStep = m_Settings.numberOfGaussianStandardDeviations() * atmVol * std::sqrt(expiry) / centralIndex;
+
+          stateVars.resize(numStateVars);
+          for (int i=0; i<numStateVars; ++i)
+            stateVars[i] = centralValue + (i - centralIndex) * stateVarStep;
+
+          // Set the initial condition
+          density.resize(numStateVars, 0.0);
+          density[centralIndex] = 1. / stateVarStep;
         }
         virtual void evolve(double start,
                             double end,
                             const beagle::dbl_vec_t& stateVars,
-                            beagle::dbl_vec_t& density) const
+                            beagle::dbl_vec_t& density) const override
         {
           beagle::real_function_ptr_t fundingRate = beagle::math::RealFunction::createUnaryFunction(
                             [this](double time)

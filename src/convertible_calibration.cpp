@@ -25,6 +25,20 @@ namespace beagle
       beagle::dbl_vec_t a(expiries.size());
       beagle::dbl_vec_t b(expiries.size());
 
+      // Set up the spatial finite difference grid and the initial condition
+      beagle::pricer_ptr_t forwardPricer = beagle::valuation::Pricer::formOneDimForwardPDEEuroOptionPricer(
+                                                               forward,
+                                                               discounting,
+                                                               drift,
+                                                               volatility,
+                                                               rate,
+                                                               settings);
+      auto pODFP = dynamic_cast<beagle::valuation::mixins::OneDimFokkerPlanck*>(forwardPricer.get());
+
+      beagle::dbl_vec_t stateVars;
+      beagle::dbl_vec_t density;
+      pODFP->formInitialCondition(expiries.back(), stateVars, density);
+
       return beagle::real_function_ptr_coll_t{beagle::math::RealFunction::createPiecewiseConstantRightInterpolatedFunction(expiries, a),
                                               beagle::math::RealFunction::createPiecewiseConstantRightInterpolatedFunction(expiries, b)};
     }

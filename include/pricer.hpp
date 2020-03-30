@@ -154,6 +154,9 @@ namespace beagle
       {
         virtual ~OneDimFokkerPlanck( void );
       public:
+        virtual void formInitialCondition(double expiry,
+                                          beagle::dbl_vec_t& stateVars,
+                                          beagle::dbl_vec_t& density) const=0;
         virtual void evolve(double start,
                             double end,
                             const beagle::dbl_vec_t& stateVars,
