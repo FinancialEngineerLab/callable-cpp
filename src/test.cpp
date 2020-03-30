@@ -957,14 +957,14 @@ int main( void )
   //test2();
   //test3();
   //test4();
-  //test5();
+  test5();
   //test6();
   //test7();
-  generateAndersenBuffumFigureTwo();
-  generateAndersenBuffumFigureThree();
-  generateAndersenBuffumFigureFour();
-  generateAndersenBuffumFigureFive();
-  generateAndersenBuffumFigureSix();
+  //generateAndersenBuffumFigureTwo();
+  //generateAndersenBuffumFigureThree();
+  //generateAndersenBuffumFigureFour();
+  //generateAndersenBuffumFigureFive();
+  //generateAndersenBuffumFigureSix();
 
   return 0;
 }

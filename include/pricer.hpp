@@ -149,6 +149,16 @@ namespace beagle
       public:
         virtual beagle::pricer_ptr_t createPricerWithNewModelParameters( const beagle::dbl_vec_t& parameters ) const = 0;
       };
+
+      struct OneDimFokkerPlanck
+      {
+        virtual ~OneDimFokkerPlanck( void );
+      public:
+        virtual void evolve(double start,
+                            double end,
+                            const beagle::dbl_vec_t& stateVars,
+                            beagle::dbl_vec_t& density) const=0;
+      };
     }
   }
 }

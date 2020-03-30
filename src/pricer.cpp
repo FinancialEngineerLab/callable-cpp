@@ -226,6 +226,9 @@ namespace beagle
 
       CloneWithNewModelParameters::~CloneWithNewModelParameters( void )
       { }
+
+      OneDimFokkerPlanck::~OneDimFokkerPlanck( void )
+      { }
     }
   }
 }

@@ -4,6 +4,13 @@ namespace beagle
 {
   namespace math
   {
+
+
+
+
+
+    // This function calibrates a model to a constant ATMF volatility and a constant risky spread.
+    // See Andersen and Buffum, Calibration and Implementation of Convertible Bond Models, for details.
     beagle::real_function_ptr_coll_t
     RealFunction::createCalibratedAndersenBuffumParameters(const beagle::real_function_ptr_t& forward,
                                                            const beagle::real_function_ptr_t& discounting,
@@ -15,7 +22,11 @@ namespace beagle
                                                            const beagle::dbl_vec_t& expiries,
                                                            const beagle::two_dbl_t& quotes )
     {
-      return beagle::real_function_ptr_coll_t{};
+      beagle::dbl_vec_t a(expiries.size());
+      beagle::dbl_vec_t b(expiries.size());
+
+      return beagle::real_function_ptr_coll_t{beagle::math::RealFunction::createPiecewiseConstantRightInterpolatedFunction(expiries, a),
+                                              beagle::math::RealFunction::createPiecewiseConstantRightInterpolatedFunction(expiries, b)};
     }
   }
 }

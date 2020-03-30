@@ -156,7 +156,8 @@ namespace beagle
         beagle::real_2d_function_ptr_t m_Volatility;
       };
 
-      struct OneDimForwardPDEEuroOptionPricer : public Pricer
+      struct OneDimForwardPDEEuroOptionPricer : public Pricer,
+                                                public beagle::valuation::mixins::OneDimFokkerPlanck
       {
         OneDimForwardPDEEuroOptionPricer(const beagle::real_function_ptr_t& forward,
                                          const beagle::real_function_ptr_t& discounting,
@@ -193,44 +194,6 @@ namespace beagle
           auto pDS = dynamic_cast<beagle::math::mixins::DividendSchedule*>(m_Forward.get());
           if (!pDS)
           {
-            // Determine the convection and diffusion terms in the backward PDE
-            beagle::real_function_ptr_t fundingRate = beagle::math::RealFunction::createUnaryFunction(
-                              [this](double time)
-                              {
-                                double bump = 1e-6;
-                                return std::log(m_Forward->value(time+bump) / m_Forward->value(time)) / bump;
-                              } );
-            beagle::real_function_ptr_t discountingRate = beagle::math::RealFunction::createUnaryFunction(
-                              [this](double time)
-                              {
-                                double bump = 1e-6;
-                                return - std::log(m_Discounting->value(time+bump) / m_Discounting->value(time)) / bump;
-                              } );
-            beagle::real_2d_function_ptr_t convection = beagle::math::RealTwoDimFunction::createBinaryFunction(
-                              [this, fundingRate](double time, double logMoneyness)
-                              {
-                                double spot =  std::exp(logMoneyness);
-                                double localVol = m_Vol->value(time, spot);
-                                double drift = m_Drift->value(time, spot);
-                                return fundingRate->value(time) + drift - .5 * localVol * localVol;
-                              } );
-            beagle::real_2d_function_ptr_t diffusion = beagle::math::RealTwoDimFunction::createBinaryFunction(
-                              [this](double time, double logMoneyness)
-                              {
-                                double spot = std::exp(logMoneyness);
-                                double localVol = m_Vol->value(time, spot);
-                                return .5 * localVol * localVol;
-                              } );
-            beagle::real_2d_function_ptr_t rate = beagle::math::RealTwoDimFunction::createBinaryFunction(
-                              [this, discountingRate](double time, double logMoneyness)
-                              {
-                                double spot = std::exp(logMoneyness);
-                                return discountingRate->value(time) + m_Rate->value(time, spot);
-                              } );
-
-            beagle::parabolic_pde_solver_ptr_t solver
-              = beagle::math::OneDimParabolicPDESolver::formOneDimFokkerPlanckPDESolver(convection, diffusion, rate);
-
             // Set up the state variable mesh
             int numStateVars = m_Settings.numberOfStateVariableSteps();
             if (numStateVars % 2 == 0)
@@ -248,19 +211,8 @@ namespace beagle
             beagle::dbl_vec_t initialCondition(numStateVars, 0.0);
             initialCondition[centralIndex] = 1. / stateVarStep;
 
-            // Perform the backward induction
-            int numTimes = static_cast<int>(expiry * m_Settings.numberOfStateVariableSteps());
-            double timeStep = expiry / numTimes;
-            for (int i=0; i<numTimes; ++i)
-            {
-              double end = (i+1) * timeStep / numTimes;
-              solver->evolve(end,
-                             timeStep,
-                             stateVars,
-                             beagle::dbl_vec_t{0.0},
-                             beagle::dbl_vec_t{0.0},
-                             initialCondition);
-            }
+            // Perform the forwardward induction
+            evolve(0., expiry, stateVars, initialCondition);
  
             double result(.0);
             for (int i=0; i<numStateVars; ++i)
@@ -272,6 +224,62 @@ namespace beagle
           }
           else
             return 0.0;
+        }
+        virtual void evolve(double start,
+                            double end,
+                            const beagle::dbl_vec_t& stateVars,
+                            beagle::dbl_vec_t& density) const
+        {
+          beagle::real_function_ptr_t fundingRate = beagle::math::RealFunction::createUnaryFunction(
+                            [this](double time)
+                            {
+                              double bump = 1e-6;
+                              return std::log(m_Forward->value(time+bump) / m_Forward->value(time)) / bump;
+                            } );
+          beagle::real_function_ptr_t discountingRate = beagle::math::RealFunction::createUnaryFunction(
+                            [this](double time)
+                            {
+                              double bump = 1e-6;
+                              return - std::log(m_Discounting->value(time+bump) / m_Discounting->value(time)) / bump;
+                            } );
+          beagle::real_2d_function_ptr_t convection = beagle::math::RealTwoDimFunction::createBinaryFunction(
+                            [this, fundingRate](double time, double logMoneyness)
+                            {
+                              double spot =  std::exp(logMoneyness);
+                              double localVol = m_Vol->value(time, spot);
+                              double drift = m_Drift->value(time, spot);
+                              return fundingRate->value(time) + drift - .5 * localVol * localVol;
+                            } );
+          beagle::real_2d_function_ptr_t diffusion = beagle::math::RealTwoDimFunction::createBinaryFunction(
+                            [this](double time, double logMoneyness)
+                            {
+                              double spot = std::exp(logMoneyness);
+                              double localVol = m_Vol->value(time, spot);
+                              return .5 * localVol * localVol;
+                            } );
+          beagle::real_2d_function_ptr_t rate = beagle::math::RealTwoDimFunction::createBinaryFunction(
+                            [this, discountingRate](double time, double logMoneyness)
+                            {
+                              double spot = std::exp(logMoneyness);
+                              return discountingRate->value(time) + m_Rate->value(time, spot);
+                            } );
+
+          beagle::parabolic_pde_solver_ptr_t solver
+            = beagle::math::OneDimParabolicPDESolver::formOneDimFokkerPlanckPDESolver(convection, diffusion, rate);
+
+          // Perform the forward induction
+          int numTimes = static_cast<int>((end - start) * m_Settings.numberOfStateVariableSteps());
+          double timeStep = (end - start) / numTimes;
+          for (int i=0; i<numTimes; ++i)
+          {
+            double end = start + (i+1) * timeStep / numTimes;
+            solver->evolve(end,
+                           timeStep,
+                           stateVars,
+                           beagle::dbl_vec_t{0.0},
+                           beagle::dbl_vec_t{0.0},
+                           density);
+          }
         }
       private:
         beagle::real_function_ptr_t m_Forward;
