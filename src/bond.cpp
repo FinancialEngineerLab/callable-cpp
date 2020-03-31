@@ -61,7 +61,7 @@ namespace beagle
             double accrual = 1. / frequency;
             double couponAmount = standardFaceValue() * coupon * accrual;
 
-            int numPayments = std::ceil(expiry * frequency);
+            int numPayments = static_cast<int>(std::ceil(expiry * frequency));
             for (int i=0; i<numPayments; ++i)
             {
               m_Couponflows.emplace_back(expiry - (numPayments-i-1) * accrual, couponAmount);
