@@ -8,6 +8,7 @@
 #include "interpolation_builder.hpp"
 #include "util.hpp"
 #include "round_trip.hpp"
+#include "convertible_calibration.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -951,13 +952,73 @@ void generateAndersenBuffumFigureSix( void )
   }
 }
 
+void generateAndersenBuffumFigureSeven( void )
+{
+  double spot = 50;
+  double r = .04;
+  double q = .02;
+
+  double sigma = .4;
+  double c = .05;
+
+  beagle::valuation::OneDimFiniteDifferenceSettings settings(52, 150, 4.5);
+
+  // Model parameters
+  beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
+                                            [=](double arg) { return std::exp(-r * arg);});
+  beagle::real_function_ptr_t forward = beagle::math::RealFunction::createContinuousForwardAssetPriceFunction(
+                                            spot,
+                                            beagle::math::RealFunction::createUnaryFunction(
+                                            [=](double arg) { return std::exp(-(r - q) * arg);}));
+
+  int numExpiries = 120U;
+  beagle::dbl_vec_t expiries(numExpiries);
+  for (int i=0; i<numExpiries; ++i)
+    expiries[i] = (i+1) * 10. / numExpiries;
+
+  beagle::andersen_buffum_param_t quotes(numExpiries, beagle::two_dbl_t{sigma, c});
+
+  std::ofstream outA(".\\figure\\fig_7_panel_A.txt");
+  outA << "[";
+  for (double expiry : expiries)
+    outA << expiry << ", ";
+  outA << "]\n";
+
+  std::ofstream outB(".\\figure\\fig_7_panel_B.txt");
+  outB << "[";
+  for (double expiry : expiries)
+    outB << expiry << ", ";
+  outB << "]\n";
+
+  beagle::dbl_vec_t ps{0., .5, 1., 2.};
+  for (double p : ps)
+  {
+    beagle::andersen_buffum_param_t params = beagle::calibration::util::createCalibratedAndersenBuffumParameters(forward,
+                                                                                                                 discounting,
+                                                                                                                 settings,
+                                                                                                                 p,
+                                                                                                                 expiries,
+                                                                                                                 quotes);
+
+    outA << "[";
+    outB << "[";
+    for (int i=0; i<numExpiries; ++i)
+    {
+      outA << params[i].first << ", ";
+      outB << params[i].second << ", ";
+    }
+    outA << "]\n";
+    outB << "]\n";
+  }
+}
+
 int main( void )
 {
   //test1();
   //test2();
   //test3();
   //test4();
-  test5();
+  //test5();
   //test6();
   //test7();
   //generateAndersenBuffumFigureTwo();
@@ -965,6 +1026,7 @@ int main( void )
   //generateAndersenBuffumFigureFour();
   //generateAndersenBuffumFigureFive();
   //generateAndersenBuffumFigureSix();
+  //generateAndersenBuffumFigureSeven();
 
   return 0;
 }

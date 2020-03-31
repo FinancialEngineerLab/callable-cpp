@@ -1,7 +1,5 @@
 #include "calibration_functor.hpp"
 
-#include <iostream>
-
 namespace beagle
 {
   namespace calibration
@@ -36,10 +34,7 @@ namespace beagle
       for (beagle::dbl_vec_t::size_type i=0; i<values.size(); ++i)
       {
         diff(i) = values[i] - m_Targets[i];
-        std::cout << values[i] << "\t" << m_Targets[i] << "\t" << diff(i) << "\n";
       }
-
-      std::cout << "\n\n";
 
       return 0;
     }

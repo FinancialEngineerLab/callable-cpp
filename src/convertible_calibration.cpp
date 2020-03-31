@@ -2,8 +2,10 @@
 #include "real_function.hpp"
 #include "real_2d_function.hpp"
 #include "calibration_adapter.hpp"
+#include "calibration_functor.hpp"
 #include "util.hpp"
 #include "payoff.hpp"
+#include "unsupported/Eigen/NonLinearOptimization"
 
 namespace beagle
 {
@@ -100,7 +102,8 @@ namespace beagle
               bond += stateVarStep * density[i] * digitalCall->intrinsicValue(std::exp(m_StateVars[i]), 0.);
             }
 
-            return beagle::dbl_vec_t{option, bond};
+            return beagle::dbl_vec_t{option - m_Targets.first,
+                                     bond - m_Targets.second};
           }
           dbl_mat_t derivativeWithRespectToParameters( const dbl_vec_t& parameters ) const override
           {
@@ -160,9 +163,10 @@ namespace beagle
         beagle::real_2d_function_ptr_t drift;
         beagle::real_2d_function_ptr_t volatility;
         beagle::real_2d_function_ptr_t rate;
+        double spot = forward->value(0.0);
         formModelParameters(quotes.back().first,
                             quotes.back().second,
-                            forward->value(0.0),
+                            spot,
                             exponent,
                             drift,
                             volatility,
@@ -181,15 +185,73 @@ namespace beagle
         beagle::dbl_vec_t density;
         pODFP->formInitialCondition(expiries.back(), stateVars, density);
 
+        beagle::dbl_vec_t::size_type numParams(2U);
+
         // Now perform calibration by bootstrapping
         beagle::andersen_buffum_param_t params;
-        for (double expiry : expiries)
+        double start = 0.;
+        for (beagle::dbl_vec_t::size_type i=0; i<expiries.size(); ++i)
         {
-          
+          double end = expiries[i];
+          beagle::dbl_vec_t guesses{quotes[i].first, quotes[i].second};
+
+          beagle::calibration_bound_constraint_coll_t constraints(numParams,
+                                                                  beagle::calibration::CalibrationBoundConstraint::lowerBoundCalibrationConstraint(0.));
+          beagle::int_vec_t elimIndices(0U);
+
+          guesses = beagle::calibration::util::getTransformedParameters( guesses, constraints );
+          Eigen::VectorXd calibParams(guesses.size());
+          for (beagle::dbl_vec_t::size_type i=0; i<guesses.size(); ++i)
+            calibParams(i) = guesses[i];
+
+          beagle::calibration_adapter_ptr_t adapter = std::make_shared<AndersenBuffumCalibrationAdapter>(forward,
+                                                                                                         discounting,
+                                                                                                         settings,
+                                                                                                         start,
+                                                                                                         end,
+                                                                                                         spot,
+                                                                                                         exponent,
+                                                                                                         stateVars,
+                                                                                                         density,
+                                                                                                         quotes[i]);
+
+          beagle::calibration::CalibrationFunctor functor( beagle::dbl_vec_t(2U, 0.),
+                                                           adapter,
+                                                           calibParams,
+                                                           constraints,
+                                                           elimIndices );
+          Eigen::LevenbergMarquardt<beagle::calibration::CalibrationFunctor> lm(functor);
+          lm.parameters.xtol = 1.0e-4;
+          Eigen::LevenbergMarquardtSpace::Status status = lm.minimize(calibParams);
+
+          for (beagle::dbl_vec_t::size_type i=0; i<guesses.size(); ++i)
+            guesses[i] = calibParams(i);
+
+          guesses = beagle::calibration::util::getOriginalParameters( guesses, constraints );
+          params.emplace_back(guesses[0], guesses[1]);
+
+          // Evolve density
+          formModelParameters(guesses[0],
+                              guesses[1],
+                              spot,
+                              exponent,
+                              drift,
+                              volatility,
+                              rate);
+          beagle::pricer_ptr_t forwardPricer = beagle::valuation::Pricer::formOneDimForwardPDEEuroOptionPricer(
+                                                                   forward,
+                                                                   discounting,
+                                                                   drift,
+                                                                   volatility,
+                                                                   rate,
+                                                                   settings);
+          auto pODFP = dynamic_cast<beagle::valuation::mixins::OneDimFokkerPlanck*>(forwardPricer.get());
+          pODFP->evolve(start, end, stateVars, density);
+
+          start = expiries[i];
         }
 
-
-        return beagle::andersen_buffum_param_t{};
+        return params;
       }
     }
   }
