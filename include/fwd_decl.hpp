@@ -41,6 +41,7 @@ namespace beagle
     struct Pricer;
     struct DividendPolicy;
     struct FiniteDifferenceDetails;
+    struct OneDimFiniteDifferenceSettings;
   }
 
   namespace calibration
@@ -89,6 +90,8 @@ namespace beagle
   // For each callable schedule entry, the two doubles indicate the 
   // start and end of the call period.
   using callable_schedule_t = std::vector<std::tuple<double, beagle::real_function_ptr_t, double>>;
+
+  using andersen_buffum_param_t = std::vector<two_dbl_t>;
 }
 
 
