@@ -9,6 +9,7 @@
 #include "util.hpp"
 #include "round_trip.hpp"
 #include "convertible_calibration.hpp"
+#include "local_vol_calibration.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -100,82 +101,36 @@ void test2( void )
   // dividends.emplace_back(0.6, 2.0);
   // dividends.emplace_back(0.8, 1.0);
 
-  beagle::valuation::FiniteDifferenceDetails fdDetails(100., .00, .5, 500, 1500, 5.5, dividends,
-                                                       beagle::valuation::DividendPolicy::liquidator(),
-                                                       beagle::math::InterpolationBuilder::linear());
+  beagle::dbl_vec_t strikes{90., 92.5, 95., 97.5, 100., 102.5, 105., 107.5, 110.};
+  beagle::dbl_vec_t vols{.33, .32, .31, .30, .29, .28, .28, .29, .31};
 
-  beagle::dbl_vec_t expiries;
-  beagle::dbl_vec_vec_t strikesColl;
-  beagle::dbl_vec_vec_t pricesColl;
-  beagle::test::generateEuropeanMarketQuotes(fdDetails, expiries, strikesColl, pricesColl );
+  beagle::volatility_smile_coll_t volSmiles;
+  volSmiles.emplace_back(0.25, std::make_pair(strikes, vols));
+  volSmiles.emplace_back(0.50, std::make_pair(strikes, vols));
+  volSmiles.emplace_back(0.75, std::make_pair(strikes, vols));
+  volSmiles.emplace_back(1.00, std::make_pair(strikes, vols));
+  volSmiles.emplace_back(1.25, std::make_pair(strikes, vols));
+  
+  double r = 0.04;
+  double q = 0.00;
+  double spot = 100;
+  beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
+                                            [=](double arg) { return std::exp(-r * arg);});
+  beagle::real_function_ptr_t forward = beagle::math::RealFunction::createContinuousForwardAssetPriceFunction(
+                                            spot,
+                                            beagle::math::RealFunction::createUnaryFunction(
+                                            [=](double arg) { return std::exp(-(r - q) * arg);}));
+  beagle::valuation::OneDimFiniteDifferenceSettings settings(52, 250, 10.5);
 
-  beagle::dbl_vec_t initialGuesses(expiries.size(), .6);
 
-  try
-  {
-    beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::call();
-    beagle::interp_builder_ptr_t interp = beagle::math::InterpolationBuilder::linear();
+  beagle::real_2d_function_ptr_t localVol =
+    beagle::calibration::util::createCalibratedLocalVolatilitySurface(forward,
+                                                                      discounting,
+                                                                      settings,
+                                                                      volSmiles);
 
-    beagle::pricer_ptr_t forwardPricer = beagle::valuation::Pricer::formOneDimensionalForwardPDEEuropeanOptionPricer(
-                                                                 fdDetails,
-                                                                 beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(fdDetails.volatility()) );
 
-    beagle::real_2d_function_ptr_t localVol =
-      beagle::math::RealTwoDimFunction::createBootstrappedLocalVolatilityFunction( expiries,
-                                                                                   initialGuesses,
-                                                                                   strikesColl,
-                                                                                   pricesColl,
-                                                                                   forwardPricer,
-                                                                                   payoff,
-                                                                                   interp );
-
-    // Output local volatility surface
-    for (beagle::dbl_vec_t::size_type i = 0; i < expiries.size() - 1; ++i)
-    {
-      for (beagle::dbl_vec_t::size_type j = 0; j < strikesColl[i].size(); ++j)
-        std::cout << expiries[i] - .1 << "\t"
-                  << strikesColl[i][j] << "\t"
-                  << localVol->value(expiries[i] - .1, strikesColl[i][j]) << "\n";
-
-      std::cout << "\n";
-    }
-
-    std::cout << "\n";
-
-    // Output price quotes
-    for (beagle::dbl_vec_t::size_type i = 0; i < expiries.size() - 1; ++i)
-    {
-      for (beagle::dbl_vec_t::size_type j = 0; j < strikesColl[i].size(); ++j)
-        std::cout << pricesColl[i][j] << "\t";
-
-      std::cout << "\n";
-    }
-
-    std::cout << "\n";
-
-    // Output calibrated prices
-    beagle::pricer_ptr_t calibratedPricer = beagle::valuation::Pricer::formOneDimensionalForwardPDEEuropeanOptionPricer( fdDetails, localVol );
-    for (beagle::dbl_vec_t::size_type i = 0; i < expiries.size() - 1; ++i)
-    {
-      for (beagle::dbl_vec_t::size_type j = 0; j < strikesColl[i].size(); ++j)
-      {
-        beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption(expiries[i],
-                                                                                                 strikesColl[i][j],
-                                                                                                 payoff);
-        std::cout << calibratedPricer->value(euroOption) << "\t";
-      }
-
-      std::cout << "\n";
-    }
-
-    std::cout << "\n";
-
-    std::cout << "\nEnd of Test 2\n";
-  }
-  catch (const std::string& what)
-  {
-    std::cout << what << std::endl;
-  }
+  std::cout << "\nEnd of Test 2\n";
 }
 
 void test3( void )
@@ -1228,12 +1183,12 @@ void generateAndersenBuffumTableOne( void )
 int main( void )
 {
   //test1();
-  //test2();
+  test2();
   //test3();
   //test4();
   //test5();
   //test6();
-  test7();
+  //test7();
   //generateAndersenBuffumFigureTwo();
   //generateAndersenBuffumFigureThree();
   //generateAndersenBuffumFigureFour();

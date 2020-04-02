@@ -92,6 +92,10 @@ namespace beagle
   using callable_schedule_t = std::vector<std::tuple<double, beagle::real_function_ptr_t, double>>;
 
   using andersen_buffum_param_t = std::vector<two_dbl_t>;
+
+  // Strikes and implied volatilities
+  using volatility_smile_t = std::pair<beagle::dbl_vec_t, beagle::dbl_vec_t>;
+  using volatility_smile_coll_t = std::vector<std::pair<double, beagle::volatility_smile_t>>;
 }
 
 
