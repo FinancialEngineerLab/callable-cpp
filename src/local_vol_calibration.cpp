@@ -44,7 +44,12 @@ namespace beagle
             m_Targets.clear();
             for (beagle::dbl_vec_t::size_type i=0; i<m_Strikes.size(); ++i)
             {
-              m_Targets.emplace_back(df * beagle::util::bsCall(m_Strikes[i], fwd, end, vols[i]));
+              double strike = m_Strikes[i];
+              double call = beagle::util::bsCall(m_Strikes[i], fwd, end, vols[i]);
+              if (strike > fwd)
+                m_Targets.emplace_back(df * call);
+              else
+                m_Targets.emplace_back(df * (call - fwd + strike));
             }
           }
           virtual ~LocalVolatilityCalibrationAdapter( void )
@@ -78,19 +83,20 @@ namespace beagle
             beagle::dbl_vec_t density(m_Density);
             pODFP->evolve(m_Start, m_End, m_StateVars, density);
 
-            beagle::payoff_ptr_t call = beagle::product::option::Payoff::call();
-
             int numStateVars = m_StateVars.size();
             double stateVarStep = (m_StateVars.back() - m_StateVars.front()) / (numStateVars - 1);
 
             beagle::dbl_vec_t results;
+            double fwd = m_Forward->value(m_End);
             for (beagle::dbl_vec_t::size_type j=0; j<m_Strikes.size(); ++j)
             {
               double strike = m_Strikes[j];
+              beagle::payoff_ptr_t payoff = strike > fwd ? beagle::product::option::Payoff::call()
+                                                         : beagle::product::option::Payoff::put();
               double option(0.0);
               for (int i=0; i<numStateVars; ++i)
               {
-                option += stateVarStep * density[i] * call->intrinsicValue(std::exp(m_StateVars[i]), strike);
+                option += stateVarStep * density[i] * payoff->intrinsicValue(std::exp(m_StateVars[i]), strike);
               }
             
               results.emplace_back(option - m_Targets[j]);
@@ -184,7 +190,7 @@ namespace beagle
           beagle::dbl_vec_t strikes = volSmiles[i].second.first;
 
           beagle::calibration_bound_constraint_coll_t constraints(strikes.size(),
-                                                                  beagle::calibration::CalibrationBoundConstraint::lowerBoundCalibrationConstraint(0.));
+                                                                  beagle::calibration::CalibrationBoundConstraint::lowerBoundCalibrationConstraint(0.0001));
           beagle::int_vec_t elimIndices(0U);
 
           guesses = beagle::calibration::util::getTransformedParameters( guesses, constraints );
