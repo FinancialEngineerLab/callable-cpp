@@ -535,7 +535,7 @@ void generateAndersenBuffumFigureTwo( void )
   double p = 2.;
   beagle::dbl_vec_t cs{0., .03, .05, .1};
 
-  std::ofstream outA(".\\figure\\fig_2_panel_A1.txt");
+  std::ofstream outA(".\\figure\\fig_2_panel_A.txt");
   outA << "[";
   for (double expiry : expiries)
     outA << expiry << ", ";
@@ -580,7 +580,7 @@ void generateAndersenBuffumFigureTwo( void )
   double c = .05;
   beagle::dbl_vec_t ps{0., .5, 2.};
 
-  std::ofstream outB(".\\figure\\fig_2_panel_B1.txt");
+  std::ofstream outB(".\\figure\\fig_2_panel_B.txt");
   outB << "[";
   for (double expiry : expiries)
     outB << expiry << ", ";
@@ -1041,7 +1041,7 @@ void generateAndersenBuffumTableOne( void )
 
     // Create a fixed coupon bond: 5-year maturity, 1.5% coupon, semi-annual
     beagle::callable_schedule_t callSchedule;
-    callSchedule.emplace_back(5., beagle::math::RealFunction::createConstantFunction(100.), 10.);
+    callSchedule.emplace_back(5., beagle::math::RealFunction::createConstantFunction(108.), 10.);
 
     beagle::puttable_schedule_t putSchedule;
     putSchedule.emplace_back(6., 100.);
@@ -1127,7 +1127,7 @@ void generateAndersenBuffumTableOne( void )
 
     // Create a fixed coupon bond: 5-year maturity, 1.5% coupon, semi-annual
     beagle::callable_schedule_t callSchedule;
-    callSchedule.emplace_back(3., beagle::math::RealFunction::createConstantFunction(100.), 5.);
+    callSchedule.emplace_back(3., beagle::math::RealFunction::createConstantFunction(106.), 5.);
 
     beagle::puttable_schedule_t putSchedule;
     putSchedule.emplace_back(4., 100.);
