@@ -90,6 +90,7 @@ namespace beagle
             beagle::payoff_ptr_t call = beagle::product::option::Payoff::call();
             beagle::payoff_ptr_t digitalCall = beagle::product::option::Payoff::digitalCall();
             double strike = m_Forward->value(m_End);
+            double df = m_Discounting->value(m_End);
 
             int numStateVars = m_StateVars.size();
             double stateVarStep = (m_StateVars.back() - m_StateVars.front()) / (numStateVars - 1);
@@ -98,12 +99,12 @@ namespace beagle
             double bond(.0);
             for (int i=0; i<numStateVars; ++i)
             {
-              option += stateVarStep * density[i] * call->intrinsicValue(std::exp(m_StateVars[i]), strike);
-              bond += stateVarStep * density[i] * digitalCall->intrinsicValue(std::exp(m_StateVars[i]), 0.);
+              option += stateVarStep * density[i] * call->intrinsicValue(strike * std::exp(m_StateVars[i]), strike);
+              bond += stateVarStep * density[i] * digitalCall->intrinsicValue(strike * std::exp(m_StateVars[i]), 0.);
             }
 
-            return beagle::dbl_vec_t{option - m_Targets.first,
-                                     bond - m_Targets.second};
+            return beagle::dbl_vec_t{df * option - m_Targets.first,
+                                     df * bond - m_Targets.second};
           }
           dbl_mat_t derivativeWithRespectToParameters( const dbl_vec_t& parameters ) const override
           {

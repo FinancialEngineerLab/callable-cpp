@@ -147,7 +147,7 @@ void test3( void )
 
   double expiry = 1.;
   double strike = 100.;
-  beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::put();
+  beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::call();
   beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption( expiry,
                                                                                             strike,
                                                                                             payoff );
@@ -190,16 +190,24 @@ void test3( void )
                                                                beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0.),
                                                                cev,
                                                                beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0.),
-                                                               beagle::valuation::OneDimFiniteDifferenceSettings(1500, 1501, 7.5) );
+                                                               beagle::valuation::OneDimFiniteDifferenceSettings(500, 1001, 7.5) );
     beagle::pricer_ptr_t odfpeop  = beagle::valuation::Pricer::formOneDimensionalForwardPDEEuropeanOptionPricer(
                                                                fdDetails,
                                                                localVolSurface );
+    beagle::pricer_ptr_t odfpeop2 = beagle::valuation::Pricer::formOneDimForwardPDEEuroOptionPricer(
+                                                               forward,
+                                                               discounting,
+                                                               beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0.),
+                                                               cev,
+                                                               beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0.),
+                                                               beagle::valuation::OneDimFiniteDifferenceSettings(500, 1001, 7.5) );
 
     std::cout << "European option price (FD-B) is: " << odbpop->value( euroOption ) << std::endl;
     std::cout << "European option price (FD-B) is: " << odbpop2->value( euroOption ) << std::endl;
     std::cout << "American option price (FD-B) is: " << odbpop->value( amerOption ) << std::endl;
     std::cout << "American option price (FD-B) is: " << odbpop2->value( amerOption ) << std::endl;
     std::cout << "European option price (FD-F) is: " << odfpeop->value( euroOption ) << std::endl;
+    std::cout << "European option price (FD-F) is: " << odfpeop2->value( euroOption ) << std::endl;
 
     std::cout << "\nEnd of Test 3\n";
   }
@@ -394,7 +402,7 @@ void test7( void )
     double coupon = .03;
     int frequency = 2;
 
-    beagle::valuation::OneDimFiniteDifferenceSettings settings(100, 300, 4.5);
+    beagle::valuation::OneDimFiniteDifferenceSettings settings(104, 250, 4.5);
 
     beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
                                               [=](double arg) { return std::exp(-r * arg);});
@@ -449,13 +457,13 @@ void test7( void )
     double sigma = .25;
 
     double c = .02;
-    double rec = 0.4;
+    double rec = 0.;
 
     double expiry = 5.;
     double coupon = .015;
     int frequency = 2;
 
-    beagle::valuation::OneDimFiniteDifferenceSettings settings(52, 150, 4.5);
+    beagle::valuation::OneDimFiniteDifferenceSettings settings(104, 250, 4.5);
 
     beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
                                               [=](double arg) { return std::exp(-r * arg);});
@@ -527,7 +535,7 @@ void generateAndersenBuffumFigureTwo( void )
   double p = 2.;
   beagle::dbl_vec_t cs{0., .03, .05, .1};
 
-  std::ofstream outA(".\\figure\\fig_2_panel_A.txt");
+  std::ofstream outA(".\\figure\\fig_2_panel_A1.txt");
   outA << "[";
   for (double expiry : expiries)
     outA << expiry << ", ";
@@ -572,7 +580,7 @@ void generateAndersenBuffumFigureTwo( void )
   double c = .05;
   beagle::dbl_vec_t ps{0., .5, 2.};
 
-  std::ofstream outB(".\\figure\\fig_2_panel_B.txt");
+  std::ofstream outB(".\\figure\\fig_2_panel_B1.txt");
   outB << "[";
   for (double expiry : expiries)
     outB << expiry << ", ";
@@ -1033,7 +1041,7 @@ void generateAndersenBuffumTableOne( void )
 
     // Create a fixed coupon bond: 5-year maturity, 1.5% coupon, semi-annual
     beagle::callable_schedule_t callSchedule;
-    callSchedule.emplace_back(5., beagle::math::RealFunction::createConstantFunction(108.), 10.);
+    callSchedule.emplace_back(5., beagle::math::RealFunction::createConstantFunction(100.), 10.);
 
     beagle::puttable_schedule_t putSchedule;
     putSchedule.emplace_back(6., 100.);
@@ -1119,7 +1127,7 @@ void generateAndersenBuffumTableOne( void )
 
     // Create a fixed coupon bond: 5-year maturity, 1.5% coupon, semi-annual
     beagle::callable_schedule_t callSchedule;
-    callSchedule.emplace_back(3., beagle::math::RealFunction::createConstantFunction(106.), 5.);
+    callSchedule.emplace_back(3., beagle::math::RealFunction::createConstantFunction(100.), 5.);
 
     beagle::puttable_schedule_t putSchedule;
     putSchedule.emplace_back(4., 100.);

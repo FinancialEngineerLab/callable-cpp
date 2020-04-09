@@ -259,7 +259,7 @@ namespace beagle
             = beagle::math::OneDimParabolicPDESolver::formOneDimFokkerPlanckPDESolver(convection, diffusion, rate);
 
           // Perform the forward induction
-          int numTimes = static_cast<int>((end - start) * m_Settings.numberOfStateVariableSteps());
+          int numTimes = static_cast<int>((end - start) * m_Settings.numberOfTimeSteps());
           double timeStep = (end - start) / numTimes;
           for (int i=0; i<numTimes; ++i)
           {

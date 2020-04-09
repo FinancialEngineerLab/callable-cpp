@@ -96,7 +96,7 @@ namespace beagle
               double option(0.0);
               for (int i=0; i<numStateVars; ++i)
               {
-                option += stateVarStep * density[i] * payoff->intrinsicValue(std::exp(m_StateVars[i]), strike);
+                option += stateVarStep * density[i] * payoff->intrinsicValue(fwd * std::exp(m_StateVars[i]), strike);
               }
             
               results.emplace_back(option - m_Targets[j]);

@@ -268,7 +268,7 @@ namespace beagle
                            { return termDF * payoff->intrinsicValue(termForward*moneyness, strike); });
 
             // Perform the backward induction
-            int numTimes = static_cast<int>(expiry * m_Settings.numberOfStateVariableSteps());
+            int numTimes = static_cast<int>(expiry * m_Settings.numberOfTimeSteps());
             double timeStep = (0. - expiry) / numTimes;
             for (int i=0; i<numTimes; ++i)
             {
@@ -430,16 +430,8 @@ namespace beagle
           for (int i=0; i<numStateVars; ++i)
             stateVars[i] = centralValue + (i - centralIndex) * stateVarStep;
 
-          // Set the initial condition
-          beagle::dbl_vec_t moneynesses(numStateVars);
-          std::transform(stateVars.cbegin(),
-                         stateVars.cend(),
-                         moneynesses.begin(),
-                         [=](double logMoneyness)
-                         { return std::exp(logMoneyness); });
-
           beagle::dbl_vec_t prices(numStateVars, termDF * notionalFlows.back().second);
-          applyEarlyExerciseBoundaryConditions(moneynesses,
+          applyEarlyExerciseBoundaryConditions(stateVars,
                                                callSchedule,
                                                putSchedule,
                                                conversionRatio,
@@ -464,7 +456,7 @@ namespace beagle
                            { return price + startDF * couponAmounts[numCouponflows-j]; });
             
             // Perform the backward induction
-            int numTimes = static_cast<int>((start - end) * m_Settings.numberOfStateVariableSteps());
+            int numTimes = static_cast<int>((start - end) * m_Settings.numberOfTimeSteps());
             double timeStep = (end - start) / numTimes;
             for (int i=0; i<numTimes; ++i)
             {
@@ -479,7 +471,7 @@ namespace beagle
                              beagle::dbl_vec_t{ubc},
                              prices);
 
-              applyEarlyExerciseBoundaryConditions(moneynesses,
+              applyEarlyExerciseBoundaryConditions(stateVars,
                                                    callSchedule,
                                                    putSchedule,
                                                    conversionRatio,
@@ -526,7 +518,7 @@ namespace beagle
             isConvertible = true;
           }
         }
-        void applyEarlyExerciseBoundaryConditions(const beagle::dbl_vec_t& moneynesses,
+        void applyEarlyExerciseBoundaryConditions(const beagle::dbl_vec_t& stateVars,
                                                   const beagle::callable_schedule_t& callSchedule,
                                                   const beagle::puttable_schedule_t& putSchedule,
                                                   const beagle::real_function_ptr_t& convRatio,
@@ -569,7 +561,7 @@ namespace beagle
               {
                 for (int k=0; k<sz; ++k)
                 {
-                  double conversionValue = convRatio->value(time) * forward * moneynesses[k];
+                  double conversionValue = convRatio->value(time) * forward * std::exp(stateVars[k]);
                   double callValue = callPrice->value(time);
                   prices[k] = std::min(prices[k],
                                        df * std::max(conversionValue, callValue));
@@ -591,7 +583,7 @@ namespace beagle
           {
             for (int k=0; k<sz; ++k)
             {
-              double conversionValue = convRatio->value(time) * forward * moneynesses[k];
+              double conversionValue = convRatio->value(time) * forward * std::exp(stateVars[k]);
               prices[k] = std::max(prices[k], df * conversionValue);
             }
           }
