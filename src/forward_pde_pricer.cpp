@@ -189,19 +189,20 @@ namespace beagle
 
           // Set the initial condition and perform the forwardward induction
           beagle::dbl_vec_t stateVars;
-          beagle::dbl_vec_t initialCondition;
-          formInitialCondition(expiry, stateVars, initialCondition);
-          evolve(0., expiry, stateVars, initialCondition);
+          beagle::dbl_vec_t densities;
+          formInitialCondition(expiry, stateVars, densities);
+          evolve(0., expiry, stateVars, densities);
  
           double result(.0);
           int numStateVars = stateVars.size();
           double stateVarStep = (stateVars.back() - stateVars.front()) / (numStateVars - 1);
+          double forward = m_Forward->value(expiry);
           for (int i=0; i<numStateVars; ++i)
           {
-            result += stateVarStep * initialCondition[i] * payoff->intrinsicValue(std::exp(stateVars[i]), strike);
+            result += stateVarStep * densities[i] * payoff->intrinsicValue(forward * std::exp(stateVars[i]), strike);
           }
 
-          return result;
+          return m_Discounting->value(expiry) * result;
         }
         virtual void formInitialCondition(double expiry,
                                           beagle::dbl_vec_t& stateVars,
@@ -216,7 +217,7 @@ namespace beagle
 
           double atmVol = m_Vol->value(expiry, termForward);
           int centralIndex = numStateVars / 2;
-          double centralValue = std::log(m_Forward->value(0.0));
+          double centralValue = 0.;
           double stateVarStep = m_Settings.numberOfGaussianStandardDeviations() * atmVol * std::sqrt(expiry) / centralIndex;
 
           stateVars.resize(numStateVars);
@@ -232,38 +233,26 @@ namespace beagle
                             const beagle::dbl_vec_t& stateVars,
                             beagle::dbl_vec_t& density) const override
         {
-          beagle::real_function_ptr_t fundingRate = beagle::math::RealFunction::createUnaryFunction(
-                            [this](double time)
-                            {
-                              double bump = 1e-6;
-                              return std::log(m_Forward->value(time+bump) / m_Forward->value(time)) / bump;
-                            } );
-          beagle::real_function_ptr_t discountingRate = beagle::math::RealFunction::createUnaryFunction(
-                            [this](double time)
-                            {
-                              double bump = 1e-6;
-                              return - std::log(m_Discounting->value(time+bump) / m_Discounting->value(time)) / bump;
-                            } );
           beagle::real_2d_function_ptr_t convection = beagle::math::RealTwoDimFunction::createBinaryFunction(
-                            [this, fundingRate](double time, double logMoneyness)
+                            [this](double time, double logMoneyness)
                             {
-                              double spot =  std::exp(logMoneyness);
+                              double spot = m_Forward->value(time) * std::exp(logMoneyness);
                               double localVol = m_Vol->value(time, spot);
                               double drift = m_Drift->value(time, spot);
-                              return fundingRate->value(time) + drift - .5 * localVol * localVol;
+                              return drift - .5 * localVol * localVol;
                             } );
           beagle::real_2d_function_ptr_t diffusion = beagle::math::RealTwoDimFunction::createBinaryFunction(
                             [this](double time, double logMoneyness)
                             {
-                              double spot = std::exp(logMoneyness);
+                              double spot = m_Forward->value(time) * std::exp(logMoneyness);
                               double localVol = m_Vol->value(time, spot);
                               return .5 * localVol * localVol;
                             } );
           beagle::real_2d_function_ptr_t rate = beagle::math::RealTwoDimFunction::createBinaryFunction(
-                            [this, discountingRate](double time, double logMoneyness)
+                            [this](double time, double logMoneyness)
                             {
-                              double spot = std::exp(logMoneyness);
-                              return discountingRate->value(time) + m_Rate->value(time, spot);
+                              double spot = m_Forward->value(time) * std::exp(logMoneyness);
+                              return m_Rate->value(time, spot);
                             } );
 
           beagle::parabolic_pde_solver_ptr_t solver
@@ -274,7 +263,7 @@ namespace beagle
           double timeStep = (end - start) / numTimes;
           for (int i=0; i<numTimes; ++i)
           {
-            double end = start + (i+1) * timeStep / numTimes;
+            double end = start + (i+1) * timeStep;
             solver->evolve(end,
                            timeStep,
                            stateVars,

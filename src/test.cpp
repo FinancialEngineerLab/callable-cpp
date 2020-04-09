@@ -122,7 +122,6 @@ void test2( void )
                                             [=](double arg) { return std::exp(-(r - q) * arg);}));
   beagle::valuation::OneDimFiniteDifferenceSettings settings(52, 250, 10.5);
 
-
   beagle::real_2d_function_ptr_t localVol =
     beagle::calibration::util::createCalibratedLocalVolatilitySurface(forward,
                                                                       discounting,
@@ -314,11 +313,11 @@ void test6( void )
   double spot = 50;
   double r = .04;
   double q = .02;
-  double sigma = .25;
+  double sigma = .4;
 
-  double c = .02;
+  double c = .03;
   double p = 2.;
-  double rec = 0.4;
+  double rec = 0.;
 
   beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
                                             [=](double arg) { return std::exp(-r * arg);});
@@ -395,7 +394,7 @@ void test7( void )
     double coupon = .03;
     int frequency = 2;
 
-    beagle::valuation::OneDimFiniteDifferenceSettings settings(52, 150, 4.5);
+    beagle::valuation::OneDimFiniteDifferenceSettings settings(100, 300, 4.5);
 
     beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
                                               [=](double arg) { return std::exp(-r * arg);});
@@ -441,9 +440,9 @@ void test7( void )
     std::cout << "\n";
   }
 
-  // Convertible bond, Case A
+  // Convertible bond, Case B
   {
-    std::cout << "\nConvertible bond, Case A\n";
+    std::cout << "\nConvertible bond, Case B\n";
     double spot = 50;
     double r = .04;
     double q = .02;
@@ -1183,12 +1182,12 @@ void generateAndersenBuffumTableOne( void )
 int main( void )
 {
   //test1();
-  test2();
+  //test2();
   //test3();
   //test4();
   //test5();
   //test6();
-  //test7();
+  test7();
   //generateAndersenBuffumFigureTwo();
   //generateAndersenBuffumFigureThree();
   //generateAndersenBuffumFigureFour();
