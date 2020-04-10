@@ -431,15 +431,15 @@ namespace beagle
             stateVars[i] = centralValue + (i - centralIndex) * stateVarStep;
 
           beagle::dbl_vec_t prices(numStateVars, termDF * notionalFlows.back().second);
-          applyEarlyExerciseBoundaryConditions(stateVars,
-                                               callSchedule,
-                                               putSchedule,
-                                               conversionRatio,
-                                               isCallable,
-                                               isPuttable,
-                                               isConvertible,
-                                               expiry,
-                                               prices);
+          //applyEarlyExerciseBoundaryConditions(stateVars,
+          //                                     callSchedule,
+          //                                     putSchedule,
+          //                                     conversionRatio,
+          //                                     isCallable,
+          //                                     isPuttable,
+          //                                     isConvertible,
+          //                                     expiry,
+          //                                     prices);
 
           int numCouponflows = couponTimes.size() - 1U;
           for (int j=0; j<numCouponflows; ++j)
@@ -471,15 +471,15 @@ namespace beagle
                              beagle::dbl_vec_t{ubc},
                              prices);
 
-              applyEarlyExerciseBoundaryConditions(stateVars,
-                                                   callSchedule,
-                                                   putSchedule,
-                                                   conversionRatio,
-                                                   isCallable,
-                                                   isPuttable,
-                                                   isConvertible,
-                                                   thisTime,
-                                                   prices);
+              //applyEarlyExerciseBoundaryConditions(stateVars,
+              //                                     callSchedule,
+              //                                     putSchedule,
+              //                                     conversionRatio,
+              //                                     isCallable,
+              //                                     isPuttable,
+              //                                     isConvertible,
+              //                                     thisTime,
+              //                                     prices);
             }
           }
 
