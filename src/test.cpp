@@ -1043,7 +1043,7 @@ void generateAndersenBuffumTableOne( void )
 
     // Create a fixed coupon bond: 5-year maturity, 1.5% coupon, semi-annual
     beagle::callable_schedule_t callSchedule;
-    callSchedule.emplace_back(5., beagle::math::RealFunction::createConstantFunction(107.), 10.);
+    callSchedule.emplace_back(5., beagle::math::RealFunction::createConstantFunction(106.), 10.);
 
     beagle::puttable_schedule_t putSchedule;
     putSchedule.emplace_back(6., 100.);
@@ -1129,7 +1129,7 @@ void generateAndersenBuffumTableOne( void )
 
     // Create a fixed coupon bond: 5-year maturity, 1.5% coupon, semi-annual
     beagle::callable_schedule_t callSchedule;
-    callSchedule.emplace_back(3., beagle::math::RealFunction::createConstantFunction(105.), 5.);
+    callSchedule.emplace_back(3., beagle::math::RealFunction::createConstantFunction(104.), 5.);
 
     beagle::puttable_schedule_t putSchedule;
     putSchedule.emplace_back(4., 100.);
@@ -1191,20 +1191,20 @@ void generateAndersenBuffumTableOne( void )
 
 int main( void )
 {
-  //test1();
+  test1();
   //test2();
   //test3();
   //test4();
   //test5();
   //test6();
-  test7();
+  //test7();
   //generateAndersenBuffumFigureTwo();
   //generateAndersenBuffumFigureThree();
   //generateAndersenBuffumFigureFour();
   //generateAndersenBuffumFigureFive();
   //generateAndersenBuffumFigureSix();
   //generateAndersenBuffumFigureSeven();
-  //generateAndersenBuffumTableOne();
+  generateAndersenBuffumTableOne();
 
   return 0;
 }

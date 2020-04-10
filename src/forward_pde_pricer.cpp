@@ -156,7 +156,7 @@ namespace beagle
         beagle::real_2d_function_ptr_t m_Volatility;
       };
 
-      struct OneDimForwardPDEEuroOptionPricer : public Pricer,
+      struct OneDimForwardPDEEuroOptionPricer : public OneDimParabolicPDEPricer,
                                                 public beagle::valuation::mixins::OneDimFokkerPlanck
       {
         OneDimForwardPDEEuroOptionPricer(const beagle::real_function_ptr_t& forward,
@@ -165,23 +165,26 @@ namespace beagle
                                          const beagle::real_2d_function_ptr_t& volatility,
                                          const beagle::real_2d_function_ptr_t& rate,
                                          const beagle::valuation::OneDimFiniteDifferenceSettings& settings) :
-          m_Forward(forward),
-          m_Discounting(discounting),
-          m_Drift(drift),
-          m_Vol(volatility),
-          m_Rate(rate),
-          m_Settings(settings)
+          OneDimParabolicPDEPricer(forward,
+                                   discounting,
+                                   drift,
+                                   volatility,
+                                   rate,
+                                   beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(.0),
+                                   settings)
         { }
         virtual ~OneDimForwardPDEEuroOptionPricer( void )
         { }
       public:
         virtual double value(const beagle::product_ptr_t& product) const override
         {
+          auto pA = dynamic_cast<beagle::product::option::mixins::American*>(product.get());
+          if (pA)
+            throw(std::string("Cannot value an American option with a forward equation!"));
+
           auto pO = dynamic_cast<beagle::product::mixins::Option*>(product.get());
           if (!pO)
             throw(std::string("The incoming product is not an option!"));
-
-          auto pA = dynamic_cast<beagle::product::option::mixins::American*>(product.get());
 
           double expiry = pO->expiry();
           double strike = pO->strike();
@@ -196,29 +199,29 @@ namespace beagle
           double result(.0);
           int numStateVars = stateVars.size();
           double stateVarStep = (stateVars.back() - stateVars.front()) / (numStateVars - 1);
-          double forward = m_Forward->value(expiry);
+          double forward = forwardCurve()->value(expiry);
           for (int i=0; i<numStateVars; ++i)
           {
             result += stateVarStep * densities[i] * payoff->intrinsicValue(forward * std::exp(stateVars[i]), strike);
           }
 
-          return m_Discounting->value(expiry) * result;
+          return discountCurve()->value(expiry) * result;
         }
         virtual void formInitialCondition(double expiry,
                                           beagle::dbl_vec_t& stateVars,
                                           beagle::dbl_vec_t& density) const override
         {
-          double termForward = m_Forward->value(expiry);
+          double termForward = forwardCurve()->value(expiry);
 
           // Set up the state variable mesh
-          int numStateVars = m_Settings.numberOfStateVariableSteps();
+          int numStateVars = finiteDifferenceSettings().numberOfStateVariableSteps();
           if (numStateVars % 2 == 0)
             numStateVars += 1;
 
-          double atmVol = m_Vol->value(expiry, termForward);
+          double atmVol = volatilitySurface()->value(expiry, termForward);
           int centralIndex = numStateVars / 2;
           double centralValue = 0.;
-          double stateVarStep = m_Settings.numberOfGaussianStandardDeviations() * atmVol * std::sqrt(expiry) / centralIndex;
+          double stateVarStep = finiteDifferenceSettings().numberOfGaussianStandardDeviations() * atmVol * std::sqrt(expiry) / centralIndex;
 
           stateVars.resize(numStateVars);
           for (int i=0; i<numStateVars; ++i)
@@ -233,33 +236,13 @@ namespace beagle
                             const beagle::dbl_vec_t& stateVars,
                             beagle::dbl_vec_t& density) const override
         {
-          beagle::real_2d_function_ptr_t convection = beagle::math::RealTwoDimFunction::createBinaryFunction(
-                            [this](double time, double logMoneyness)
-                            {
-                              double spot = m_Forward->value(time) * std::exp(logMoneyness);
-                              double localVol = m_Vol->value(time, spot);
-                              double drift = m_Drift->value(time, spot);
-                              return drift - .5 * localVol * localVol;
-                            } );
-          beagle::real_2d_function_ptr_t diffusion = beagle::math::RealTwoDimFunction::createBinaryFunction(
-                            [this](double time, double logMoneyness)
-                            {
-                              double spot = m_Forward->value(time) * std::exp(logMoneyness);
-                              double localVol = m_Vol->value(time, spot);
-                              return .5 * localVol * localVol;
-                            } );
-          beagle::real_2d_function_ptr_t rate = beagle::math::RealTwoDimFunction::createBinaryFunction(
-                            [this](double time, double logMoneyness)
-                            {
-                              double spot = m_Forward->value(time) * std::exp(logMoneyness);
-                              return m_Rate->value(time, spot);
-                            } );
-
           beagle::parabolic_pde_solver_ptr_t solver
-            = beagle::math::OneDimParabolicPDESolver::formOneDimFokkerPlanckPDESolver(convection, diffusion, rate);
+            = beagle::math::OneDimParabolicPDESolver::formOneDimFokkerPlanckPDESolver(convectionCoefficient(),
+                                                                                      diffusionCoefficient(),
+                                                                                      rateCoefficient());
 
           // Perform the forward induction
-          int numTimes = static_cast<int>((end - start) * m_Settings.numberOfTimeSteps());
+          int numTimes = static_cast<int>((end - start) * finiteDifferenceSettings().numberOfTimeSteps());
           double timeStep = (end - start) / numTimes;
           for (int i=0; i<numTimes; ++i)
           {
@@ -272,13 +255,6 @@ namespace beagle
                            density);
           }
         }
-      private:
-        beagle::real_function_ptr_t m_Forward;
-        beagle::real_function_ptr_t m_Discounting;
-        beagle::real_2d_function_ptr_t m_Drift;
-        beagle::real_2d_function_ptr_t m_Vol;
-        beagle::real_2d_function_ptr_t m_Rate;
-        beagle::valuation::OneDimFiniteDifferenceSettings m_Settings;
       };
     }
 
