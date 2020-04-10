@@ -405,11 +405,11 @@ void test7( void )
     beagle::valuation::OneDimFiniteDifferenceSettings settings(104, 250, 4.5);
 
     beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
-                                              [=](double arg) { return std::exp(-r * arg);});
+                                              [=](double arg) { return 1.; });
     beagle::real_function_ptr_t forward = beagle::math::RealFunction::createContinuousForwardAssetPriceFunction(
                                               spot,
                                               beagle::math::RealFunction::createUnaryFunction(
-                                              [=](double arg) { return std::exp(-(r - q) * arg);}));
+                                              [=](double arg) { return 1.; }));
     beagle::real_2d_function_ptr_t volatility = beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(sigma);
 
     // Create a fixed coupon bond: 5-year maturity, 1.5% coupon, semi-annual
@@ -428,10 +428,11 @@ void test7( void )
     for (double p : ps)
     {
       beagle::real_2d_function_ptr_t drift = beagle::math::RealTwoDimFunction::createBinaryFunction(
-                                                [=](double time, double price){ return c * std::pow(price / spot, -p); } );
-      beagle::real_2d_function_ptr_t rate = drift;
+                                                [=](double time, double price){ return r - q + c * std::pow(price / spot, -p); } );
+      beagle::real_2d_function_ptr_t rate = beagle::math::RealTwoDimFunction::createBinaryFunction(
+                                                [=](double time, double price){ return r + c * std::pow(price / spot, -p); } );
       beagle::real_2d_function_ptr_t recovery = beagle::math::RealTwoDimFunction::createBinaryFunction(
-                                                [=](double time, double price){ return -100. * rec * rate->value(time, price); } );
+                                                [=](double time, double price){ return -100. * rec * c * std::pow(price / spot, -p); } );
       beagle::pricer_ptr_t odbpbp  = beagle::valuation::Pricer::formOneDimBackwardPDEBondPricer(
                                                               forward,
                                                               discounting,
@@ -457,20 +458,20 @@ void test7( void )
     double sigma = .25;
 
     double c = .02;
-    double rec = 0.;
+    double rec = 0.4;
 
     double expiry = 5.;
     double coupon = .015;
     int frequency = 2;
 
     beagle::valuation::OneDimFiniteDifferenceSettings settings(104, 250, 4.5);
-
+    
     beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
-                                              [=](double arg) { return std::exp(-r * arg);});
+                                              [=](double arg) { return 1.; });
     beagle::real_function_ptr_t forward = beagle::math::RealFunction::createContinuousForwardAssetPriceFunction(
                                               spot,
                                               beagle::math::RealFunction::createUnaryFunction(
-                                              [=](double arg) { return std::exp(-(r - q) * arg);}));
+                                              [=](double arg) { return 1.; }));
     beagle::real_2d_function_ptr_t volatility = beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(sigma);
 
     // Create a fixed coupon bond: 5-year maturity, 1.5% coupon, semi-annual
@@ -488,10 +489,11 @@ void test7( void )
     for (double p : ps)
     {
       beagle::real_2d_function_ptr_t drift = beagle::math::RealTwoDimFunction::createBinaryFunction(
-                                                [=](double time, double price){ return c * std::pow(price / spot, -p); } );
-      beagle::real_2d_function_ptr_t rate = drift;
+                                                [=](double time, double price){ return r - q + c * std::pow(price / spot, -p); } );
+      beagle::real_2d_function_ptr_t rate = beagle::math::RealTwoDimFunction::createBinaryFunction(
+                                                [=](double time, double price){ return r + c * std::pow(price / spot, -p); } );
       beagle::real_2d_function_ptr_t recovery = beagle::math::RealTwoDimFunction::createBinaryFunction(
-                                                [=](double time, double price){ return -100. * rec * rate->value(time, price); } );
+                                                [=](double time, double price){ return -100. * rec * c * std::pow(price / spot, -p); } );
       beagle::pricer_ptr_t odbpbp  = beagle::valuation::Pricer::formOneDimBackwardPDEBondPricer(
                                                               forward,
                                                               discounting,
