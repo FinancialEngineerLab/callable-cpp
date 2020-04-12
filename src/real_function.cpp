@@ -201,7 +201,30 @@ namespace beagle
           m_Funding(funding),
           m_Dividends(dividends),
           m_Policy(policy)
-        { }
+        {
+          m_Prices.clear();
+
+          double start = 1.;
+          double forward = m_Spot;
+          for (auto jt = m_Dividends.cbegin(); jt != m_Dividends.cend(); ++jt)
+          {
+            double end = m_Funding->value(std::get<0>(*jt));
+            double rel = std::get<1>(*jt);
+            double abs = std::get<2>(*jt);
+
+            beagle::cum_ex_dividend_prices_t::value_type pair;
+
+            forward *= start / end;
+            pair.first = forward;
+
+            forward *= (1. - rel);
+            forward = m_Policy->exDividendStockPrice(forward, abs);
+            pair.second = forward;
+
+            start = end;
+            m_Prices.emplace_back(pair);
+          }
+        }
         virtual ~GeneralForwardAssetPriceFunction( void )
         { }
       public:
@@ -213,23 +236,12 @@ namespace beagle
                                      [](const beagle::dividend_schedule_t::value_type& dividend,
                                         double value)
                                      { return std::get<0>(dividend) < value; });
+          auto diff = std::distance(m_Dividends.cbegin(), it);
 
-          double start = 1.;
-          double forward = m_Spot;
-          for (auto jt = m_Dividends.cbegin(); jt != it; ++jt)
-          {
-            double end = m_Funding->value(std::get<0>(*jt));
-            double rel = std::get<1>(*jt);
-            double abs = std::get<2>(*jt);
+          auto jt = m_Prices.cbegin();
+          std::advance(jt, diff);
 
-            forward *= start / end;
-            forward *= (1. - rel);
-            forward = m_Policy->exDividendStockPrice(forward, abs);
-
-            start = end;
-          }
-
-          return forward * start / m_Funding->value(arg);
+          return jt->second * m_Funding->value(std::get<0>(*it)) / m_Funding->value(arg);
         }
         virtual const beagle::dividend_schedule_t& dividendSchedule( void ) const override
         {
@@ -239,11 +251,16 @@ namespace beagle
         {
           return m_Policy;
         }
+        virtual const beagle::cum_ex_dividend_prices_t& cumAndExDividendPrices( void ) const override
+        {
+          return m_Prices;
+        }
       private:
         double m_Spot;
         beagle::real_function_ptr_t m_Funding;
         beagle::dividend_schedule_t m_Dividends;
         beagle::dividend_policy_ptr_t m_Policy;
+        beagle::cum_ex_dividend_prices_t m_Prices;
       };
     }
 

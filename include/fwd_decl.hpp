@@ -99,6 +99,7 @@ namespace beagle
   
   using three_dbl_t = std::tuple<double, double, double>;
   using dividend_schedule_t = std::vector<three_dbl_t>;
+  using cum_ex_dividend_prices_t = std::vector<two_dbl_t>;
 }
 
 
