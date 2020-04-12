@@ -34,7 +34,8 @@ namespace beagle
       static beagle::real_function_ptr_t createGeneralForwardAssetPriceFunction(
                                                          double spot,
                                                          const beagle::real_function_ptr_t& funding,
-                                                         const beagle::discrete_dividend_schedule_t& dividends );
+                                                         const beagle::dividend_schedule_t& dividends,
+                                                         const beagle::dividend_policy_ptr_t& policy);
     };
 
     namespace mixins
@@ -51,7 +52,8 @@ namespace beagle
       {
         virtual ~DividendSchedule( void );
       public:
-        virtual const beagle::discrete_dividend_schedule_t& dividendSchedule( void ) const = 0;
+        virtual const beagle::dividend_schedule_t& dividendSchedule( void ) const = 0;
+        virtual const beagle::dividend_policy_ptr_t& dividendPolicy( void ) const = 0;
       };
     }
 

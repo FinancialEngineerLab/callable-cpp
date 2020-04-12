@@ -159,7 +159,7 @@ void test3( void )
   double rate = .01;
 
   beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
-                                            [=](double arg) { return std::exp(-rate * arg);});
+                                            [=](double arg) { return 1;});
   beagle::real_function_ptr_t forward = beagle::math::RealFunction::createContinuousForwardAssetPriceFunction(
                                             spot, discounting);
 
@@ -187,9 +187,9 @@ void test3( void )
     beagle::pricer_ptr_t odbpop2  = beagle::valuation::Pricer::formOneDimBackwardPDEOptionPricer(
                                                                forward,
                                                                discounting,
-                                                               beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0.),
+                                                               beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(rate),
                                                                cev,
-                                                               beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0.),
+                                                               beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(rate),
                                                                beagle::valuation::OneDimFiniteDifferenceSettings(500, 1001, 7.5) );
     beagle::pricer_ptr_t odfpeop  = beagle::valuation::Pricer::formOneDimensionalForwardPDEEuropeanOptionPricer(
                                                                fdDetails,
@@ -197,9 +197,9 @@ void test3( void )
     beagle::pricer_ptr_t odfpeop2 = beagle::valuation::Pricer::formOneDimForwardPDEEuroOptionPricer(
                                                                forward,
                                                                discounting,
-                                                               beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0.),
+                                                               beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(rate),
                                                                cev,
-                                                               beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0.),
+                                                               beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(rate),
                                                                beagle::valuation::OneDimFiniteDifferenceSettings(500, 1001, 7.5) );
 
     std::cout << "European option price (FD-B) is: " << odbpop->value( euroOption ) << std::endl;
@@ -1191,9 +1191,9 @@ void generateAndersenBuffumTableOne( void )
 
 int main( void )
 {
-  test1();
+  //test1();
   //test2();
-  //test3();
+  test3();
   //test4();
   //test5();
   //test6();
@@ -1204,7 +1204,7 @@ int main( void )
   //generateAndersenBuffumFigureFive();
   //generateAndersenBuffumFigureSix();
   //generateAndersenBuffumFigureSeven();
-  generateAndersenBuffumTableOne();
+  //generateAndersenBuffumTableOne();
 
   return 0;
 }

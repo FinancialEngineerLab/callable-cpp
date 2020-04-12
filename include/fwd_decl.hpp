@@ -96,6 +96,9 @@ namespace beagle
   // Strikes and implied volatilities
   using volatility_smile_t = std::pair<beagle::dbl_vec_t, beagle::dbl_vec_t>;
   using volatility_smile_coll_t = std::vector<std::pair<double, beagle::volatility_smile_t>>;
+  
+  using three_dbl_t = std::tuple<double, double, double>;
+  using dividend_schedule_t = std::vector<three_dbl_t>;
 }
 
 
