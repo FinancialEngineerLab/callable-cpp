@@ -289,8 +289,11 @@ namespace beagle
             for (int i=0; i<numTimes; ++i)
             {
               double thisTime = start - interval * (i+1) / numTimes;
-              double fwd = forwardCurve()->value(thisTime);
               double df = discountCurve()->value(thisTime);
+              double fwd = forwardCurve()->value(thisTime);
+              if (i == numTimes-1)
+                fwd = kt->second;
+
               double lbc = payoff->intrinsicValue( fwd * std::exp(stateVars.front() - stateVarStep), strike );
               double ubc = payoff->intrinsicValue( fwd * std::exp(stateVars.back()  + stateVarStep), strike );
               solver->evolve(thisTime,
