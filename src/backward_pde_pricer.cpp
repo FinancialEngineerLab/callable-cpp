@@ -197,90 +197,111 @@ namespace beagle
           if (!pO)
             throw(std::string("The incoming product is not an option!"));
 
-          auto pA = dynamic_cast<beagle::product::option::mixins::American*>(product.get());
-
           double expiry = pO->expiry();
           double strike = pO->strike();
           const beagle::payoff_ptr_t& payoff = pO->payoff();
+
+          // Check American option
+          auto pA = dynamic_cast<beagle::product::option::mixins::American*>(product.get());
 
           // Calculate terminal forward and discount factor for later use
           double termForward = forwardCurve()->value(expiry);
           double termDF = discountCurve()->value(expiry);
 
+          // Check dividends and use ex-dividend dates in backward induction
+          beagle::dbl_vec_t dates(1U, 0.0);
+          std::vector<beagle::two_dbl_t> dividends;
+          std::vector<beagle::two_dbl_t> cumAndExDivForward;
+          beagle::dividend_policy_ptr_t policy;
           auto pDS = dynamic_cast<beagle::math::mixins::DividendSchedule*>(forwardCurve().get());
-          if (!pDS)
+          if (pDS)
           {
+            auto schedule = pDS->dividendSchedule();
+            cumAndExDivForward = pDS->cumAndExDividendForwards();
+            policy = pDS->dividendPolicy();
 
-            beagle::parabolic_pde_solver_ptr_t solver
-              = beagle::math::OneDimParabolicPDESolver::formOneDimParabolicValuationPDESolver(
-                                                        convectionCoefficient(),
-                                                        diffusionCoefficient(),
-                                                        rateCoefficient(),
-                                                        sourceTerm());
+            dates.resize(schedule.size() + 1U);
+            std::transform(schedule.cbegin(),
+                           schedule.cend(),
+                           dates.begin() + 1U,
+                           [=](const beagle::dividend_schedule_t::value_type& item)
+                           { return std::get<0>(item); });
 
-            // Set up the state variable mesh
-            int numStateVars = finiteDifferenceSettings().numberOfStateVariableSteps();
-            if (numStateVars % 2 == 0)
-              numStateVars += 1;
-
-            double atmVol = volatilitySurface()->value(expiry, termForward);
-            int centralIndex = numStateVars / 2;
-            double centralValue = 0.;
-            double stateVarStep = finiteDifferenceSettings().numberOfGaussianStandardDeviations() * atmVol * std::sqrt(expiry) / centralIndex;
-            beagle::dbl_vec_t stateVars(numStateVars);
-            for (int i=0; i<numStateVars; ++i)
-              stateVars[i] = centralValue + (i - centralIndex) * stateVarStep;
-
-            // Set the initial condition
-            beagle::dbl_vec_t moneynesses(numStateVars);
-            std::transform(stateVars.cbegin(),
-                           stateVars.cend(),
-                           moneynesses.begin(),
-                           [=](double logMoneyness)
-                           { return std::exp(logMoneyness); });
-
-            beagle::dbl_vec_t prices(numStateVars);
-            std::transform(moneynesses.cbegin(),
-                           moneynesses.cend(),
-                           prices.begin(),
-                           [=](double moneyness)
-                           { return termDF * payoff->intrinsicValue(termForward*moneyness, strike); });
-
-            // Perform the backward induction
-            int numTimes = static_cast<int>(expiry * finiteDifferenceSettings().numberOfTimeSteps());
-            double timeStep = (0. - expiry) / numTimes;
-            for (int i=0; i<numTimes; ++i)
-            {
-              double end = expiry * (numTimes - i - 1) / numTimes;
-              double fwd = forwardCurve()->value(end);
-              double df = discountCurve()->value(end);
-              double lbc = payoff->intrinsicValue( fwd * std::exp(stateVars.front() - stateVarStep), strike );
-              double ubc = payoff->intrinsicValue( fwd * std::exp(stateVars.back()  + stateVarStep), strike );
-              solver->evolve(end,
-                             timeStep,
-                             stateVars,
-                             beagle::dbl_vec_t{lbc},
-                             beagle::dbl_vec_t{ubc},
-                             prices);
-
-              if (pA)
-              {
-                std::transform(prices.begin(),
-                               prices.end(),
-                               moneynesses.cbegin(),
-                               prices.begin(),
-                               [=](double continuation, double moneyness)
-                               {
-                                 return std::max(continuation,
-                                                 df * payoff->intrinsicValue( fwd * moneyness, strike ));
-                               });
-              }
-            }
-
-            return prices[centralIndex];
+            dividends.resize(schedule.size());
+            std::transform(schedule.cbegin(),
+                           schedule.cend(),
+                           dividends.begin(),
+                           [=](const beagle::dividend_schedule_t::value_type& item)
+                           { return std::make_pair(std::get<1>(item), std::get<2>(item)); });
           }
-          else
-            return 0.0;
+
+          beagle::parabolic_pde_solver_ptr_t solver
+            = beagle::math::OneDimParabolicPDESolver::formOneDimParabolicValuationPDESolver(
+                                                      convectionCoefficient(),
+                                                      diffusionCoefficient(),
+                                                      rateCoefficient(),
+                                                      sourceTerm());
+
+          // Set up the state variable mesh
+          int numStateVars = finiteDifferenceSettings().numberOfStateVariableSteps();
+          if (numStateVars % 2 == 0)
+            numStateVars += 1;
+
+          double atmVol = volatilitySurface()->value(expiry, termForward);
+          int centralIndex = numStateVars / 2;
+          double centralValue = 0.;
+          double stateVarStep = finiteDifferenceSettings().numberOfGaussianStandardDeviations() * atmVol * std::sqrt(expiry) / centralIndex;
+          beagle::dbl_vec_t stateVars(numStateVars);
+          for (int i=0; i<numStateVars; ++i)
+            stateVars[i] = centralValue + (i - centralIndex) * stateVarStep;
+
+          // Set the initial condition
+          beagle::dbl_vec_t moneynesses(numStateVars);
+          std::transform(stateVars.cbegin(),
+                         stateVars.cend(),
+                         moneynesses.begin(),
+                         [=](double logMoneyness)
+                         { return std::exp(logMoneyness); });
+
+          beagle::dbl_vec_t prices(numStateVars);
+          std::transform(moneynesses.cbegin(),
+                         moneynesses.cend(),
+                         prices.begin(),
+                         [=](double moneyness)
+                         { return termDF * payoff->intrinsicValue(termForward*moneyness, strike); });
+
+          // Perform the backward induction
+          int numTimes = static_cast<int>(expiry * finiteDifferenceSettings().numberOfTimeSteps());
+          double timeStep = (0. - expiry) / numTimes;
+          for (int i=0; i<numTimes; ++i)
+          {
+            double end = expiry * (numTimes - i - 1) / numTimes;
+            double fwd = forwardCurve()->value(end);
+            double df = discountCurve()->value(end);
+            double lbc = payoff->intrinsicValue( fwd * std::exp(stateVars.front() - stateVarStep), strike );
+            double ubc = payoff->intrinsicValue( fwd * std::exp(stateVars.back()  + stateVarStep), strike );
+            solver->evolve(end,
+                           timeStep,
+                           stateVars,
+                           beagle::dbl_vec_t{lbc},
+                           beagle::dbl_vec_t{ubc},
+                           prices);
+
+            if (pA)
+            {
+              std::transform(prices.begin(),
+                             prices.end(),
+                             moneynesses.cbegin(),
+                             prices.begin(),
+                             [=](double continuation, double moneyness)
+                             {
+                               return std::max(continuation,
+                                               df * payoff->intrinsicValue( fwd * moneyness, strike ));
+                             });
+            }
+          }
+
+          return prices[centralIndex];
         }
       };
 

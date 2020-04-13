@@ -513,6 +513,39 @@ void test7( void )
   std::cout << "\nEnd of Test 7\n";
 }
 
+void test8( void )
+{
+  std::cout << "\nStart of Test 8:\n\n";
+
+  beagle::dividend_schedule_t dividends;
+  dividends.emplace_back( 1.0, 0., 3.0 );
+  dividends.emplace_back( 2.0, 0., 3.0 );
+  dividends.emplace_back( 3.0, 0., 3.0 );
+  dividends.emplace_back( 4.0, 0., 3.0 );
+  dividends.emplace_back( 5.0, 0., 8.0 );
+  dividends.emplace_back( 6.0, 0., 8.0 );
+
+  double spot = 100.;
+  double rate = .01;
+
+  beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
+                                            [=](double arg) { return std::exp(-rate * arg);});
+  beagle::real_function_ptr_t forward = beagle::math::RealFunction::createGeneralForwardAssetPriceFunction(
+                                            100,
+                                            discounting,
+                                            dividends,
+                                            beagle::valuation::DividendPolicy::liquidator());
+  
+  beagle::dbl_vec_t expiries{.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5};
+  for (double expiry : expiries)
+  {
+    std::cout << "Expiry = " << expiry << ", forward = " << forward->value(expiry) << "\n";
+  }
+  std::cout << "\n";
+
+  std::cout << "\nEnd of Test 8\n";
+}
+
 void generateAndersenBuffumFigureTwo( void )
 {
   double spot = 50;
@@ -1193,11 +1226,12 @@ int main( void )
 {
   //test1();
   //test2();
-  test3();
+  //test3();
   //test4();
   //test5();
   //test6();
   //test7();
+  test8();
   //generateAndersenBuffumFigureTwo();
   //generateAndersenBuffumFigureThree();
   //generateAndersenBuffumFigureFour();

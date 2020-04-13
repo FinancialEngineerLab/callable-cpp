@@ -54,7 +54,7 @@ namespace beagle
       public:
         virtual const beagle::dividend_schedule_t& dividendSchedule( void ) const = 0;
         virtual const beagle::dividend_policy_ptr_t& dividendPolicy( void ) const = 0;
-        virtual const beagle::cum_ex_dividend_prices_t& cumAndExDividendPrices( void ) const = 0;
+        virtual const beagle::cum_ex_dividend_prices_t& cumAndExDividendForwards( void ) const = 0;
       };
     }
 

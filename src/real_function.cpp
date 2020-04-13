@@ -202,7 +202,7 @@ namespace beagle
           m_Dividends(dividends),
           m_Policy(policy)
         {
-          m_Prices.clear();
+          m_Forwards.clear();
 
           double start = 1.;
           double forward = m_Spot;
@@ -212,7 +212,7 @@ namespace beagle
             double rel = std::get<1>(*jt);
             double abs = std::get<2>(*jt);
 
-            beagle::cum_ex_dividend_prices_t::value_type pair;
+            typename beagle::cum_ex_dividend_prices_t::value_type pair;
 
             forward *= start / end;
             pair.first = forward;
@@ -222,7 +222,7 @@ namespace beagle
             pair.second = forward;
 
             start = end;
-            m_Prices.emplace_back(pair);
+            m_Forwards.emplace_back(pair);
           }
         }
         virtual ~GeneralForwardAssetPriceFunction( void )
@@ -236,12 +236,17 @@ namespace beagle
                                      [](const beagle::dividend_schedule_t::value_type& dividend,
                                         double value)
                                      { return std::get<0>(dividend) < value; });
-          auto diff = std::distance(m_Dividends.cbegin(), it);
 
-          auto jt = m_Prices.cbegin();
-          std::advance(jt, diff);
-
-          return jt->second * m_Funding->value(std::get<0>(*it)) / m_Funding->value(arg);
+          if (it == m_Dividends.cbegin())
+            return m_Spot / m_Funding->value(arg);
+          else
+          {
+            --it;
+            auto diff = std::distance(m_Dividends.cbegin(), it);
+            auto jt = m_Forwards.cbegin();
+            std::advance(jt, diff);
+            return jt->second * m_Funding->value(std::get<0>(*it)) / m_Funding->value(arg);
+          }
         }
         virtual const beagle::dividend_schedule_t& dividendSchedule( void ) const override
         {
@@ -251,16 +256,16 @@ namespace beagle
         {
           return m_Policy;
         }
-        virtual const beagle::cum_ex_dividend_prices_t& cumAndExDividendPrices( void ) const override
+        virtual const beagle::cum_ex_dividend_prices_t& cumAndExDividendForwards( void ) const override
         {
-          return m_Prices;
+          return m_Forwards;
         }
       private:
         double m_Spot;
         beagle::real_function_ptr_t m_Funding;
         beagle::dividend_schedule_t m_Dividends;
         beagle::dividend_policy_ptr_t m_Policy;
-        beagle::cum_ex_dividend_prices_t m_Prices;
+        beagle::cum_ex_dividend_prices_t m_Forwards;
       };
     }
 
