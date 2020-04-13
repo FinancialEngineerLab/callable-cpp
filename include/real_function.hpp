@@ -48,9 +48,9 @@ namespace beagle
         virtual const beagle::dbl_vec_t& yParameters( void ) const = 0;
       };
 
-      struct DividendSchedule
+      struct ContainsDividends
       {
-        virtual ~DividendSchedule( void );
+        virtual ~ContainsDividends( void );
       public:
         virtual const beagle::dividend_schedule_t& dividendSchedule( void ) const = 0;
         virtual const beagle::dividend_policy_ptr_t& dividendPolicy( void ) const = 0;

@@ -20,17 +20,27 @@ void test1( void )
 
   beagle::dividend_schedule_t dividends;
   dividends.emplace_back( 0.5, 0.0, 3.0 );
-  //dividends.emplace_back( 1.5, 3.0 );
-  //dividends.emplace_back( 2.5, 3.0 );
-  //dividends.emplace_back( 3.5, 3.0 );
-  //dividends.emplace_back( 4.5, 3.0 );
-  //dividends.emplace_back( 5.5, 8.0 );
-  //dividends.emplace_back( 6.5, 8.0 );
+  dividends.emplace_back( 1.5, 0.0, 3.0 );
+  dividends.emplace_back( 2.5, 0.0, 3.0 );
+  dividends.emplace_back( 3.5, 0.0, 3.0 );
+  dividends.emplace_back( 4.5, 0.0, 3.0 );
+  dividends.emplace_back( 5.5, 0.0, 3.0 );
+  dividends.emplace_back( 6.5, 0.0, 3.0 );
+  dividends.emplace_back( 7.5, 0.0, 3.0 );
+  dividends.emplace_back( 8.5, 0.0, 3.0 );
+  dividends.emplace_back( 9.5, 0.0, 3.0 );
 
-  double expiry = 1.;
+  beagle::discrete_dividend_schedule_t discDivs(dividends.size());
+  std::transform(dividends.cbegin(),
+                 dividends.cend(),
+                 discDivs.begin(),
+                 [=](const beagle::dividend_schedule_t::value_type& item)
+                 { return std::make_pair(std::get<0>(item), std::get<2>(item)); });
+
+  double expiry = 5.;
   double spot = 100.;
   double strike = 100.;
-  double rate = .01;
+  double rate = .03;
   double vol = .3;
 
   beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::call();
@@ -49,8 +59,7 @@ void test1( void )
                                             dividends,
                                             beagle::valuation::DividendPolicy::liquidator());
 
-  beagle::valuation::FiniteDifferenceDetails fdDetails( spot, rate, vol, 1501, 1901, 7.5,
-                                                        beagle::discrete_dividend_schedule_t(1U, std::make_pair(.5, 3.)),
+  beagle::valuation::FiniteDifferenceDetails fdDetails( spot, rate, vol, 1501, 1901, 7.5, discDivs,
                                                         beagle::valuation::DividendPolicy::liquidator(),
                                                         beagle::math::InterpolationBuilder::linear());
 
@@ -82,11 +91,12 @@ void test1( void )
                                                                beagle::valuation::OneDimFiniteDifferenceSettings(1501, 1901, 7.5) );
 
     std::cout << "European option price (CF)   is: " << bscfeop->value( euroOption ) << std::endl;
-    std::cout << "European option price (FD-B) is: " << odbpop->value( euroOption ) << std::endl;    std::cout << "European option price (FD-B) is: " << odbpop2->value( euroOption ) << std::endl;
-    std::cout << "American option price (FD-B) is: " << odbpop->value( amerOption ) << std::endl;
-    std::cout << "American option price (FD-B) is: " << odbpop2->value( amerOption ) << std::endl;
-    std::cout << "European option price (FD-F) is: " << odfpeop->value( euroOption ) << std::endl;
-    std::cout << "European option price (FD-F) is: " << odfpeop2->value( euroOption ) << std::endl;
+    std::cout << "European option price (FD-B) is: " << odbpop->value( euroOption ) << std::endl;    
+    //std::cout << "European option price (FD-B) is: " << odbpop2->value( euroOption ) << std::endl;
+    //std::cout << "American option price (FD-B) is: " << odbpop->value( amerOption ) << std::endl;
+    //std::cout << "American option price (FD-B) is: " << odbpop2->value( amerOption ) << std::endl;
+    //std::cout << "European option price (FD-F) is: " << odfpeop->value( euroOption ) << std::endl;
+    //std::cout << "European option price (FD-F) is: " << odfpeop2->value( euroOption ) << std::endl;
 
 
     std::cout << "\nEnd of Test 1\n";

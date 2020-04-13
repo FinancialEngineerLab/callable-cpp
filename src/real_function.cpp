@@ -10,7 +10,7 @@ namespace beagle
       InterpolationParameters::~InterpolationParameters( void )
       { }
 
-      DividendSchedule::~DividendSchedule( void )
+      ContainsDividends::~ContainsDividends( void )
       { }
     }
 
@@ -191,7 +191,7 @@ namespace beagle
       };
 
       struct GeneralForwardAssetPriceFunction : public RealFunction,
-                                                public mixins::DividendSchedule
+                                                public mixins::ContainsDividends
       {
         GeneralForwardAssetPriceFunction( double spot,
                                           const beagle::real_function_ptr_t& funding,

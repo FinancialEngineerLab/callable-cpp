@@ -216,7 +216,7 @@ namespace beagle
           std::vector<beagle::two_dbl_t> dividends;
           std::vector<beagle::two_dbl_t> cumAndExDivForwards;
           beagle::dividend_policy_ptr_t policy;
-          auto pDS = dynamic_cast<beagle::math::mixins::DividendSchedule*>(forwardCurve().get());
+          auto pDS = dynamic_cast<beagle::math::mixins::ContainsDividends*>(forwardCurve().get());
           if (pDS)
           {
             auto schedule = pDS->dividendSchedule();
