@@ -71,7 +71,7 @@ namespace beagle
                    = beagle::math::RealTwoDimFunction::createBinaryFunction(
                                    [=](double time, double spot){ return localVol->value(spot); });
 
-            beagle::pricer_ptr_t forwardPricer = beagle::valuation::Pricer::formOneDimForwardPDEEuroOptionPricer(
+            beagle::pricer_ptr_t forwardPricer = beagle::valuation::Pricer::formOneDimForwardPDEArrowDebreuPricer(
                                                                      m_Forward,
                                                                      m_Discounting,
                                                                      drift,
@@ -165,7 +165,7 @@ namespace beagle
         beagle::real_2d_function_ptr_t volatility = beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(
                                                             volSmiles.back().second.second[centralIndex]);
 
-        beagle::pricer_ptr_t forwardPricer = beagle::valuation::Pricer::formOneDimForwardPDEEuroOptionPricer(
+        beagle::pricer_ptr_t forwardPricer = beagle::valuation::Pricer::formOneDimForwardPDEArrowDebreuPricer(
                                                                  forward,
                                                                  discounting,
                                                                  drift,
@@ -228,7 +228,7 @@ namespace beagle
           beagle::real_2d_function_ptr_t volatility
                    = beagle::math::RealTwoDimFunction::createBinaryFunction(
                                    [=](double time, double spot){ return localVol->value(spot); });
-          beagle::pricer_ptr_t forwardPricer = beagle::valuation::Pricer::formOneDimForwardPDEEuroOptionPricer(
+          beagle::pricer_ptr_t forwardPricer = beagle::valuation::Pricer::formOneDimForwardPDEArrowDebreuPricer(
                                                                    forward,
                                                                    discounting,
                                                                    drift,

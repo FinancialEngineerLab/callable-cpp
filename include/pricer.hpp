@@ -91,12 +91,12 @@ namespace beagle
       static beagle::pricer_ptr_t formOneDimensionalForwardPDEEuropeanOptionPricer(
                                                                      const FiniteDifferenceDetails& fdDetails,
                                                                      const beagle::real_2d_function_ptr_t& volatility);
-      static beagle::pricer_ptr_t formOneDimForwardPDEEuroOptionPricer(const beagle::real_function_ptr_t& forward,
-                                                                       const beagle::real_function_ptr_t& discounting,
-                                                                       const beagle::real_2d_function_ptr_t& drift,
-                                                                       const beagle::real_2d_function_ptr_t& volatility,
-                                                                       const beagle::real_2d_function_ptr_t& rate,
-                                                                       const beagle::valuation::OneDimFiniteDifferenceSettings& settings);
+      static beagle::pricer_ptr_t formOneDimForwardPDEArrowDebreuPricer(const beagle::real_function_ptr_t& forward,
+                                                                        const beagle::real_function_ptr_t& discounting,
+                                                                        const beagle::real_2d_function_ptr_t& drift,
+                                                                        const beagle::real_2d_function_ptr_t& volatility,
+                                                                        const beagle::real_2d_function_ptr_t& rate,
+                                                                        const beagle::valuation::OneDimFiniteDifferenceSettings& settings);
       static beagle::pricer_ptr_t formOneDimBackwardPDEOptionPricer(const beagle::real_function_ptr_t& forward,
                                                                     const beagle::real_function_ptr_t& discounting,
                                                                     const beagle::real_2d_function_ptr_t& drift,

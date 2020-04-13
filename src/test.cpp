@@ -75,14 +75,14 @@ void test1( void )
                                                                beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0.),
                                                                beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(vol),
                                                                beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0),
-                                                               beagle::valuation::OneDimFiniteDifferenceSettings(1001, 2001, 6.5) );
+                                                               beagle::valuation::OneDimFiniteDifferenceSettings(365, 1001, 4.5) );
     beagle::pricer_ptr_t odbpop2  = beagle::valuation::Pricer::formOneDimensionalBackwardPDEOptionPricer(
                                                                fdDetails,
                                                                beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(fdDetails.volatility()) );
     beagle::pricer_ptr_t odfpeop  = beagle::valuation::Pricer::formOneDimensionalForwardPDEEuropeanOptionPricer(
                                                                fdDetails,
                                                                beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(fdDetails.volatility()) );
-    beagle::pricer_ptr_t odfpeop2  = beagle::valuation::Pricer::formOneDimForwardPDEEuroOptionPricer(
+    beagle::pricer_ptr_t odfpeop2  = beagle::valuation::Pricer::formOneDimForwardPDEArrowDebreuPricer(
                                                                forward,
                                                                discounting,
                                                                beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0.),
@@ -209,7 +209,7 @@ void test3( void )
     beagle::pricer_ptr_t odfpeop  = beagle::valuation::Pricer::formOneDimensionalForwardPDEEuropeanOptionPricer(
                                                                fdDetails,
                                                                localVolSurface );
-    beagle::pricer_ptr_t odfpeop2 = beagle::valuation::Pricer::formOneDimForwardPDEEuroOptionPricer(
+    beagle::pricer_ptr_t odfpeop2 = beagle::valuation::Pricer::formOneDimForwardPDEArrowDebreuPricer(
                                                                forward,
                                                                discounting,
                                                                beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(rate),
@@ -304,7 +304,7 @@ void test5( void )
               << bondPrice << "\t"
               << -std::log(bondPrice) / expiry - r << "\n";
 
-    beagle::pricer_ptr_t odfpeop  = beagle::valuation::Pricer::formOneDimForwardPDEEuroOptionPricer(
+    beagle::pricer_ptr_t odfpeop  = beagle::valuation::Pricer::formOneDimForwardPDEArrowDebreuPricer(
                                                                forward,
                                                                discounting,
                                                                drift,

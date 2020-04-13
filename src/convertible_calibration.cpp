@@ -75,7 +75,7 @@ namespace beagle
                                 volatility,
                                 rate);
 
-            beagle::pricer_ptr_t forwardPricer = beagle::valuation::Pricer::formOneDimForwardPDEEuroOptionPricer(
+            beagle::pricer_ptr_t forwardPricer = beagle::valuation::Pricer::formOneDimForwardPDEArrowDebreuPricer(
                                                                      m_Forward,
                                                                      m_Discounting,
                                                                      drift,
@@ -173,7 +173,7 @@ namespace beagle
                             volatility,
                             rate);
 
-        beagle::pricer_ptr_t forwardPricer = beagle::valuation::Pricer::formOneDimForwardPDEEuroOptionPricer(
+        beagle::pricer_ptr_t forwardPricer = beagle::valuation::Pricer::formOneDimForwardPDEArrowDebreuPricer(
                                                                  forward,
                                                                  discounting,
                                                                  drift,
@@ -239,7 +239,7 @@ namespace beagle
                               drift,
                               volatility,
                               rate);
-          beagle::pricer_ptr_t forwardPricer = beagle::valuation::Pricer::formOneDimForwardPDEEuroOptionPricer(
+          beagle::pricer_ptr_t forwardPricer = beagle::valuation::Pricer::formOneDimForwardPDEArrowDebreuPricer(
                                                                    forward,
                                                                    discounting,
                                                                    drift,

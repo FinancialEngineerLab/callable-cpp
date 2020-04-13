@@ -156,15 +156,15 @@ namespace beagle
         beagle::real_2d_function_ptr_t m_Volatility;
       };
 
-      struct OneDimForwardPDEEuroOptionPricer : public OneDimParabolicPDEPricer,
-                                                public beagle::valuation::mixins::OneDimFokkerPlanck
+      struct OneDimForwardPDEArrowDebreuPricer : public OneDimParabolicPDEPricer,
+                                                 public beagle::valuation::mixins::OneDimFokkerPlanck
       {
-        OneDimForwardPDEEuroOptionPricer(const beagle::real_function_ptr_t& forward,
-                                         const beagle::real_function_ptr_t& discounting,
-                                         const beagle::real_2d_function_ptr_t& drift,
-                                         const beagle::real_2d_function_ptr_t& volatility,
-                                         const beagle::real_2d_function_ptr_t& rate,
-                                         const beagle::valuation::OneDimFiniteDifferenceSettings& settings) :
+        OneDimForwardPDEArrowDebreuPricer(const beagle::real_function_ptr_t& forward,
+                                          const beagle::real_function_ptr_t& discounting,
+                                          const beagle::real_2d_function_ptr_t& drift,
+                                          const beagle::real_2d_function_ptr_t& volatility,
+                                          const beagle::real_2d_function_ptr_t& rate,
+                                          const beagle::valuation::OneDimFiniteDifferenceSettings& settings) :
           OneDimParabolicPDEPricer(forward,
                                    discounting,
                                    drift,
@@ -173,7 +173,7 @@ namespace beagle
                                    beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(.0),
                                    settings)
         { }
-        virtual ~OneDimForwardPDEEuroOptionPricer( void )
+        virtual ~OneDimForwardPDEArrowDebreuPricer( void )
         { }
       public:
         virtual double value(const beagle::product_ptr_t& product) const override
@@ -267,19 +267,19 @@ namespace beagle
     }
 
     beagle::pricer_ptr_t
-    Pricer::formOneDimForwardPDEEuroOptionPricer(const beagle::real_function_ptr_t& forward,
-                                                 const beagle::real_function_ptr_t& discounting,
-                                                 const beagle::real_2d_function_ptr_t& drift,
-                                                 const beagle::real_2d_function_ptr_t& volatility,
-                                                 const beagle::real_2d_function_ptr_t& rate,
-                                                 const beagle::valuation::OneDimFiniteDifferenceSettings& settings)
+    Pricer::formOneDimForwardPDEArrowDebreuPricer(const beagle::real_function_ptr_t& forward,
+                                                  const beagle::real_function_ptr_t& discounting,
+                                                  const beagle::real_2d_function_ptr_t& drift,
+                                                  const beagle::real_2d_function_ptr_t& volatility,
+                                                  const beagle::real_2d_function_ptr_t& rate,
+                                                  const beagle::valuation::OneDimFiniteDifferenceSettings& settings)
     {
-      return std::make_shared<impl::OneDimForwardPDEEuroOptionPricer>( forward,
-                                                                       discounting,
-                                                                       drift,
-                                                                       volatility,
-                                                                       rate,
-                                                                       settings );
+      return std::make_shared<impl::OneDimForwardPDEArrowDebreuPricer>( forward,
+                                                                        discounting,
+                                                                        drift,
+                                                                        volatility,
+                                                                        rate,
+                                                                        settings );
     }
   }
 }
