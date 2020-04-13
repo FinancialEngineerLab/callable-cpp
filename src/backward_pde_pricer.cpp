@@ -2,8 +2,11 @@
 #include "solver.hpp"
 #include "bond.hpp"
 
+#include <fstream>
 #include <iostream>
 #include <iterator>
+
+std::ofstream out("result.txt");
 
 namespace beagle
 {
@@ -211,28 +214,41 @@ namespace beagle
           // Check dividends and use ex-dividend dates in backward induction
           beagle::dbl_vec_t dates(1U, 0.0);
           std::vector<beagle::two_dbl_t> dividends;
-          std::vector<beagle::two_dbl_t> cumAndExDivForward;
+          std::vector<beagle::two_dbl_t> cumAndExDivForwards;
           beagle::dividend_policy_ptr_t policy;
           auto pDS = dynamic_cast<beagle::math::mixins::DividendSchedule*>(forwardCurve().get());
           if (pDS)
           {
             auto schedule = pDS->dividendSchedule();
-            cumAndExDivForward = pDS->cumAndExDividendForwards();
-            policy = pDS->dividendPolicy();
+            auto it = std::lower_bound(schedule.cbegin(),
+                                       schedule.cend(),
+                                       expiry,
+                                       [](const beagle::dividend_schedule_t::value_type& dividend,
+                                          double value)
+                                       { return std::get<0>(dividend) < value; });
+            auto diff = std::distance(schedule.cbegin(), it);
 
-            dates.resize(schedule.size() + 1U);
             std::transform(schedule.cbegin(),
-                           schedule.cend(),
-                           dates.begin() + 1U,
+                           it,
+                           std::back_inserter(dates),
                            [=](const beagle::dividend_schedule_t::value_type& item)
                            { return std::get<0>(item); });
-
-            dividends.resize(schedule.size());
             std::transform(schedule.cbegin(),
-                           schedule.cend(),
-                           dividends.begin(),
+                           it,
+                           std::back_inserter(dividends),
                            [=](const beagle::dividend_schedule_t::value_type& item)
                            { return std::make_pair(std::get<1>(item), std::get<2>(item)); });
+
+            cumAndExDivForwards = pDS->cumAndExDividendForwards();
+            cumAndExDivForwards.erase(cumAndExDivForwards.begin() + diff,
+                                      cumAndExDivForwards.end());
+
+            policy = pDS->dividendPolicy();
+
+            if (cumAndExDivForwards.size() != dividends.size())
+              throw(std::string(""));
+            if (dates.size() - dividends.size() != 1U)
+              throw(std::string(""));
           }
 
           beagle::parabolic_pde_solver_ptr_t solver
@@ -271,34 +287,85 @@ namespace beagle
                          { return termDF * payoff->intrinsicValue(termForward*moneyness, strike); });
 
           // Perform the backward induction
-          int numTimes = static_cast<int>(expiry * finiteDifferenceSettings().numberOfTimeSteps());
-          double timeStep = (0. - expiry) / numTimes;
-          for (int i=0; i<numTimes; ++i)
+          auto it = dates.crbegin();
+          auto itEnd = dates.crend();
+          auto jt = dividends.crbegin();
+          auto jtEnd = dividends.crend();
+          auto kt = cumAndExDivForwards.crbegin();
+          double start = expiry;
+          for ( ; it!=itEnd; ++it, ++jt, ++kt)
           {
-            double end = expiry * (numTimes - i - 1) / numTimes;
-            double fwd = forwardCurve()->value(end);
-            double df = discountCurve()->value(end);
-            double lbc = payoff->intrinsicValue( fwd * std::exp(stateVars.front() - stateVarStep), strike );
-            double ubc = payoff->intrinsicValue( fwd * std::exp(stateVars.back()  + stateVarStep), strike );
-            solver->evolve(end,
-                           timeStep,
-                           stateVars,
-                           beagle::dbl_vec_t{lbc},
-                           beagle::dbl_vec_t{ubc},
-                           prices);
-
-            if (pA)
+            double end = *it;
+            double interval = start - end;
+            int numTimes = static_cast<int>(interval * finiteDifferenceSettings().numberOfTimeSteps());
+            double timeStep = -interval / numTimes;
+            for (int i=0; i<numTimes; ++i)
             {
-              std::transform(prices.begin(),
-                             prices.end(),
-                             moneynesses.cbegin(),
-                             prices.begin(),
-                             [=](double continuation, double moneyness)
-                             {
-                               return std::max(continuation,
-                                               df * payoff->intrinsicValue( fwd * moneyness, strike ));
-                             });
+              double thisTime = start - interval * (i+1) / numTimes;
+              double fwd = forwardCurve()->value(thisTime);
+              double df = discountCurve()->value(thisTime);
+              double lbc = payoff->intrinsicValue( fwd * std::exp(stateVars.front() - stateVarStep), strike );
+              double ubc = payoff->intrinsicValue( fwd * std::exp(stateVars.back()  + stateVarStep), strike );
+              solver->evolve(thisTime,
+                             timeStep,
+                             stateVars,
+                             beagle::dbl_vec_t{lbc},
+                             beagle::dbl_vec_t{ubc},
+                             prices);
+
+              if (pA)
+                std::transform(prices.begin(),
+                               prices.end(),
+                               moneynesses.cbegin(),
+                               prices.begin(),
+                               [=](double continuation, double moneyness)
+                               {
+                                 return std::max(continuation,
+                                                 df * payoff->intrinsicValue( fwd * moneyness, strike ));
+                               });
             }
+
+            // Take into account of dividends
+            if (jt != jtEnd)
+            {
+              double cumForward = kt->first;
+              double exForward = kt->second;
+
+              beagle::dbl_vec_t spots(numStateVars);
+              std::transform(moneynesses.cbegin(),
+                             moneynesses.cend(),
+                             spots.begin(),
+                             [=](double moneyness)
+                             { return exForward * moneyness; });
+
+              beagle::real_function_ptr_t interpFunc
+                = finiteDifferenceSettings().interpolationMethod()->formFunction( spots, prices );
+
+              //out << spots.size() << " " << prices.size() << std::endl;
+              //for (int k=0; k<spots.size(); ++k)
+              //  out  << spots[k] << " " << prices[k] << std::endl;
+
+              std::transform(moneynesses.cbegin(),
+                             moneynesses.cend(),
+                             spots.begin(),
+                             [=](double moneyness)
+                             { 
+                               return policy->exDividendStockPrice(cumForward * moneyness * (1. - jt->first),
+                                                                   jt->second);
+                             } );
+
+              std::transform( spots.cbegin(),
+                              spots.cend(),
+                              prices.begin(),
+                              [&interpFunc](double spot)
+                              { return interpFunc->value(spot); } );
+
+              //out << std::endl;
+              //for (int k=0; k<spots.size(); ++k)
+              //  out  << spots[k] << " " << prices[k] << std::endl;
+            }
+
+            start = end;
           }
 
           return prices[centralIndex];

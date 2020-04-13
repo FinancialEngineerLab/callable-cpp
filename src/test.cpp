@@ -18,8 +18,8 @@ void test1( void )
 {
   std::cout << "\nStart of Test 1:\n\n";
 
-  beagle::discrete_dividend_schedule_t dividends;
-  //dividends.emplace_back( 0.5, 3.0 );
+  beagle::dividend_schedule_t dividends;
+  dividends.emplace_back( 0.5, 0.0, 3.0 );
   //dividends.emplace_back( 1.5, 3.0 );
   //dividends.emplace_back( 2.5, 3.0 );
   //dividends.emplace_back( 3.5, 3.0 );
@@ -28,11 +28,12 @@ void test1( void )
   //dividends.emplace_back( 6.5, 8.0 );
 
   double expiry = 1.;
+  double spot = 100.;
   double strike = 100.;
   double rate = .01;
   double vol = .3;
 
-  beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::put();
+  beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::call();
   beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption( expiry,
                                                                                             strike,
                                                                                             payoff );
@@ -42,10 +43,14 @@ void test1( void )
 
   beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
                                             [=](double arg) { return std::exp(-rate * arg);});
-  beagle::real_function_ptr_t forward = beagle::math::RealFunction::createContinuousForwardAssetPriceFunction(
-                                            100, discounting);
+  beagle::real_function_ptr_t forward = beagle::math::RealFunction::createGeneralForwardAssetPriceFunction(
+                                            spot,
+                                            discounting,
+                                            dividends,
+                                            beagle::valuation::DividendPolicy::liquidator());
 
-  beagle::valuation::FiniteDifferenceDetails fdDetails( 100., rate, vol, 1501, 1901, 7.5, dividends,
+  beagle::valuation::FiniteDifferenceDetails fdDetails( spot, rate, vol, 1501, 1901, 7.5,
+                                                        beagle::discrete_dividend_schedule_t(1U, std::make_pair(.5, 3.)),
                                                         beagle::valuation::DividendPolicy::liquidator(),
                                                         beagle::math::InterpolationBuilder::linear());
 
@@ -61,7 +66,7 @@ void test1( void )
                                                                beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0.),
                                                                beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(vol),
                                                                beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0),
-                                                               beagle::valuation::OneDimFiniteDifferenceSettings(1501, 1901, 7.5) );
+                                                               beagle::valuation::OneDimFiniteDifferenceSettings(1001, 2001, 6.5) );
     beagle::pricer_ptr_t odbpop2  = beagle::valuation::Pricer::formOneDimensionalBackwardPDEOptionPricer(
                                                                fdDetails,
                                                                beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(fdDetails.volatility()) );
@@ -77,12 +82,12 @@ void test1( void )
                                                                beagle::valuation::OneDimFiniteDifferenceSettings(1501, 1901, 7.5) );
 
     std::cout << "European option price (CF)   is: " << bscfeop->value( euroOption ) << std::endl;
-    std::cout << "European option price (FD-B) is: " << odbpop->value( euroOption ) << std::endl;
-    std::cout << "European option price (FD-B) is: " << odbpop2->value( euroOption ) << std::endl;
+    std::cout << "European option price (FD-B) is: " << odbpop->value( euroOption ) << std::endl;    std::cout << "European option price (FD-B) is: " << odbpop2->value( euroOption ) << std::endl;
     std::cout << "American option price (FD-B) is: " << odbpop->value( amerOption ) << std::endl;
     std::cout << "American option price (FD-B) is: " << odbpop2->value( amerOption ) << std::endl;
     std::cout << "European option price (FD-F) is: " << odfpeop->value( euroOption ) << std::endl;
     std::cout << "European option price (FD-F) is: " << odfpeop2->value( euroOption ) << std::endl;
+
 
     std::cout << "\nEnd of Test 1\n";
   }
@@ -1224,14 +1229,14 @@ void generateAndersenBuffumTableOne( void )
 
 int main( void )
 {
-  //test1();
+  test1();
   //test2();
   //test3();
   //test4();
   //test5();
   //test6();
   //test7();
-  test8();
+  //test8();
   //generateAndersenBuffumFigureTwo();
   //generateAndersenBuffumFigureThree();
   //generateAndersenBuffumFigureFour();
