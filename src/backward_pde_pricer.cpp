@@ -2,11 +2,7 @@
 #include "solver.hpp"
 #include "bond.hpp"
 
-#include <fstream>
-#include <iostream>
 #include <iterator>
-
-std::ofstream out("result.txt");
 
 namespace beagle
 {
@@ -108,10 +104,6 @@ namespace beagle
               beagle::dbl_vec_t shiftedSpots(spots.cbegin(), spots.cend());
               beagle::real_function_ptr_t interpFunc = finiteDifferenceDetails().interpolation()->formFunction( spots, optionValues );
 
-              // out << spots.size() << " " << optionValues.size() << std::endl;
-              // for (int k=0; k<spots.size(); ++k)
-              //   out  << spots[k] << " " << optionValues[k] << std::endl;
-
               double dividendAmount = it->second;
               std::transform( shiftedSpots.cbegin(),
                               shiftedSpots.cend(),
@@ -126,11 +118,6 @@ namespace beagle
                               [&interpFunc](double spot) { 
                                 return interpFunc->value(spot);
                               } );
-
-              // out << std::endl << dividendAmount << std::endl;
-              // for (int k=0; k<shiftedSpots.size(); ++k)
-              //   out  << shiftedSpots[k] << " " << optionValues[k] << std::endl;
-              // out << std::endl;
 
               ++jt;
               --it;
@@ -341,10 +328,6 @@ namespace beagle
               beagle::real_function_ptr_t interpFunc
                 = finiteDifferenceSettings().interpolationMethod()->formFunction( spots, prices );
 
-              //out << spots.size() << " " << prices.size() << std::endl;
-              //for (int k=0; k<spots.size(); ++k)
-              //  out  << spots[k] << " " << prices[k] << std::endl;
-
               std::transform(moneynesses.cbegin(),
                              moneynesses.cend(),
                              spots.begin(),
@@ -359,10 +342,6 @@ namespace beagle
                               prices.begin(),
                               [&interpFunc](double spot)
                               { return interpFunc->value(spot); } );
-
-              //out << std::endl;
-              //for (int k=0; k<spots.size(); ++k)
-              //  out  << spots[k] << " " << prices[k] << std::endl;
             }
 
             start = end;
