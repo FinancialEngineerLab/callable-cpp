@@ -133,7 +133,7 @@ void test2( void )
                                             spot,
                                             beagle::math::RealFunction::createUnaryFunction(
                                             [=](double arg) { return std::exp(-(r - q) * arg);}));
-  beagle::valuation::OneDimFiniteDifferenceSettings settings(52, 250, 10.5);
+  beagle::valuation::OneDimFiniteDifferenceSettings settings(365, 1001, 5.5);
 
   beagle::real_2d_function_ptr_t localVol =
     beagle::calibration::util::createCalibratedLocalVolatilitySurface(forward,
@@ -1224,7 +1224,7 @@ void generateAndersenBuffumTableOne( void )
 int main( void )
 {
   //test1();
-  //test2();
+  test2();
   //test3();
   //test4();
   //test5();
