@@ -16,7 +16,17 @@ namespace beagle
                           const beagle::dbl_vec_t& stateVariables,
                           const beagle::dbl_vec_t& lowerBoundaryCondition,
                           const beagle::dbl_vec_t& upperBoundaryCondition,
-                          beagle::dbl_vec_t& initialCondition) const = 0;
+                          beagle::dbl_vec_t& initialCondition) const;
+    private:
+      virtual void calculateTridiagonoalMatrix(double end,
+                                               double timeStep,
+                                               const beagle::dbl_vec_t& stateVariables,
+                                               const beagle::dbl_vec_t& lowerBoundaryCondition,
+                                               const beagle::dbl_vec_t& upperBoundaryCondition,
+                                               beagle::dbl_vec_t& diag,
+                                               beagle::dbl_vec_t& lower,
+                                               beagle::dbl_vec_t& upper,
+                                               beagle::dbl_vec_t& initialCondition) const = 0;
     public:
       static beagle::parabolic_pde_solver_ptr_t formOneDimParabolicValuationPDESolver(const beagle::real_2d_function_ptr_t& drift,
                                                                                       const beagle::real_2d_function_ptr_t& vol,

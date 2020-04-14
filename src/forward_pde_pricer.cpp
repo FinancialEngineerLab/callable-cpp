@@ -2,6 +2,7 @@
 #include "solver.hpp"
 
 #include <iostream>
+#include <iterator>
 
 namespace beagle
 {
@@ -295,11 +296,74 @@ namespace beagle
           beagle::dbl_vec_t stateVars;
           beagle::dbl_vec_t prices;
           formInitialCondition(expiry, payoff, stateVars, prices);
-          evolve(0., expiry, payoff, stateVars, prices);
- 
-          return discountCurve()->value(expiry)
-               * forwardCurve()->value(expiry)
-               * prices[stateVars.size()/2];
+          
+          // Check dividends and use ex-dividend dates in forward induction
+          beagle::dbl_vec_t dates;
+          std::vector<beagle::two_dbl_t> dividends;
+          std::vector<beagle::two_dbl_t> cumAndExDivForwards;
+          beagle::dividend_policy_ptr_t policy;
+          auto pDS = dynamic_cast<beagle::math::mixins::ContainsDividends*>(forwardCurve().get());
+          if (pDS)
+          {
+            auto schedule = pDS->dividendSchedule();
+            auto it = std::lower_bound(schedule.cbegin(),
+                                       schedule.cend(),
+                                       expiry,
+                                       [](const beagle::dividend_schedule_t::value_type& dividend,
+                                          double value)
+                                       { return std::get<0>(dividend) < value; });
+            auto diff = std::distance(schedule.cbegin(), it);
+
+            std::transform(schedule.cbegin(),
+                           it,
+                           std::back_inserter(dates),
+                           [=](const beagle::dividend_schedule_t::value_type& item)
+                           { return std::get<0>(item); });
+            std::transform(schedule.cbegin(),
+                           it,
+                           std::back_inserter(dividends),
+                           [=](const beagle::dividend_schedule_t::value_type& item)
+                           { return std::make_pair(std::get<1>(item), std::get<2>(item)); });
+
+            cumAndExDivForwards = pDS->cumAndExDividendForwards();
+            cumAndExDivForwards.erase(cumAndExDivForwards.begin() + diff,
+                                      cumAndExDivForwards.end());
+
+            policy = pDS->dividendPolicy();
+
+            if (cumAndExDivForwards.size() != dividends.size())
+              throw(std::string(""));
+            if (dates.size() != dividends.size())
+              throw(std::string(""));
+          }
+
+          dates.emplace_back(expiry);
+
+          // Perform the forward induction
+          auto it = dates.cbegin();
+          auto itEnd = dates.cend();
+          auto jt = dividends.cbegin();
+          auto jtEnd = dividends.cend();
+          auto kt = cumAndExDivForwards.cbegin();
+          double start = 0.;
+          for ( ; it!=itEnd; ++it, ++jt, ++kt)
+          {
+            double end = *it;
+            evolve(start, end, payoff, stateVars, prices);
+
+
+            start = end;
+          }
+
+          double forward = forwardCurve()->value(expiry);
+          beagle::dbl_vec_t strikes(stateVars);
+          std::transform(strikes.begin(),
+                         strikes.end(),
+                         strikes.begin(),
+                         [=](double logMoneyness)
+                         { return forward * std::exp(logMoneyness); });
+          beagle::real_function_ptr_t result = finiteDifferenceSettings().interpolationMethod()->formFunction(strikes, prices);
+          return discountCurve()->value(expiry) * forward * result->value(strike);
         }
         virtual void formInitialCondition(double expiry,
                                           const beagle::payoff_ptr_t& payoff,

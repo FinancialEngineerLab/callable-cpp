@@ -99,10 +99,10 @@ void test1( void )
                                                                beagle::valuation::OneDimFiniteDifferenceSettings(365, 1001, 4.5) );
 
     std::cout << "European option price (CF)   is: " << bscfeop->value( euroOption ) << std::endl;
-    //std::cout << "European option price (FD-B) is: " << odbpop->value( euroOption ) << std::endl;    
-    //std::cout << "European option price (FD-B) is: " << odbpop2->value( euroOption ) << std::endl;
-    //std::cout << "American option price (FD-B) is: " << odbpop->value( amerOption ) << std::endl;
-    //std::cout << "American option price (FD-B) is: " << odbpop2->value( amerOption ) << std::endl;
+    std::cout << "European option price (FD-B) is: " << odbpop->value( euroOption ) << std::endl;    
+    std::cout << "European option price (FD-B) is: " << odbpop2->value( euroOption ) << std::endl;
+    std::cout << "American option price (FD-B) is: " << odbpop->value( amerOption ) << std::endl;
+    std::cout << "American option price (FD-B) is: " << odbpop2->value( amerOption ) << std::endl;
     std::cout << "European option price (FD-F) is: " << odfpeop->value( euroOption ) << std::endl;
     std::cout << "European option price (FD-F) is: " << odfpeop2->value( euroOption ) << std::endl;
     std::cout << "European option price (FD-F) is: " << odfpeop3->value( euroOption ) << std::endl;

@@ -22,24 +22,20 @@ namespace beagle
           m_Rate(rate),
           m_Source(source)
         { }
-        virtual ~OneDimParabolicValuationPDESolver(void)
-        { }
-      public:
-        virtual void evolve(double end,
-                            double timeStep,
-                            const beagle::dbl_vec_t& stateVariables,
-                            const beagle::dbl_vec_t& lbc,
-                            const beagle::dbl_vec_t& ubc,
-                            beagle::dbl_vec_t& initialCondition) const override
+        virtual ~OneDimParabolicValuationPDESolver(void) = default;
+      private:
+        virtual void calculateTridiagonoalMatrix(double end,
+                                                 double timeStep,
+                                                 const beagle::dbl_vec_t& stateVariables,
+                                                 const beagle::dbl_vec_t& lowerBoundaryCondition,
+                                                 const beagle::dbl_vec_t& upperBoundaryCondition,
+                                                 beagle::dbl_vec_t& diag,
+                                                 beagle::dbl_vec_t& lower,
+                                                 beagle::dbl_vec_t& upper,
+                                                 beagle::dbl_vec_t& initialCondition) const override
         {
-          // Assuming the state variable grid is uniform
           int numUnderlyingSteps = stateVariables.size();
           double deltaX = (stateVariables.back() - stateVariables.front()) / (numUnderlyingSteps - 1);
-
-          // Now, perform induction
-          beagle::dbl_vec_t diag(numUnderlyingSteps);
-          beagle::dbl_vec_t lower(numUnderlyingSteps);
-          beagle::dbl_vec_t upper(numUnderlyingSteps);
 
           double dTdX = timeStep / deltaX;
           double dTdXdX = dTdX / deltaX;
@@ -57,15 +53,13 @@ namespace beagle
             initialCondition[j] += source * timeStep;
           }
 
-          initialCondition[0] -= lower[0] * lbc[0];
+          initialCondition[0] -= lower[0] * lowerBoundaryCondition[0];
           //diag[0]             -= lower[0] * lbc[2] / lbc[1];
           //upper[0]            -= lower[0] * lbc[3] / lbc[1];
 
-          initialCondition[numUnderlyingSteps-1] -= upper[numUnderlyingSteps-1] * ubc[0];
+          initialCondition[numUnderlyingSteps-1] -= upper[numUnderlyingSteps-1] * upperBoundaryCondition[0];
           //diag[numUnderlyingSteps-1]             -= upper[numUnderlyingSteps-1] * ubc[2] / ubc[1];
           //upper[numUnderlyingSteps-1]            -= upper[numUnderlyingSteps-1] * ubc[3] / ubc[1];
-
-          beagle::util::tridiagonalSolve( initialCondition, diag, upper, lower );
         }
       private:
         beagle::real_2d_function_ptr_t m_Convection;
@@ -83,24 +77,20 @@ namespace beagle
           m_Diffusion(diffusion),
           m_Rate(rate)
         { }
-        virtual ~OneDimFokkerPlanckPDESolver(void)
-        { }
-      public:
-        virtual void evolve(double end,
-                            double timeStep,
-                            const beagle::dbl_vec_t& stateVariables,
-                            const beagle::dbl_vec_t& lbc,
-                            const beagle::dbl_vec_t& ubc,
-                            beagle::dbl_vec_t& initialCondition) const override
+        virtual ~OneDimFokkerPlanckPDESolver(void) = default;
+      private:
+        virtual void calculateTridiagonoalMatrix(double end,
+                                                 double timeStep,
+                                                 const beagle::dbl_vec_t& stateVariables,
+                                                 const beagle::dbl_vec_t& lowerBoundaryCondition,
+                                                 const beagle::dbl_vec_t& upperBoundaryCondition,
+                                                 beagle::dbl_vec_t& diag,
+                                                 beagle::dbl_vec_t& lower,
+                                                 beagle::dbl_vec_t& upper,
+                                                 beagle::dbl_vec_t& initialCondition) const override
         {
-          // Assuming the state variable grid is uniform
           int numUnderlyingSteps = stateVariables.size();
           double deltaX = (stateVariables.back() - stateVariables.front()) / (numUnderlyingSteps - 1);
-
-          // Now, perform induction
-          beagle::dbl_vec_t diag(numUnderlyingSteps);
-          beagle::dbl_vec_t lower(numUnderlyingSteps);
-          beagle::dbl_vec_t upper(numUnderlyingSteps);
 
           double dTdX = timeStep / deltaX;
           double dTdXdX = dTdX / deltaX;
@@ -125,15 +115,13 @@ namespace beagle
                          - m_Diffusion->value(end, stateVariables[j+1]) * dTdXdX;
           }
 
-          initialCondition[0] -= lower[0] * lbc[0];
+          initialCondition[0] -= lower[0] * lowerBoundaryCondition[0];
           //diag[0]             -= lower[0] * lbc[2] / lbc[1];
           //upper[0]            -= lower[0] * lbc[3] / lbc[1];
 
-          initialCondition[numUnderlyingSteps-1] -= upper[numUnderlyingSteps-1] * ubc[0];
+          initialCondition[numUnderlyingSteps-1] -= upper[numUnderlyingSteps-1] * upperBoundaryCondition[0];
           //diag[numUnderlyingSteps-1]             -= upper[numUnderlyingSteps-1] * ubc[2] / ubc[1];
           //upper[numUnderlyingSteps-1]            -= upper[numUnderlyingSteps-1] * ubc[3] / ubc[1];
-
-          beagle::util::tridiagonalSolve( initialCondition, diag, upper, lower );
         }
       private:
         beagle::real_2d_function_ptr_t m_Convection;
@@ -149,22 +137,19 @@ namespace beagle
           m_Diffusion(diffusion)
         { }
         virtual ~DupirePDESolver(void) = default;
-      public:
-        virtual void evolve(double end,
-                            double timeStep,
-                            const beagle::dbl_vec_t& stateVariables,
-                            const beagle::dbl_vec_t& lbc,
-                            const beagle::dbl_vec_t& ubc,
-                            beagle::dbl_vec_t& initialCondition) const override
+      private:
+        virtual void calculateTridiagonoalMatrix(double end,
+                                                 double timeStep,
+                                                 const beagle::dbl_vec_t& stateVariables,
+                                                 const beagle::dbl_vec_t& lowerBoundaryCondition,
+                                                 const beagle::dbl_vec_t& upperBoundaryCondition,
+                                                 beagle::dbl_vec_t& diag,
+                                                 beagle::dbl_vec_t& lower,
+                                                 beagle::dbl_vec_t& upper,
+                                                 beagle::dbl_vec_t& initialCondition) const override
         {
-          // Assuming the state variable grid is uniform
           int numUnderlyingSteps = stateVariables.size();
           double deltaX = (stateVariables.back() - stateVariables.front()) / (numUnderlyingSteps - 1);
-
-          // Now, perform induction
-          beagle::dbl_vec_t diag(numUnderlyingSteps);
-          beagle::dbl_vec_t lower(numUnderlyingSteps);
-          beagle::dbl_vec_t upper(numUnderlyingSteps);
 
           double dTdX = timeStep / deltaX;
           double dTdXdX = dTdX / deltaX;
@@ -179,20 +164,42 @@ namespace beagle
             lower[j] =   .5 * convection * dTdX - diffusion * dTdXdX;
           }
 
-          initialCondition[0] -= lower[0] * lbc[0];
+          initialCondition[0] -= lower[0] * lowerBoundaryCondition[0];
           //diag[0]             -= lower[0] * lbc[2] / lbc[1];
           //upper[0]            -= lower[0] * lbc[3] / lbc[1];
 
-          initialCondition[numUnderlyingSteps-1] -= upper[numUnderlyingSteps-1] * ubc[0];
+          initialCondition[numUnderlyingSteps-1] -= upper[numUnderlyingSteps-1] * upperBoundaryCondition[0];
           //diag[numUnderlyingSteps-1]             -= upper[numUnderlyingSteps-1] * ubc[2] / ubc[1];
           //upper[numUnderlyingSteps-1]            -= upper[numUnderlyingSteps-1] * ubc[3] / ubc[1];
-
-          beagle::util::tridiagonalSolve( initialCondition, diag, upper, lower );
         }
       private:
         beagle::real_2d_function_ptr_t m_Convection;
         beagle::real_2d_function_ptr_t m_Diffusion;
       };
+    }
+
+    void OneDimParabolicPDESolver::evolve(double end,
+                                          double timeStep,
+                                          const beagle::dbl_vec_t& stateVariables,
+                                          const beagle::dbl_vec_t& lowerBoundaryCondition,
+                                          const beagle::dbl_vec_t& upperBoundaryCondition,
+                                          beagle::dbl_vec_t& initialCondition) const
+    {
+      // Assuming the state variable grid is uniform
+      int numUnderlyingSteps = stateVariables.size();
+      beagle::dbl_vec_t diag(numUnderlyingSteps);
+      beagle::dbl_vec_t lower(numUnderlyingSteps);
+      beagle::dbl_vec_t upper(numUnderlyingSteps);
+      calculateTridiagonoalMatrix(end,
+                                  timeStep,
+                                  stateVariables,
+                                  lowerBoundaryCondition,
+                                  upperBoundaryCondition,
+                                  diag,
+                                  lower,
+                                  upper,
+                                  initialCondition);
+      beagle::util::tridiagonalSolve( initialCondition, diag, upper, lower );
     }
 
     beagle::parabolic_pde_solver_ptr_t
