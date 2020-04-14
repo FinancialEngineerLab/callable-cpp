@@ -16,19 +16,16 @@ namespace beagle
       OneDimFiniteDifferenceSettings( int numTimeSteps,
                                       int numStateVariableSteps,
                                       double numGaussianStandardDeviations,
-                                      const beagle::interp_builder_ptr_t& interp,
-                                      const beagle::dividend_policy_ptr_t& policy );
+                                      const beagle::interp_builder_ptr_t& interp );
     public:
       int numberOfTimeSteps( void ) const;
       int numberOfStateVariableSteps( void ) const;
       double numberOfGaussianStandardDeviations( void ) const;
-      const beagle::dividend_policy_ptr_t& dividendPolicy( void ) const;
       const beagle::interp_builder_ptr_t& interpolationMethod( void ) const;
     private:
       int m_NumTimeSteps;
       int m_NumUnderlyingSteps;
       double m_NumStdev;
-      beagle::dividend_policy_ptr_t m_Policy;
       beagle::interp_builder_ptr_t m_Interp;
     };
 
@@ -76,7 +73,7 @@ namespace beagle
 
     struct Pricer
     {
-      virtual ~Pricer( void );
+      virtual ~Pricer( void ) = default;
     public:
       virtual double value( const beagle::product_ptr_t& product ) const = 0;
     public:
@@ -97,6 +94,10 @@ namespace beagle
                                                                         const beagle::real_2d_function_ptr_t& volatility,
                                                                         const beagle::real_2d_function_ptr_t& rate,
                                                                         const beagle::valuation::OneDimFiniteDifferenceSettings& settings);
+      static beagle::pricer_ptr_t formOneDimForwardPDEEuroOptionPricer(const beagle::real_function_ptr_t& forward,
+                                                                       const beagle::real_function_ptr_t& discounting,
+                                                                       const beagle::real_2d_function_ptr_t& volatility,
+                                                                       const beagle::valuation::OneDimFiniteDifferenceSettings& settings);
       static beagle::pricer_ptr_t formOneDimBackwardPDEOptionPricer(const beagle::real_function_ptr_t& forward,
                                                                     const beagle::real_function_ptr_t& discounting,
                                                                     const beagle::real_2d_function_ptr_t& drift,
@@ -152,7 +153,7 @@ namespace beagle
 
       struct OneDimFokkerPlanck
       {
-        virtual ~OneDimFokkerPlanck( void );
+        virtual ~OneDimFokkerPlanck( void ) = default;
       public:
         virtual void formInitialCondition(double expiry,
                                           beagle::dbl_vec_t& stateVars,
@@ -161,6 +162,21 @@ namespace beagle
                             double end,
                             const beagle::dbl_vec_t& stateVars,
                             beagle::dbl_vec_t& density) const=0;
+      };
+
+      struct Dupire
+      {
+        virtual ~Dupire( void ) = default;
+      public:
+        virtual void formInitialCondition(double expiry,
+                                          const beagle::payoff_ptr_t& payoff,
+                                          beagle::dbl_vec_t& stateVars,
+                                          beagle::dbl_vec_t& prices) const=0;
+        virtual void evolve(double start,
+                            double end,
+                            const beagle::payoff_ptr_t& payoff,
+                            const beagle::dbl_vec_t& stateVars,
+                            beagle::dbl_vec_t& prices) const=0;
       };
     }
   }

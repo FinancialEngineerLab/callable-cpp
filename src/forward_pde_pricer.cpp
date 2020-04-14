@@ -1,6 +1,8 @@
 #include "one_dim_pde_pricer.hpp"
 #include "solver.hpp"
 
+#include <iostream>
+
 namespace beagle
 {
   namespace valuation
@@ -256,6 +258,112 @@ namespace beagle
           }
         }
       };
+
+      struct OneDimForwardPDEEuroOptionPricer : public OneDimParabolicPDEPricer,
+                                                public beagle::valuation::mixins::Dupire
+      {
+        OneDimForwardPDEEuroOptionPricer(const beagle::real_function_ptr_t& forward,
+                                         const beagle::real_function_ptr_t& discounting,
+                                         const beagle::real_2d_function_ptr_t& volatility,
+                                         const beagle::valuation::OneDimFiniteDifferenceSettings& settings) :
+          OneDimParabolicPDEPricer(forward,
+                                   discounting,
+                                   beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(.0),
+                                   volatility,
+                                   beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(.0),
+                                   beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(.0),
+                                   settings)
+        { }
+        virtual ~OneDimForwardPDEEuroOptionPricer( void )
+        { }
+      public:
+        virtual double value(const beagle::product_ptr_t& product) const override
+        {
+          auto pA = dynamic_cast<beagle::product::option::mixins::American*>(product.get());
+          if (pA)
+            throw(std::string("Cannot value an American option with a forward equation!"));
+
+          auto pO = dynamic_cast<beagle::product::mixins::Option*>(product.get());
+          if (!pO)
+            throw(std::string("The incoming product is not an option!"));
+
+          double expiry = pO->expiry();
+          double strike = pO->strike();
+          const beagle::payoff_ptr_t& payoff = pO->payoff();
+
+          // Set the initial condition and perform the forwardward induction
+          beagle::dbl_vec_t stateVars;
+          beagle::dbl_vec_t prices;
+          formInitialCondition(expiry, payoff, stateVars, prices);
+          evolve(0., expiry, payoff, stateVars, prices);
+ 
+          return discountCurve()->value(expiry)
+               * forwardCurve()->value(expiry)
+               * prices[stateVars.size()/2];
+        }
+        virtual void formInitialCondition(double expiry,
+                                          const beagle::payoff_ptr_t& payoff,
+                                          beagle::dbl_vec_t& stateVars,
+                                          beagle::dbl_vec_t& prices) const override
+        {
+          double termForward = forwardCurve()->value(expiry);
+
+          // Set up the state variable mesh
+          int numStateVars = finiteDifferenceSettings().numberOfStateVariableSteps();
+          if (numStateVars % 2 == 0)
+            numStateVars += 1;
+
+          double atmVol = volatilitySurface()->value(expiry, termForward);
+          int centralIndex = numStateVars / 2;
+          double centralValue = 0.;
+          double stateVarStep = finiteDifferenceSettings().numberOfGaussianStandardDeviations() * atmVol * std::sqrt(expiry) / centralIndex;
+
+          stateVars.resize(numStateVars);
+          for (int i=0; i<numStateVars; ++i)
+            stateVars[i] = centralValue + (i - centralIndex) * stateVarStep;
+
+          // Set the initial condition
+          prices.resize(numStateVars);
+          std::transform(stateVars.cbegin(),
+                         stateVars.cend(),
+                         prices.begin(),
+                         [&payoff](double logMoneyness)
+                         {
+                           return payoff->intrinsicValue(1., std::exp(logMoneyness));
+                         });
+
+          //for (int i=0; i<prices.size(); ++i)
+          //  std::cout << prices[i] << "\n";
+          //std::cout << "\n\n";
+        }
+        virtual void evolve(double start,
+                            double end,
+                            const beagle::payoff_ptr_t& payoff,
+                            const beagle::dbl_vec_t& stateVars,
+                            beagle::dbl_vec_t& prices) const override
+        {
+          beagle::parabolic_pde_solver_ptr_t solver
+            = beagle::math::OneDimParabolicPDESolver::formDupirePDESolver(
+                                   convectionCoefficient(),
+                                   diffusionCoefficient());
+
+          // Perform the forward induction
+          int numTimes = static_cast<int>((end - start) * finiteDifferenceSettings().numberOfTimeSteps());
+          double timeStep = (end - start) / numTimes;
+          double lbc = payoff->intrinsicValue( 1.0, std::exp(stateVars.front()) );
+          double ubc = payoff->intrinsicValue( 1.0, std::exp(stateVars.back()) );
+          for (int i=0; i<numTimes; ++i)
+          {
+            double thisTime = start + (i+1) * timeStep;
+            solver->evolve(thisTime,
+                           timeStep,
+                           stateVars,
+                           beagle::dbl_vec_t{lbc},
+                           beagle::dbl_vec_t{ubc},
+                           prices);
+          }
+        }
+      };
     }
 
     beagle::pricer_ptr_t
@@ -280,6 +388,18 @@ namespace beagle
                                                                         volatility,
                                                                         rate,
                                                                         settings );
+    }
+
+    beagle::pricer_ptr_t
+    Pricer::formOneDimForwardPDEEuroOptionPricer(const beagle::real_function_ptr_t& forward,
+                                                 const beagle::real_function_ptr_t& discounting,
+                                                 const beagle::real_2d_function_ptr_t& volatility,
+                                                 const beagle::valuation::OneDimFiniteDifferenceSettings& settings)
+    {
+      return std::make_shared<impl::OneDimForwardPDEEuroOptionPricer>( forward,
+                                                                       discounting,
+                                                                       volatility,
+                                                                       settings );
     }
   }
 }

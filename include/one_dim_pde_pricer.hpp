@@ -74,38 +74,37 @@ namespace beagle
                               double spot = forward->value(time) * std::exp(logMoneyness);
                               return discounting->value(time) * recovery->value(time, spot);
                             } );}
-        virtual ~OneDimParabolicPDEPricer( void )
-        { }
-      public:
-        virtual const beagle::real_function_ptr_t& forwardCurve( void ) const
+        virtual ~OneDimParabolicPDEPricer( void ) =default;
+      protected:
+        const beagle::real_function_ptr_t& forwardCurve( void ) const
         {
           return m_Forward;
         }
-        virtual const beagle::real_function_ptr_t& discountCurve( void ) const
+        const beagle::real_function_ptr_t& discountCurve( void ) const
         {
           return m_Discounting;
         }
-        virtual const beagle::real_2d_function_ptr_t& volatilitySurface( void ) const
+        const beagle::real_2d_function_ptr_t& volatilitySurface( void ) const
         {
           return m_Vol;
         }
-        virtual const beagle::valuation::OneDimFiniteDifferenceSettings& finiteDifferenceSettings(void) const
+        const beagle::valuation::OneDimFiniteDifferenceSettings& finiteDifferenceSettings(void) const
         {
           return m_Settings;
         }
-        virtual const beagle::real_2d_function_ptr_t& convectionCoefficient( void ) const
+        const beagle::real_2d_function_ptr_t& convectionCoefficient( void ) const
         {
           return m_Convection;
         }
-        virtual const beagle::real_2d_function_ptr_t& diffusionCoefficient( void ) const
+        const beagle::real_2d_function_ptr_t& diffusionCoefficient( void ) const
         {
           return m_Diffusion;
         }
-        virtual const beagle::real_2d_function_ptr_t& rateCoefficient( void ) const
+        const beagle::real_2d_function_ptr_t& rateCoefficient( void ) const
         {
           return m_Rate;
         }
-        virtual const beagle::real_2d_function_ptr_t& sourceTerm( void ) const
+        const beagle::real_2d_function_ptr_t& sourceTerm( void ) const
         {
           return m_Source;
         }

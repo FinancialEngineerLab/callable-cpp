@@ -291,7 +291,7 @@ namespace beagle
               double thisTime = start - interval * (i+1) / numTimes;
               double df = discountCurve()->value(thisTime);
               double fwd = forwardCurve()->value(thisTime);
-              if (i == numTimes-1)
+              if (i == numTimes-1 && jt != jtEnd)
                 fwd = kt->second;
 
               double lbc = payoff->intrinsicValue( fwd * std::exp(stateVars.front() - stateVarStep), strike );

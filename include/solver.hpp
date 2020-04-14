@@ -9,8 +9,7 @@ namespace beagle
   {
     struct OneDimParabolicPDESolver
     {
-      OneDimParabolicPDESolver(void);
-      virtual ~OneDimParabolicPDESolver(void);
+      virtual ~OneDimParabolicPDESolver(void) = default;
     public:
       virtual void evolve(double end,
                           double timeStep,
@@ -26,10 +25,8 @@ namespace beagle
       static beagle::parabolic_pde_solver_ptr_t formOneDimFokkerPlanckPDESolver(const beagle::real_2d_function_ptr_t& convection,
                                                                                 const beagle::real_2d_function_ptr_t& diffusion,
                                                                                 const beagle::real_2d_function_ptr_t& rate);
-    private:
-      beagle::real_2d_function_ptr_t m_Convection;
-      beagle::real_2d_function_ptr_t m_Diffusion;
-      beagle::real_function_ptr_t m_Rate;
+      static beagle::parabolic_pde_solver_ptr_t formDupirePDESolver(const beagle::real_2d_function_ptr_t& convection,
+                                                                    const beagle::real_2d_function_ptr_t& diffusion);
     };
   }
 

@@ -2,7 +2,6 @@
 #define REAL_FUNCTION_HPP
 
 #include "fwd_decl.hpp"
-#include "pricer.hpp"
 
 namespace beagle
 {
