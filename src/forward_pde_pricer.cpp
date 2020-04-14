@@ -297,6 +297,14 @@ namespace beagle
           beagle::dbl_vec_t prices;
           formInitialCondition(expiry, payoff, stateVars, prices);
           
+          // Store exponential of state variables for speed
+          beagle::dbl_vec_t moneynesses(stateVars);
+          std::transform(stateVars.cbegin(),
+                         stateVars.cend(),
+                         moneynesses.begin(),
+                         [=](double logMoneyness)
+                         { return std::exp(logMoneyness); });
+          
           // Check dividends and use ex-dividend dates in forward induction
           beagle::dbl_vec_t dates;
           std::vector<beagle::two_dbl_t> dividends;
@@ -351,6 +359,31 @@ namespace beagle
             double end = *it;
             evolve(start, end, payoff, stateVars, prices);
 
+            if (jt != jtEnd)
+            {
+              double cumForward = kt->first;
+              double exForward = kt->second;
+
+              beagle::dbl_vec_t strikes(stateVars);
+              std::transform(moneynesses.cbegin(),
+                             moneynesses.cend(),
+                             strikes.begin(),
+                             [=](double moneyness)
+                             { return cumForward * moneyness; });
+
+              beagle::real_function_ptr_t results = finiteDifferenceSettings().interpolationMethod()->formFunction( strikes, prices );
+              
+              std::transform( moneynesses.begin(),
+                              moneynesses.end(),
+                              strikes.begin(),
+                              [=](double moneyness)
+                              { return (exForward * moneyness  + jt->second) / (1. - jt->first); } );
+              std::transform( strikes.cbegin(),
+                              strikes.cend(),
+                              prices.begin(),
+                              [=](double strike)
+                              { return cumForward * results->value(strike) / exForward; } );
+            }
 
             start = end;
           }
