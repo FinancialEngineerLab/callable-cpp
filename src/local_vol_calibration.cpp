@@ -79,6 +79,7 @@ namespace beagle
             pD->evolve(m_Start, m_End, m_Payoff, m_StateVars, prices);
 
             double fwd = m_Forward->value(m_End);
+            double df = m_Discounting->value(m_End);
             beagle::dbl_vec_t strikes(m_StateVars);
             std::transform(m_StateVars.cbegin(),
                            m_StateVars.cend(),
@@ -91,10 +92,10 @@ namespace beagle
             for (beagle::dbl_vec_t::size_type j=0; j<m_Strikes.size(); ++j)
             {
               double strike = m_Strikes[j];
-              results.emplace_back(func->value(strike) - m_Targets[j]);
+              results.emplace_back(df * fwd * func->value(strike) - m_Targets[j]);
             }
 
-            std::cout << "\nFor this iteration, the erros are: \n";
+            std::cout << "\nFor this iteration, the errors are: \n";
             for (beagle::dbl_vec_t::size_type i=0; i<results.size(); ++i)
               std::cout << results[i] << "\t";
             std::cout << "\n";
@@ -185,7 +186,7 @@ namespace beagle
           guesses = beagle::calibration::util::getTransformedParameters( guesses, constraints );
           Eigen::VectorXd calibParams(guesses.size());
           for (beagle::dbl_vec_t::size_type i=0; i<guesses.size(); ++i)
-            calibParams(i) = 2. * guesses[i];
+            calibParams(i) = guesses[i];
 
           beagle::calibration_adapter_ptr_t adapter = std::make_shared<LocalVolatilityCalibrationAdapter>(forward,
                                                                                                           discounting,

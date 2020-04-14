@@ -99,10 +99,10 @@ void test2( void )
 {
   std::cout << "\nStart of Test 2:\n\n";
 
-  beagle::discrete_dividend_schedule_t dividends;
-  // dividends.emplace_back(0.4, 3.0);
-  // dividends.emplace_back(0.6, 2.0);
-  // dividends.emplace_back(0.8, 1.0);
+  beagle::dividend_schedule_t dividends;
+  //dividends.emplace_back(0.4, 0.0, 3.0);
+  //dividends.emplace_back(0.6, 0.0, 2.0);
+  //dividends.emplace_back(0.8, 0.0, 1.0);
 
   beagle::dbl_vec_t strikes{90., 92.5, 95., 97.5, 100., 102.5, 105., 107.5, 110.};
   beagle::dbl_vec_t vols{.33, .32, .31, .30, .29, .28, .28, .29, .31};
@@ -115,15 +115,18 @@ void test2( void )
   volSmiles.emplace_back(1.25, std::make_pair(strikes, vols));
   
   double r = 0.04;
-  double q = 0.00;
+  double q = 0.02;
   double spot = 100;
   beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
                                             [=](double arg) { return std::exp(-r * arg);});
-  beagle::real_function_ptr_t forward = beagle::math::RealFunction::createContinuousForwardAssetPriceFunction(
+  beagle::real_function_ptr_t funding = beagle::math::RealFunction::createUnaryFunction(
+                                            [=](double arg) { return std::exp(-(r-q) * arg);});
+  beagle::real_function_ptr_t forward = beagle::math::RealFunction::createGeneralForwardAssetPriceFunction(
                                             spot,
-                                            beagle::math::RealFunction::createUnaryFunction(
-                                            [=](double arg) { return std::exp(-(r - q) * arg);}));
-  beagle::valuation::OneDimFiniteDifferenceSettings settings(365, 1001, 5.5);
+                                            funding,
+                                            dividends,
+                                            beagle::valuation::DividendPolicy::liquidator());
+  beagle::valuation::OneDimFiniteDifferenceSettings settings(104, 350, 6.5);
 
   beagle::real_2d_function_ptr_t localVol =
     beagle::calibration::util::createCalibratedLocalVolatilitySurface(forward,
@@ -1213,8 +1216,8 @@ void generateAndersenBuffumTableOne( void )
 
 int main( void )
 {
-  test1();
-  //test2();
+  //test1();
+  test2();
   //test3();
   //test4();
   //test5();
