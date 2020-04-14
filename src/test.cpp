@@ -17,17 +17,18 @@ void test1( void )
 {
   std::cout << "\nStart of Test 1:\n\n";
 
+  // Set up dividend
   beagle::dividend_schedule_t dividends;
   dividends.emplace_back( 0.5, 0.0, 3.0 );
   dividends.emplace_back( 1.5, 0.0, 3.0 );
   dividends.emplace_back( 2.5, 0.0, 3.0 );
   dividends.emplace_back( 3.5, 0.0, 3.0 );
   dividends.emplace_back( 4.5, 0.0, 3.0 );
-  //dividends.emplace_back( 5.5, 0.0, 3.0 );
-  //dividends.emplace_back( 6.5, 0.0, 3.0 );
-  //dividends.emplace_back( 7.5, 0.0, 3.0 );
-  //dividends.emplace_back( 8.5, 0.0, 3.0 );
-  //dividends.emplace_back( 9.5, 0.0, 3.0 );
+  dividends.emplace_back( 5.5, 0.0, 3.0 );
+  dividends.emplace_back( 6.5, 0.0, 3.0 );
+  dividends.emplace_back( 7.5, 0.0, 3.0 );
+  dividends.emplace_back( 8.5, 0.0, 3.0 );
+  dividends.emplace_back( 9.5, 0.0, 3.0 );
 
   beagle::discrete_dividend_schedule_t discDivs(dividends.size());
   std::transform(dividends.cbegin(),
@@ -36,19 +37,10 @@ void test1( void )
                  [=](const beagle::dividend_schedule_t::value_type& item)
                  { return std::make_pair(std::get<0>(item), std::get<2>(item)); });
 
-  double expiry = 5.;
+  // Model parameters
   double spot = 100.;
-  double strike = 100.;
   double rate = .03;
   double vol = .3;
-
-  beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::call();
-  beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption( expiry,
-                                                                                            strike,
-                                                                                            payoff );
-  beagle::product_ptr_t amerOption = beagle::product::option::Option::createAmericanOption( expiry,
-                                                                                            strike,
-                                                                                            payoff );
 
   beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
                                             [=](double arg) { return std::exp(-rate * arg);});
@@ -57,11 +49,19 @@ void test1( void )
                                             discounting,
                                             dividends,
                                             beagle::valuation::DividendPolicy::liquidator());
-    //beagle::real_function_ptr_t forward = beagle::math::RealFunction::createContinuousForwardAssetPriceFunction(
-    //                                        spot,
-    //                                        discounting);
-
   beagle::valuation::OneDimFiniteDifferenceSettings seetings;
+
+  // Set up options
+  double expiry = 5.;
+  double strike = 100.;
+  beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::call();
+
+  beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption( expiry,
+                                                                                            strike,
+                                                                                            payoff );
+  beagle::product_ptr_t amerOption = beagle::product::option::Option::createAmericanOption( expiry,
+                                                                                            strike,
+                                                                                            payoff );
 
   try
   {
@@ -76,14 +76,7 @@ void test1( void )
                                                                beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(vol),
                                                                beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0),
                                                                seetings );
-    beagle::pricer_ptr_t odfpeop2  = beagle::valuation::Pricer::formOneDimForwardPDEArrowDebreuPricer(
-                                                               forward,
-                                                               discounting,
-                                                               beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0.),
-                                                               beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(vol),
-                                                               beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0),
-                                                               seetings );
-    beagle::pricer_ptr_t odfpeop3  = beagle::valuation::Pricer::formOneDimForwardPDEEuroOptionPricer(
+    beagle::pricer_ptr_t odfpeop  = beagle::valuation::Pricer::formOneDimForwardPDEEuroOptionPricer(
                                                                forward,
                                                                discounting,
                                                                beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(vol),
@@ -91,11 +84,8 @@ void test1( void )
 
     std::cout << "European option price (CF)   is: " << bscfeop->value( euroOption ) << std::endl;
     std::cout << "European option price (FD-B) is: " << odbpop->value( euroOption ) << std::endl;    
-    //std::cout << "American option price (FD-B) is: " << odbpop->value( amerOption ) << std::endl;
-    //std::cout << "European option price (FD-F) is: " << odfpeop->value( euroOption ) << std::endl;
-    //std::cout << "European option price (FD-F) is: " << odfpeop2->value( euroOption ) << std::endl;
-    std::cout << "European option price (FD-F) is: " << odfpeop3->value( euroOption ) << std::endl;
-
+    std::cout << "American option price (FD-B) is: " << odbpop->value( amerOption ) << std::endl;
+    std::cout << "European option price (FD-F) is: " << odfpeop->value( euroOption ) << std::endl;
 
     std::cout << "\nEnd of Test 1\n";
   }
@@ -1223,8 +1213,8 @@ void generateAndersenBuffumTableOne( void )
 
 int main( void )
 {
-  //test1();
-  test2();
+  test1();
+  //test2();
   //test3();
   //test4();
   //test5();

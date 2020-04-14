@@ -353,6 +353,9 @@ namespace beagle
                                                           const beagle::dividend_schedule_t& dividends,
                                                           const beagle::dividend_policy_ptr_t& policy )
     {
+      if (dividends.empty())
+        return RealFunction::createContinuousForwardAssetPriceFunction(spot, funding);
+
       return std::make_shared<impl::GeneralForwardAssetPriceFunction>( spot, funding, dividends, policy );
     }
   }
