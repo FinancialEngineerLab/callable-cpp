@@ -55,17 +55,5 @@ namespace beagle
     {
       return m_Interp;
     }
-
-    namespace mixins
-    {
-      OptionValueCollectionProvider::~OptionValueCollectionProvider( void )
-      { }
-
-      CloneWithNewLocalVolatilitySurface::~CloneWithNewLocalVolatilitySurface( void )
-      { }
-
-      CloneWithNewModelParameters::~CloneWithNewModelParameters( void )
-      { }
-    }
   }
 }

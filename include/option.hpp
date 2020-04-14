@@ -16,7 +16,7 @@ namespace beagle
         Option(double expiry,
                double strike,
                const beagle::payoff_ptr_t& payoff);
-        virtual ~Option(void);
+        virtual ~Option(void) = default;
       public:
         virtual const std::string& name(void) const = 0;
       public:
@@ -40,12 +40,12 @@ namespace beagle
       {
         struct European
         {
-          virtual ~European(void);
+          virtual ~European(void) = default;
         };
 
         struct American
         {
-          virtual ~American(void);
+          virtual ~American(void) = default;
         };
       }
     }

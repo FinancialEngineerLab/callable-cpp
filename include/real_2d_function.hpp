@@ -9,8 +9,7 @@ namespace beagle
   {
     struct RealTwoDimFunction
     {
-      RealTwoDimFunction( void );
-      virtual ~RealTwoDimFunction( void );
+      virtual ~RealTwoDimFunction( void ) = default;
     public:
       virtual double value( double argX,
                             double argY ) const = 0;

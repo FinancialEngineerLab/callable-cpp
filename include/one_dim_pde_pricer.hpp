@@ -57,7 +57,7 @@ namespace beagle
                               double spot = forward->value(time) * std::exp(logMoneyness);
                               return discounting->value(time) * recovery->value(time, spot);
                             } );}
-        virtual ~OneDimParabolicPDEPricer( void ) =default;
+        virtual ~OneDimParabolicPDEPricer( void ) = default;
       protected:
         const beagle::real_function_ptr_t& forwardCurve( void ) const
         {

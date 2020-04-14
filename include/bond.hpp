@@ -13,8 +13,7 @@ namespace beagle
       struct Bond : public Product,
                     public beagle::product::mixins::Bond
       {
-        Bond(void);
-        virtual ~Bond(void);
+        virtual ~Bond(void) = default;
       public:
         virtual const std::string& name(void) const=0;
       public:
@@ -38,21 +37,21 @@ namespace beagle
       {
         struct Callable
         {
-          virtual ~Callable( void );
+          virtual ~Callable( void ) = default;
         public:
           virtual const beagle::callable_schedule_t& callSchedule( void ) const=0;
         };
         
         struct Puttable
         {
-          virtual ~Puttable( void );
+          virtual ~Puttable( void ) = default;
         public:
           virtual const beagle::puttable_schedule_t& putSchedule( void ) const=0;
         };
 
         struct Convertible
         {
-          virtual ~Convertible( void );
+          virtual ~Convertible( void ) = default;
         public:
           virtual const beagle::real_function_ptr_t& conversionRatio( void ) const=0;
         };

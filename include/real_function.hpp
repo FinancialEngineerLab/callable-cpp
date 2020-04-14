@@ -9,8 +9,7 @@ namespace beagle
   {
     struct RealFunction
     {
-      RealFunction( void );
-      virtual ~RealFunction( void );
+      virtual ~RealFunction( void ) = default;
     public:
       virtual double value( double arg ) const = 0;
     public:
@@ -41,7 +40,7 @@ namespace beagle
     {
       struct InterpolationParameters
       {
-        virtual ~InterpolationParameters( void );
+        virtual ~InterpolationParameters( void ) = default;
       public:
         virtual const beagle::dbl_vec_t& xParameters( void ) const = 0;
         virtual const beagle::dbl_vec_t& yParameters( void ) const = 0;
@@ -49,7 +48,7 @@ namespace beagle
 
       struct ContainsDividends
       {
-        virtual ~ContainsDividends( void );
+        virtual ~ContainsDividends( void ) = default;
       public:
         virtual const beagle::dividend_schedule_t& dividendSchedule( void ) const = 0;
         virtual const beagle::dividend_policy_ptr_t& dividendPolicy( void ) const = 0;
@@ -64,7 +63,7 @@ namespace beagle
       {
         InterpolatedFunction( const beagle::dbl_vec_t& xValues,
                               const beagle::dbl_vec_t& yValues );
-        virtual ~InterpolatedFunction( void );
+        virtual ~InterpolatedFunction( void ) = default;
       public:
         virtual double value( double arg ) const = 0;
         virtual const beagle::dbl_vec_t& xParameters( void ) const override;

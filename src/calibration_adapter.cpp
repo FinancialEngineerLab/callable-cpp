@@ -67,8 +67,7 @@ namespace beagle
           m_Pricer(pricer),
           m_Products(products)
         { }
-        virtual ~PricerAdapter( void )
-        { }
+        virtual ~PricerAdapter( void ) = default;
       public:
         dbl_vec_t values( const dbl_vec_t& parameters ) const override
         {
@@ -121,9 +120,6 @@ namespace beagle
         product_ptr_coll_t m_Products;
       };
     }
-
-    CalibrationAdapter::~CalibrationAdapter( void )
-    { }
 
     dbl_vec_t CalibrationAdapter::values( const dbl_vec_t& transformedParamters,
                                           const calibration_bound_constraint_coll_t& constraints ) const

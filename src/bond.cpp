@@ -6,18 +6,6 @@ namespace beagle
   {
     namespace bond
     {
-      namespace mixins
-      {
-        Callable::~Callable( void )
-        { }
-
-        Puttable::~Puttable( void )
-        { }
-
-        Convertible::~Convertible( void )
-        { }
-      }
-
       namespace impl
       {
         struct ZeroCouponBond : public Bond
@@ -28,8 +16,7 @@ namespace beagle
             m_Notionalflows.clear();
             m_Notionalflows.emplace_back(expiry, standardFaceValue());
           }
-          virtual ~ZeroCouponBond( void )
-          { }
+          virtual ~ZeroCouponBond( void ) = default;
         public:
           virtual const std::string& name(void) const override
           {
@@ -69,8 +56,7 @@ namespace beagle
 
             m_Notionalflows.emplace_back(expiry, standardFaceValue());
           }
-          virtual ~FixedCouponBond( void )
-          { }
+          virtual ~FixedCouponBond( void ) = default;
         public:
           virtual const std::string& name(void) const override
           {
@@ -104,8 +90,7 @@ namespace beagle
             m_CallSchedule(callSchedule),
             m_PutSchedule(putSchedule)
           { }
-          virtual ~ConvertibleBond( void )
-          { }
+          virtual ~ConvertibleBond( void ) = default;
         public:
           virtual const std::string& name(void) const override
           {
@@ -141,12 +126,6 @@ namespace beagle
           beagle::puttable_schedule_t m_PutSchedule;
         };
       }
-
-      Bond::Bond(void)
-      { }
-
-      Bond::~Bond( void )
-      { }
 
       beagle::product_ptr_t
       Bond::createZeroCouponBond(double expiry)

@@ -27,8 +27,7 @@ namespace beagle
                                    beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(.0),
                                    settings)
         { }
-        virtual ~OneDimForwardPDEArrowDebreuPricer( void )
-        { }
+        virtual ~OneDimForwardPDEArrowDebreuPricer( void ) = default;
       public:
         virtual double value(const beagle::product_ptr_t& product) const override
         {
@@ -126,8 +125,7 @@ namespace beagle
                                    beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(.0),
                                    settings)
         { }
-        virtual ~OneDimForwardPDEEuroOptionPricer( void )
-        { }
+        virtual ~OneDimForwardPDEEuroOptionPricer( void ) = default;
       public:
         virtual double value(const beagle::product_ptr_t& product) const override
         {

@@ -67,31 +67,9 @@ namespace beagle
 
     namespace mixins
     {
-      struct OptionValueCollectionProvider
-      {
-        virtual ~OptionValueCollectionProvider( void );
-      public:
-        virtual void formInitialOptionValueCollection( const beagle::payoff_ptr_t& payoff,
-                                                       const beagle::dbl_vec_t& strikes,
-                                                       beagle::dbl_vec_t& prices ) const = 0;
-        virtual void optionValueCollection( double start,
-                                            double end,
-                                            const beagle::payoff_ptr_t& payoff,
-                                            const beagle::dbl_vec_t& logStrikes,
-                                            const beagle::dbl_vec_t& strikes,
-                                            beagle::dbl_vec_t& prices ) const = 0;
-      };
-
-      struct CloneWithNewLocalVolatilitySurface
-      {
-        virtual ~CloneWithNewLocalVolatilitySurface( void );
-      public:
-        virtual beagle::pricer_ptr_t createPricerWithNewLocalVolatilitySurface( const beagle::real_2d_function_ptr_t& vol ) const = 0;
-      };
-
       struct CloneWithNewModelParameters
       {
-        virtual ~CloneWithNewModelParameters( void );
+        virtual ~CloneWithNewModelParameters( void ) = default;
       public:
         virtual beagle::pricer_ptr_t createPricerWithNewModelParameters( const beagle::dbl_vec_t& parameters ) const = 0;
       };

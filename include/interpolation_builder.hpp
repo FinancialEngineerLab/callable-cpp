@@ -9,8 +9,7 @@ namespace beagle
   {
     struct InterpolationBuilder
     {
-      InterpolationBuilder( void );
-      virtual ~InterpolationBuilder( void );
+      virtual ~InterpolationBuilder( void ) = default;
     public:
       virtual beagle::real_function_ptr_t formFunction( const dbl_vec_t& xValues,
                                                         const dbl_vec_t& yValues ) const = 0;

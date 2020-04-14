@@ -10,7 +10,7 @@ namespace beagle
     struct CalibrationBoundConstraint
     {
     public:
-      virtual ~CalibrationBoundConstraint( void );
+      virtual ~CalibrationBoundConstraint( void ) = default;
       virtual double lowerBound( void ) const =0;
       virtual double upperBound( void ) const =0;
       virtual double transform( const double original ) const =0;

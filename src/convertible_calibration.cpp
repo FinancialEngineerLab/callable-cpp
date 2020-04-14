@@ -56,8 +56,7 @@ namespace beagle
             m_Targets.first = df * beagle::util::bsCall(strike, strike, end, quotes.first);
             m_Targets.second = df * std::exp(-quotes.second * end);
           }
-          virtual ~AndersenBuffumCalibrationAdapter( void )
-          { }
+          virtual ~AndersenBuffumCalibrationAdapter( void ) = default;
         public:
           dbl_vec_t values( const dbl_vec_t& parameters ) const override
           {

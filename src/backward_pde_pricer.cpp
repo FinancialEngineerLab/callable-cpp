@@ -26,8 +26,7 @@ namespace beagle
                                    beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0.0),
                                    settings)
         { }
-        virtual ~OneDimBackwardPDEOptionPricer( void )
-        { }
+        virtual ~OneDimBackwardPDEOptionPricer( void ) = default;
       public:
         virtual double value(const beagle::product_ptr_t& product) const
         {
@@ -219,8 +218,7 @@ namespace beagle
                                    recovery,
                                    settings)
         { }
-        virtual ~OneDimBackwardPDEBondPricer( void )
-        { }
+        virtual ~OneDimBackwardPDEBondPricer( void ) = default;
       public:
         virtual double value(const beagle::product_ptr_t& product) const
         {

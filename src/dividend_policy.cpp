@@ -8,10 +8,7 @@ namespace beagle
     {
       struct LiquidatorDividendPolicy : public DividendPolicy
       {
-        LiquidatorDividendPolicy( void )
-        { }
-        virtual ~LiquidatorDividendPolicy( void )
-        { }
+        virtual ~LiquidatorDividendPolicy( void ) = default;
       public:
         virtual double dividendAmount( double spot,
                                        double dividend ) const override
@@ -22,10 +19,7 @@ namespace beagle
 
       struct SurvivorDividendPolicy : public DividendPolicy
       {
-        SurvivorDividendPolicy( void )
-        { }
-        virtual ~SurvivorDividendPolicy( void )
-        { }
+        virtual ~SurvivorDividendPolicy( void ) = default;
       public:
         virtual double dividendAmount( double spot,
                                        double dividend ) const override
@@ -34,13 +28,6 @@ namespace beagle
         }
       };
     }
-
-    DividendPolicy::DividendPolicy( void )
-    { }
-
-    DividendPolicy::~DividendPolicy( void )
-    { }
-
 
     double
     DividendPolicy::exDividendStockPrice( double spot,

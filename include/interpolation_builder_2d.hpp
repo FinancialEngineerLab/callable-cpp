@@ -9,8 +9,7 @@ namespace beagle
   {
     struct TwoDimInterpolationBuilder
     {
-      TwoDimInterpolationBuilder( void );
-      virtual ~TwoDimInterpolationBuilder( void );
+      virtual ~TwoDimInterpolationBuilder( void ) = default;
     public:
       virtual beagle::real_2d_function_ptr_t formTwoDimFunction() const = 0;
     public:

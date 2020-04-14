@@ -11,8 +11,7 @@ namespace beagle
     {
       struct Payoff
       {
-        Payoff( void );
-        virtual ~Payoff( void );
+        virtual ~Payoff( void ) = default;
       public:
         virtual double intrinsicValue( double spot,
                                        double strike ) const = 0;

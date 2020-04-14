@@ -22,10 +22,7 @@ namespace beagle
     {
       struct NoBoundCalibrationConstraintImpl : public CalibrationBoundConstraint
       {
-        NoBoundCalibrationConstraintImpl( void )
-        { }
-        virtual ~NoBoundCalibrationConstraintImpl( void )
-        { }
+        virtual ~NoBoundCalibrationConstraintImpl( void ) = default;
       public:
         virtual double lowerBound( void ) const override
         {
@@ -55,8 +52,7 @@ namespace beagle
         explicit LowerBoundCalibrationConstraintImpl( const double lowerBound ) :
           m_LowerBound( lowerBound )
         { }
-        virtual ~LowerBoundCalibrationConstraintImpl( void )
-        { }
+        virtual ~LowerBoundCalibrationConstraintImpl( void ) = default;
       public:
         virtual double lowerBound( void ) const override
         {
@@ -88,8 +84,7 @@ namespace beagle
         explicit UpperBoundCalibrationConstraintImpl( const double upperBound ) :
           m_UpperBound( upperBound )
         { }
-        virtual ~UpperBoundCalibrationConstraintImpl( void )
-        { }
+        virtual ~UpperBoundCalibrationConstraintImpl( void ) = default;
       public:
         virtual double lowerBound( void ) const override
         {
@@ -124,8 +119,7 @@ namespace beagle
           m_UpperBound( upperBound ),
           m_UMinusL( upperBound-lowerBound )
         { }
-        virtual ~TwoSidedBoundCalibrationConstraintImpl( void )
-        { }
+        virtual ~TwoSidedBoundCalibrationConstraintImpl( void ) = default;
       public:
         virtual double lowerBound( void ) const override
         {
@@ -154,9 +148,6 @@ namespace beagle
         const double m_UMinusL;
       };
     }
-
-    CalibrationBoundConstraint::~CalibrationBoundConstraint( void )
-    { }
 
     beagle::calibration_bound_constraint_ptr_t
     CalibrationBoundConstraint::noBoundCalibrationConstraint( void )

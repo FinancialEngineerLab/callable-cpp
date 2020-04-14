@@ -39,7 +39,7 @@ namespace beagle
                           const Eigen::VectorXd& guesses,
                           const calibration_bound_constraint_coll_t& constraints,
                           const int_vec_t& calibIndices );
-      ~CalibrationFunctor( void );
+      virtual ~CalibrationFunctor( void ) = default;
     public:
       int operator()( const Eigen::VectorXd& params, Eigen::VectorXd& diff ) const;
       int df(const Eigen::VectorXd& params, Eigen::MatrixXd& jacobian) const;

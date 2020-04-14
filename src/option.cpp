@@ -16,8 +16,7 @@ namespace beagle
                           const beagle::payoff_ptr_t& payoff ) :
             Option( expiry, strike, payoff )
           { }
-          virtual ~EuropeanOption( void )
-          { }
+          virtual ~EuropeanOption( void ) = default;
         public:
           virtual const std::string& name(void) const override
           {
@@ -34,8 +33,7 @@ namespace beagle
                           const beagle::payoff_ptr_t& payoff ) :
             Option( expiry, strike, payoff )
           { }
-          virtual ~AmericanOption( void )
-          { }
+          virtual ~AmericanOption( void ) = default;
         public:
           virtual const std::string& name(void) const override
           {
@@ -51,9 +49,6 @@ namespace beagle
         m_Expiry( expiry ),
         m_Strike( strike ),
         m_Payoff( payoff )
-      { }
-
-      Option::~Option( void )
       { }
 
       double Option::expiry( void ) const
@@ -85,12 +80,6 @@ namespace beagle
                                     const beagle::payoff_ptr_t& payoff )
       {
         return std::make_shared<impl::AmericanOption>( expiry, strike, payoff );
-      }
-
-      namespace mixins
-      {
-        European::~European( void ) { }
-        American::~American( void ) { }
       }
     }
   }

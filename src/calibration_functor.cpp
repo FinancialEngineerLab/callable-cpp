@@ -19,9 +19,6 @@ namespace beagle
         throw("Mismatch in the number of calibration guesses and calibration bound constraints!");
     }
 
-    CalibrationFunctor::~CalibrationFunctor( void )
-    { }
-
     int CalibrationFunctor::operator()( const Eigen::VectorXd& params, Eigen::VectorXd& diff ) const
     {
       dbl_vec_t parameters( params.size() );

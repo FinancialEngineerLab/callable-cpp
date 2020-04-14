@@ -9,10 +9,7 @@ namespace beagle
     {
       struct LinearInterpolationBuilder : public InterpolationBuilder
       {
-        LinearInterpolationBuilder( void )
-        { }
-        virtual ~LinearInterpolationBuilder( void )
-        { }
+        virtual ~LinearInterpolationBuilder( void ) = default;
       public:
         virtual beagle::real_function_ptr_t formFunction( const dbl_vec_t& xValues,
                                                           const dbl_vec_t& yValues ) const override
@@ -23,10 +20,7 @@ namespace beagle
       
       struct NaturalCubicSplineInterpolationBuilder : public InterpolationBuilder
       {
-        NaturalCubicSplineInterpolationBuilder( void )
-        { }
-        virtual ~NaturalCubicSplineInterpolationBuilder( void )
-        { }
+        virtual ~NaturalCubicSplineInterpolationBuilder( void ) = default;
       public:
         virtual beagle::real_function_ptr_t formFunction( const dbl_vec_t& xValues,
                                                           const dbl_vec_t& yValues ) const override
@@ -37,10 +31,7 @@ namespace beagle
       
       struct PiecewiseConstantRightInterpolationBuilder : public InterpolationBuilder
       {
-        PiecewiseConstantRightInterpolationBuilder( void )
-        { }
-        virtual ~PiecewiseConstantRightInterpolationBuilder( void )
-        { }
+        virtual ~PiecewiseConstantRightInterpolationBuilder( void ) = default;
       public:
         virtual beagle::real_function_ptr_t formFunction( const dbl_vec_t& xValues,
                                                           const dbl_vec_t& yValues ) const override
@@ -49,12 +40,6 @@ namespace beagle
         }
       };
     }
-
-    InterpolationBuilder::InterpolationBuilder( void )
-    { }
-
-    InterpolationBuilder::~InterpolationBuilder( void )
-    { }
 
     beagle::interp_builder_ptr_t
     InterpolationBuilder::linear( void )

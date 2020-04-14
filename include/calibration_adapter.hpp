@@ -11,7 +11,7 @@ namespace beagle
   {
     struct CalibrationAdapter
     {
-      virtual ~CalibrationAdapter( void );
+      virtual ~CalibrationAdapter( void ) = default;
     public:
       virtual dbl_vec_t values( const dbl_vec_t& parameters ) const = 0;
       virtual dbl_mat_t derivativeWithRespectToParameters( const dbl_vec_t& parameters ) const = 0;

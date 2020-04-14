@@ -53,8 +53,7 @@ namespace beagle
               m_Targets.emplace_back(df * call);
             }
           }
-          virtual ~LocalVolatilityCalibrationAdapter( void )
-          { }
+          virtual ~LocalVolatilityCalibrationAdapter( void ) = default;
         public:
           dbl_vec_t values( const dbl_vec_t& parameters ) const override
           {

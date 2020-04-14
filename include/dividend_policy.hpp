@@ -9,8 +9,7 @@ namespace beagle
   {
     struct DividendPolicy
     {
-      DividendPolicy( void );
-      virtual ~DividendPolicy( void );
+      virtual ~DividendPolicy( void ) = default;
     public:
       virtual double exDividendStockPrice( double spot,
                                            double dividend ) const;
