@@ -120,107 +120,6 @@ namespace beagle
         pricer_ptr_t m_Pricer;
         product_ptr_coll_t m_Products;
       };
-
-      struct ForwardPDEPricerAdapter : public CalibrationAdapter
-      {
-        ForwardPDEPricerAdapter( const pricer_ptr_t& forwardPricer,
-                                 double start,
-                                 double end,
-                                 const beagle::payoff_ptr_t& payoff,
-                                 const beagle::dbl_vec_t& logStrikes,
-                                 const beagle::dbl_vec_t& strikes,
-                                 const beagle::dbl_vec_t& prices,
-                                 const beagle::dbl_vec_t& interpStrikes ) :
-          m_Pricer(forwardPricer),
-          m_Start(start),
-          m_End(end),
-          m_Payoff(payoff),
-          m_LogStrikes(logStrikes),
-          m_Strikes(strikes),
-          m_Prices(prices),
-          m_InterpStrikes(interpStrikes)
-        { }
-        virtual ~ForwardPDEPricerAdapter( void )
-        { }
-      public:
-        dbl_vec_t values( const dbl_vec_t& parameters ) const override
-        {
-          pricer_ptr_t pricer;
-          auto pCWNMP = dynamic_cast<beagle::valuation::mixins::CloneWithNewLocalVolatilitySurface*>(m_Pricer.get());
-          if (pCWNMP)
-          {
-            beagle::real_2d_function_ptr_t newLocalVolSurface
-              = beagle::math::RealTwoDimFunction::createPiecewiseConstantRightFunction(
-                        dbl_vec_t(1U, 1.0),
-                        real_function_ptr_coll_t(
-                              1U,
-                              beagle::math::RealFunction::createLinearWithFlatExtrapolationInterpolatedFunction(m_InterpStrikes,
-                                                                                                                parameters)));
-            pricer = pCWNMP->createPricerWithNewLocalVolatilitySurface(newLocalVolSurface);
-          }
-          else
-          {
-            throw("Cannot update model parameters");
-          }
-
-          dbl_vec_t prices(m_Prices);
-          auto pOVCP = dynamic_cast<beagle::valuation::mixins::OptionValueCollectionProvider*>(pricer.get());
-          pOVCP->optionValueCollection(m_Start,
-                                       m_End,
-                                       m_Payoff,
-                                       m_LogStrikes,
-                                       m_Strikes,
-                                       prices );
-
-          auto pFD = dynamic_cast<beagle::valuation::mixins::FiniteDifference*>(pricer.get());
-          beagle::real_function_ptr_t priceFunc = pFD->finiteDifferenceDetails().interpolation()->formFunction(m_Strikes, prices);
-
-          dbl_vec_t result(m_InterpStrikes.size());
-          std::transform(m_InterpStrikes.cbegin(),
-                         m_InterpStrikes.cend(),
-                         result.begin(),
-                         [&priceFunc](double strike)
-                         { return priceFunc->value(strike); });
-          return result;
-        }
-        dbl_mat_t derivativeWithRespectToParameters( const dbl_vec_t& parameters ) const override
-        {
-          dbl_mat_t result(m_InterpStrikes.size());
-          for (beagle::dbl_vec_t::size_type i=0; i<m_InterpStrikes.size(); ++i)
-          {
-            result[i].resize(parameters.size());
-          }
-
-          double bump = 1e-4;
-          for (beagle::dbl_vec_t::size_type j=0; j<parameters.size(); ++j)
-          {
-            dbl_vec_t forwardParams(parameters);
-            dbl_vec_t backwardParams(parameters);
-
-            forwardParams[j] += bump;
-            backwardParams[j] -= bump;
-
-            dbl_vec_t forwardResult = values(forwardParams);
-            dbl_vec_t backwardResult = values(backwardParams);
-
-            for (beagle::dbl_vec_t::size_type i=0; i<m_InterpStrikes.size(); ++i)
-            {
-              result[i][j] = ( forwardResult[i] - backwardResult[i] ) * .5 / bump;
-            }
-          }
-
-          return result;
-        }
-      private:
-        pricer_ptr_t m_Pricer;
-        double m_Start;
-        double m_End;
-        beagle::payoff_ptr_t m_Payoff;
-        beagle::dbl_vec_t m_LogStrikes;
-        beagle::dbl_vec_t m_Strikes;
-        beagle::dbl_vec_t m_Prices;
-        beagle::dbl_vec_t m_InterpStrikes;
-      };
     }
 
     CalibrationAdapter::~CalibrationAdapter( void )
@@ -250,25 +149,6 @@ namespace beagle
                                                                        const product_ptr_coll_t& products )
     {
       return std::make_shared<impl::PricerAdapter>( pricer, products );
-    }
-
-    calibration_adapter_ptr_t CalibrationAdapter::forwardPDEPricerAdapter( const pricer_ptr_t& forwardPricer,
-                                                                           double start,
-                                                                           double end,
-                                                                           const beagle::payoff_ptr_t& payoff,
-                                                                           const beagle::dbl_vec_t& logStrikes,
-                                                                           const beagle::dbl_vec_t& strikes,
-                                                                           const beagle::dbl_vec_t& prices,
-                                                                           const beagle::dbl_vec_t& interpStrikes )
-    {
-      return std::make_shared<impl::ForwardPDEPricerAdapter>( forwardPricer,
-                                                              start,
-                                                              end,
-                                                              payoff,
-                                                              logStrikes,
-                                                              strikes,
-                                                              prices,
-                                                              interpStrikes );
     }
   }
 }

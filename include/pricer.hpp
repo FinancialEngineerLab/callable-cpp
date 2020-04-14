@@ -29,48 +29,6 @@ namespace beagle
       beagle::interp_builder_ptr_t m_Interp;
     };
 
-    struct FiniteDifferenceDetails
-    {
-      FiniteDifferenceDetails( void );
-      FiniteDifferenceDetails(double spot,
-                              double rate,
-                              double volatility,
-                              int stepsPerAnnum,
-                              int stepsLogSpot,
-                              double numStdev,
-                              const beagle::discrete_dividend_schedule_t& dividends,
-                              const beagle::dividend_policy_ptr_t& policy,
-                              const beagle::interp_builder_ptr_t& interp);
-    public:
-      void formTimeSteps( double start,
-                          double end,
-                          beagle::dbl_vec_t& times,
-                          beagle::int_vec_t& exDividendIndices ) const;
-      void formStateVariableSteps(double expiry,
-                                  beagle::dbl_vec_t& logStateVariables,
-                                  beagle::dbl_vec_t& stateVariables) const;
-    public:
-      double spot() const;
-      double rate() const;
-      double volatility() const;
-      int stepsPerAnnum() const;
-      int numberOfStateVariableSteps() const;
-      double numberOfStandardDeviations() const;
-      const beagle::discrete_dividend_schedule_t& dividends() const;
-      const beagle::dividend_policy_ptr_t& dividendPolicy() const;
-      const beagle::interp_builder_ptr_t& interpolation() const;
-    private:
-      double m_Spot;
-      double m_Rate;
-      double m_Volatility;
-      int m_StepsPerAnnum;
-      int m_StepsLogSpot;
-      double m_NumStdev;
-      beagle::discrete_dividend_schedule_t m_Dividends;
-      beagle::dividend_policy_ptr_t m_Policy;
-      beagle::interp_builder_ptr_t m_Interp;
-    };
-
     struct Pricer
     {
       virtual ~Pricer( void ) = default;
@@ -82,12 +40,6 @@ namespace beagle
                                                                           double rate,
                                                                           double volatility,
                                                                           const discrete_dividend_schedule_t& dividends );
-      static beagle::pricer_ptr_t formOneDimensionalBackwardPDEOptionPricer(
-                                                                     const FiniteDifferenceDetails& fdDetails,
-                                                                     const beagle::real_2d_function_ptr_t& diffusion );
-      static beagle::pricer_ptr_t formOneDimensionalForwardPDEEuropeanOptionPricer(
-                                                                     const FiniteDifferenceDetails& fdDetails,
-                                                                     const beagle::real_2d_function_ptr_t& volatility);
       static beagle::pricer_ptr_t formOneDimForwardPDEArrowDebreuPricer(const beagle::real_function_ptr_t& forward,
                                                                         const beagle::real_function_ptr_t& discounting,
                                                                         const beagle::real_2d_function_ptr_t& drift,
@@ -128,13 +80,6 @@ namespace beagle
                                             const beagle::dbl_vec_t& logStrikes,
                                             const beagle::dbl_vec_t& strikes,
                                             beagle::dbl_vec_t& prices ) const = 0;
-      };
-
-      struct FiniteDifference
-      {
-        virtual ~FiniteDifference( void );
-      public:
-        virtual const FiniteDifferenceDetails& finiteDifferenceDetails(void) const = 0;
       };
 
       struct CloneWithNewLocalVolatilitySurface

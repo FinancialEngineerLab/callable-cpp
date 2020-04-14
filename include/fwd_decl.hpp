@@ -40,7 +40,6 @@ namespace beagle
   {
     struct Pricer;
     struct DividendPolicy;
-    struct FiniteDifferenceDetails;
     struct OneDimFiniteDifferenceSettings;
   }
 

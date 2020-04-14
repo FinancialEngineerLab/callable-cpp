@@ -16,23 +16,6 @@ namespace beagle
   {
     namespace impl
     {
-      struct OneDimensionalPDEOptionPricer : public Pricer,
-                                             public beagle::valuation::mixins::FiniteDifference
-      {
-        explicit OneDimensionalPDEOptionPricer( const FiniteDifferenceDetails& fdDetails) :
-          m_FDDetails(fdDetails)
-        { }
-        virtual ~OneDimensionalPDEOptionPricer( void )
-        { }
-      public:
-        virtual const FiniteDifferenceDetails& finiteDifferenceDetails(void) const
-        {
-          return m_FDDetails;
-        }
-      private:
-        FiniteDifferenceDetails m_FDDetails;
-      };
-      
       struct OneDimParabolicPDEPricer : public Pricer
       {
         OneDimParabolicPDEPricer(const beagle::real_function_ptr_t& forward,
