@@ -57,11 +57,6 @@ namespace beagle
         public:
           dbl_vec_t values( const dbl_vec_t& parameters ) const override
           {
-            //std::cout << "\nFor this iteration, the calibrated parameters are: \n";
-            //for (beagle::dbl_vec_t::size_type i=0; i<parameters.size(); ++i)
-            //  std::cout << parameters[i] << "\t";
-            //std::cout << "\n";
-
             beagle::real_function_ptr_t localVol
                    = beagle::math::RealFunction::createLinearWithFlatExtrapolationInterpolatedFunction(m_Strikes, parameters);
             beagle::real_2d_function_ptr_t volatility
@@ -95,11 +90,6 @@ namespace beagle
               results.emplace_back(df * fwd * func->value(strike) - m_Targets[j]);
             }
 
-            std::cout << "\nFor this iteration, the errors are: \n";
-            for (beagle::dbl_vec_t::size_type i=0; i<results.size(); ++i)
-              std::cout << results[i] << "\t";
-            std::cout << "\n";
-
             return results;
           }
           dbl_mat_t derivativeWithRespectToParameters( const dbl_vec_t& parameters ) const override
@@ -128,6 +118,19 @@ namespace beagle
                 result[i][j] = ( forwardResult[i] - backwardResult[i] ) * .5 / bump;
               }
             }
+            
+            //// output parameters
+            //std::cout << "\nFor this iteration, the calibrated parameters are: \n";
+            //for (beagle::dbl_vec_t::size_type i=0; i<parameters.size(); ++i)
+            //  std::cout << parameters[i] << "\t";
+            //std::cout << "\n";
+
+            //// output residuals
+            //beagle::dbl_vec_t results = values(parameters);
+            //std::cout << "\nFor this iteration, the errors are: \n";
+            //for (beagle::dbl_vec_t::size_type i=0; i<results.size(); ++i)
+            //  std::cout << results[i] << "\t";
+            //std::cout << "\n";
 
             return result;
           }
@@ -231,11 +234,11 @@ namespace beagle
           expiries.emplace_back(end);
           localVolFuncs.emplace_back(localVol);
 
-          std::cout << "\nCalibrated parameters are: \n";
-          for (beagle::dbl_vec_t::size_type i=0; i<guesses.size(); ++i)
-            std::cout << guesses[i] << "\n";
+          //std::cout << "\nCalibrated parameters are: \n";
+          //for (beagle::dbl_vec_t::size_type i=0; i<guesses.size(); ++i)
+          //  std::cout << guesses[i] << "\n";
 
-          std::cout << "\n";
+          //std::cout << "\n";
         }
 
         return beagle::math::RealTwoDimFunction::createPiecewiseConstantRightFunction(expiries, localVolFuncs);

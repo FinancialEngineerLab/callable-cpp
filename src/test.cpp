@@ -126,7 +126,7 @@ void test2( void )
                                             funding,
                                             dividends,
                                             beagle::valuation::DividendPolicy::liquidator());
-  beagle::valuation::OneDimFiniteDifferenceSettings settings(104, 350, 6.5);
+  beagle::valuation::OneDimFiniteDifferenceSettings settings(104, 550, 5.5);
 
   beagle::real_2d_function_ptr_t localVol =
     beagle::calibration::util::createCalibratedLocalVolatilitySurface(forward,
