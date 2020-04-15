@@ -113,6 +113,9 @@ void test2( void )
   volSmiles.emplace_back(0.75, std::make_pair(strikes, vols));
   volSmiles.emplace_back(1.00, std::make_pair(strikes, vols));
   volSmiles.emplace_back(1.25, std::make_pair(strikes, vols));
+  volSmiles.emplace_back(1.50, std::make_pair(strikes, vols));
+  volSmiles.emplace_back(1.75, std::make_pair(strikes, vols));
+  volSmiles.emplace_back(2.00, std::make_pair(strikes, vols));
   
   double r = 0.04;
   double q = 0.02;
@@ -126,7 +129,7 @@ void test2( void )
                                             funding,
                                             dividends,
                                             beagle::valuation::DividendPolicy::liquidator());
-  beagle::valuation::OneDimFiniteDifferenceSettings settings(104, 550, 5.5);
+  beagle::valuation::OneDimFiniteDifferenceSettings settings(104, 750, 10.5);
 
   beagle::real_2d_function_ptr_t localVol =
     beagle::calibration::util::createCalibratedLocalVolatilitySurface(forward,
@@ -536,6 +539,35 @@ void test8( void )
   std::cout << "\n";
 
   std::cout << "\nEnd of Test 8\n";
+}
+
+void test9( void )
+{
+  std::cout << "\nStart of Test 9:\n\n";
+
+  beagle::dbl_vec_t xValues{1., 2., 3., 4., 5.};
+  beagle::dbl_vec_t yValues{0., 1., 0., 1., 0.};
+
+  beagle::interp_builder_ptr_t spline = beagle::math::InterpolationBuilder::naturalCubicSpline();
+  beagle::real_function_ptr_t func = spline->formFunction(xValues, yValues);
+
+  beagle::dbl_vec_t xs(601U);
+  std::cout << "[";
+  for (int i=0; i<601; ++i)
+  {
+    xs[i] = i * .01;
+    std::cout << xs[i] << ", ";
+  }
+  std::cout << "]";
+
+  std::cout << "[";
+  for (double x : xs)
+  {
+    std::cout << func->value(x) << ", ";
+  }
+  std::cout << "]";
+
+  std::cout << "\nEnd of Test 9\n";
 }
 
 void generateAndersenBuffumFigureTwo( void )
@@ -1224,6 +1256,7 @@ int main( void )
   //test6();
   //test7();
   //test8();
+  //test9();
   //generateAndersenBuffumFigureTwo();
   //generateAndersenBuffumFigureThree();
   //generateAndersenBuffumFigureFour();

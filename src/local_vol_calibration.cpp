@@ -119,18 +119,18 @@ namespace beagle
               }
             }
             
-            //// output parameters
-            //std::cout << "\nFor this iteration, the calibrated parameters are: \n";
-            //for (beagle::dbl_vec_t::size_type i=0; i<parameters.size(); ++i)
-            //  std::cout << parameters[i] << "\t";
-            //std::cout << "\n";
+            // output parameters
+            std::cout << "\nFor this iteration, the calibrated parameters are: \n";
+            for (beagle::dbl_vec_t::size_type i=0; i<parameters.size(); ++i)
+              std::cout << parameters[i] << "\t";
+            std::cout << "\n";
 
-            //// output residuals
-            //beagle::dbl_vec_t results = values(parameters);
-            //std::cout << "\nFor this iteration, the errors are: \n";
-            //for (beagle::dbl_vec_t::size_type i=0; i<results.size(); ++i)
-            //  std::cout << results[i] << "\t";
-            //std::cout << "\n";
+            // output residuals
+            beagle::dbl_vec_t results = values(parameters);
+            std::cout << "\nFor this iteration, the errors are: \n";
+            for (beagle::dbl_vec_t::size_type i=0; i<results.size(); ++i)
+              std::cout << results[i] << "\t";
+            std::cout << "\n";
 
             return result;
           }
@@ -183,7 +183,7 @@ namespace beagle
           beagle::dbl_vec_t strikes = volSmiles[i].second.first;
 
           beagle::calibration_bound_constraint_coll_t constraints(strikes.size(),
-                                                                  beagle::calibration::CalibrationBoundConstraint::lowerBoundCalibrationConstraint(0.0001));
+                                                                  beagle::calibration::CalibrationBoundConstraint::twoSidedBoundCalibrationConstraint(0.0001, 2.));
           beagle::int_vec_t elimIndices(0U);
 
           guesses = beagle::calibration::util::getTransformedParameters( guesses, constraints );
@@ -234,11 +234,11 @@ namespace beagle
           expiries.emplace_back(end);
           localVolFuncs.emplace_back(localVol);
 
-          //std::cout << "\nCalibrated parameters are: \n";
-          //for (beagle::dbl_vec_t::size_type i=0; i<guesses.size(); ++i)
-          //  std::cout << guesses[i] << "\n";
+          std::cout << "\nCalibrated parameters are: \n";
+          for (beagle::dbl_vec_t::size_type i=0; i<guesses.size(); ++i)
+            std::cout << guesses[i] << "\n";
 
-          //std::cout << "\n";
+          std::cout << "\n";
         }
 
         return beagle::math::RealTwoDimFunction::createPiecewiseConstantRightFunction(expiries, localVolFuncs);

@@ -1,5 +1,8 @@
 #include "real_function.hpp"
 #include "dividend_policy.hpp"
+#include "util.hpp"
+
+#include <iostream>
 
 namespace beagle
 {
@@ -107,21 +110,108 @@ namespace beagle
         }
       };
 
-      struct NaturalCubicSplineWithFlatExtrapolationInterpolatedFunction : public InterpolatedFunction
+      struct NaturalCubicSplineInterpolatedFunction : public InterpolatedFunction
       {
-        NaturalCubicSplineWithFlatExtrapolationInterpolatedFunction( const beagle::dbl_vec_t& xValues,
-                                                                     const beagle::dbl_vec_t& yValues ) :
+        NaturalCubicSplineInterpolatedFunction( const beagle::dbl_vec_t& xValues,
+                                                const beagle::dbl_vec_t& yValues ) :
           InterpolatedFunction(xValues, yValues)
-        { }
-        virtual ~NaturalCubicSplineWithFlatExtrapolationInterpolatedFunction( void ) = default;
+        {
+          // By construction, the number of interpolation parameters is at least 3
+          int sz = xValues.size();
+          beagle::dbl_vec_t diag(sz-2, 0.);
+          beagle::dbl_vec_t upper(sz-2, 0.);
+          beagle::dbl_vec_t lower(sz-2, 0.);
+          beagle::dbl_vec_t rhs(sz-2, 0.);
+          
+          for (int i=0; i<sz-2; ++i)
+          {
+            double h1 = xValues[i+1] - xValues[i];
+            double h2 = xValues[i+2] - xValues[i+1];
+            diag[i] = (h1 + h2) / 3.;
+            upper[i] = h2 / 6.;
+            lower[i] = h1 / 6.;
+            rhs[i] = (yValues[i+2] - yValues[i+1]) / h2
+                   - (yValues[i+1] - yValues[i]) / h1;
+          }
+
+          beagle::util::tridiagonalSolve( rhs, diag, upper, lower );
+
+          m_SecondDerivs.resize(xValues.size(), 0.);
+          std::copy(rhs.cbegin(),
+                    rhs.cend(),
+                    m_SecondDerivs.begin() + 1U);
+        }
+        virtual ~NaturalCubicSplineInterpolatedFunction( void ) = default;
       public:
         virtual double value( double arg ) const override
         {
           const beagle::dbl_vec_t& xValues(xParameters());
           const beagle::dbl_vec_t& yValues(yParameters());
 
-          return 0.0;
+          auto it = std::lower_bound(xValues.cbegin(),
+                                     xValues.cend(),
+                                     arg);
+
+          double x1;
+          double x2;
+          double y1;
+          double y2;
+          double d1;
+          double d2;
+          if (it == xValues.cend())
+          {
+            x1 = *(it - 2U);
+            x2 = *(it - 1U);
+
+            auto jt = yValues.cend();
+            y1 = *(jt - 2U);
+            y2 = *(jt - 1U);
+
+            auto kt = m_SecondDerivs.cend();
+            d1 = *(kt - 2U);
+            d2 = *(kt - 1U);
+          }
+          else if (it == xValues.cbegin())
+          {
+            x1 = *it;
+            x2 = *(it + 1U);
+
+            auto jt = yValues.cbegin();
+            y1 = *jt;
+            y2 = *(jt + 1U);
+
+            auto kt = m_SecondDerivs.cbegin();
+            d1 = *kt;
+            d2 = *(kt + 1U);
+          }
+          else
+          {
+            x1 = *(it - 1U);
+            x2 = *it;
+
+            auto diff = std::distance(xValues.cbegin(), it);
+            auto jt = yValues.cbegin();
+            std::advance(jt, diff);
+            y1 = *(jt - 1U);
+            y2 = *jt;
+
+            auto kt = m_SecondDerivs.cbegin();
+            std::advance(kt, diff);
+            d1 = *(kt - 1U);
+            d2 = *kt;
+          }
+
+          double delta1 = x2 - arg;
+          double delta2 = arg - x1;
+          double h = x2 - x1;
+
+          return std::pow(delta1, 3.) * d1 / 6. / h
+               + std::pow(delta2, 3.) * d2 / 6. / h
+               + delta1 * (y1 / h - h * d1 / 6.)
+               + delta2 * (y2 / h - h * d2 / 6.);
         }
+      private:
+        beagle::dbl_vec_t m_SecondDerivs; 
       };
 
       struct PiecewiseConstantRightInterpolatedFunction : public InterpolatedFunction
@@ -284,7 +374,7 @@ namespace beagle
     }
 
     beagle::real_function_ptr_t
-    RealFunction::createNaturalCubicSplineWithFlatExtrapolationInterpolatedFunction(
+    RealFunction::createNaturalCubicSplineInterpolatedFunction(
                                                          const beagle::dbl_vec_t& xValues,
                                                          const beagle::dbl_vec_t& yValues )
     {
@@ -293,9 +383,10 @@ namespace beagle
 
       if (xValues.size() == 1U)
         return createConstantFunction( yValues[0] );
+      else if (xValues.size() == 2U)
+        return createLinearWithFlatExtrapolationInterpolatedFunction(xValues, yValues);
       else
-        return std::make_shared<impl::NaturalCubicSplineWithFlatExtrapolationInterpolatedFunction>( xValues,
-                                                                                                    yValues );
+        return std::make_shared<impl::NaturalCubicSplineInterpolatedFunction>( xValues,  yValues );
     }
 
     beagle::real_function_ptr_t
