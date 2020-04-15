@@ -174,7 +174,10 @@ namespace beagle
         // Now perform calibration by bootstrapping
         beagle::dbl_vec_t expiries;
         beagle::real_function_ptr_coll_t localVolFuncs;
-        beagle::dbl_vec_t guesses(volSmiles.front().second.second);
+        
+        beagle::real_function_ptr_t localVol
+                  = beagle::math::RealFunction::createLinearWithFlatExtrapolationInterpolatedFunction(volSmiles.front().second.first,
+                                                                                                      volSmiles.front().second.second);
 
         double start = 0.;
         for (beagle::dbl_vec_t::size_type i=0; i<volSmiles.size(); ++i)
@@ -186,7 +189,13 @@ namespace beagle
                                                                   beagle::calibration::CalibrationBoundConstraint::twoSidedBoundCalibrationConstraint(0.0001, 2.));
           beagle::int_vec_t elimIndices(0U);
 
-          guesses = beagle::calibration::util::getTransformedParameters( guesses, constraints );
+          beagle::dbl_vec_t guesses(strikes);
+          std::transform(strikes.cbegin(),
+                         strikes.cend(),
+                         guesses.begin(),
+                         [=](double strike) { return localVol->value(strike); });
+
+          guesses= beagle::calibration::util::getTransformedParameters( guesses, constraints );
           Eigen::VectorXd calibParams(guesses.size());
           for (beagle::dbl_vec_t::size_type i=0; i<guesses.size(); ++i)
             calibParams(i) = guesses[i];
@@ -217,8 +226,7 @@ namespace beagle
           guesses = beagle::calibration::util::getOriginalParameters( guesses, constraints );
 
           // Evolve density
-          beagle::real_function_ptr_t localVol
-                   = beagle::math::RealFunction::createLinearWithFlatExtrapolationInterpolatedFunction(strikes, guesses);
+          localVol = beagle::math::RealFunction::createLinearWithFlatExtrapolationInterpolatedFunction(strikes, guesses);
           beagle::real_2d_function_ptr_t volatility
                    = beagle::math::RealTwoDimFunction::createBinaryFunction(
                                    [=](double time, double spot){ return localVol->value(spot); });

@@ -99,44 +99,106 @@ void test2( void )
 {
   std::cout << "\nStart of Test 2:\n\n";
 
-  beagle::dividend_schedule_t dividends;
-  //dividends.emplace_back(0.4, 0.0, 3.0);
-  //dividends.emplace_back(0.6, 0.0, 2.0);
-  //dividends.emplace_back(0.8, 0.0, 1.0);
+  //{
+  //  beagle::dividend_schedule_t dividends;
+  //  //dividends.emplace_back(0.4, 0.0, 3.0);
+  //  //dividends.emplace_back(0.6, 0.0, 2.0);
+  //  //dividends.emplace_back(0.8, 0.0, 1.0);
 
-  beagle::dbl_vec_t strikes{90., 92.5, 95., 97.5, 100., 102.5, 105., 107.5, 110.};
-  beagle::dbl_vec_t vols{.33, .32, .31, .30, .29, .28, .28, .29, .31};
+  //  beagle::dbl_vec_t strikes{90., 92.5, 95., 97.5, 100., 102.5, 105., 107.5, 110.};
+  //  beagle::dbl_vec_t vols{.33, .32, .31, .30, .29, .28, .28, .29, .31};
 
-  beagle::volatility_smile_coll_t volSmiles;
-  volSmiles.emplace_back(0.25, std::make_pair(strikes, vols));
-  volSmiles.emplace_back(0.50, std::make_pair(strikes, vols));
-  volSmiles.emplace_back(0.75, std::make_pair(strikes, vols));
-  volSmiles.emplace_back(1.00, std::make_pair(strikes, vols));
-  volSmiles.emplace_back(1.25, std::make_pair(strikes, vols));
-  volSmiles.emplace_back(1.50, std::make_pair(strikes, vols));
-  volSmiles.emplace_back(1.75, std::make_pair(strikes, vols));
-  volSmiles.emplace_back(2.00, std::make_pair(strikes, vols));
+  //  beagle::volatility_smile_coll_t volSmiles;
+  //  volSmiles.emplace_back(0.25, std::make_pair(strikes, vols));
+  //  volSmiles.emplace_back(0.50, std::make_pair(strikes, vols));
+  //  volSmiles.emplace_back(0.75, std::make_pair(strikes, vols));
+  //  volSmiles.emplace_back(1.00, std::make_pair(strikes, vols));
+  //  volSmiles.emplace_back(1.25, std::make_pair(strikes, vols));
+  //  volSmiles.emplace_back(1.50, std::make_pair(strikes, vols));
+  //  volSmiles.emplace_back(1.75, std::make_pair(strikes, vols));
+  //  volSmiles.emplace_back(2.00, std::make_pair(strikes, vols));
+  //
+  //  double r = 0.04;
+  //  double q = 0.02;
+  //  double spot = 100;
+  //  beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
+  //                                            [=](double arg) { return std::exp(-r * arg);});
+  //  beagle::real_function_ptr_t funding = beagle::math::RealFunction::createUnaryFunction(
+  //                                            [=](double arg) { return std::exp(-(r-q) * arg);});
+  //  beagle::real_function_ptr_t forward = beagle::math::RealFunction::createGeneralForwardAssetPriceFunction(
+  //                                            spot,
+  //                                            funding,
+  //                                            dividends,
+  //                                            beagle::valuation::DividendPolicy::liquidator());
+  //  beagle::valuation::OneDimFiniteDifferenceSettings settings(104, 750, 10.5);
+
+  //  beagle::real_2d_function_ptr_t localVol =
+  //    beagle::calibration::util::createCalibratedLocalVolatilitySurface(forward,
+  //                                                                      discounting,
+  //                                                                      settings,
+  //                                                                      volSmiles);
+  //}
+
+  {
+    double spot = 2772.70;
+
+    beagle::dbl_vec_t expiries{0.025, 0.101, 0.197, 0.274, 0.523, 0.772, 1.769, 2.267, 2.784, 3.781, 4.778, 5.774};
+
+    beagle::dbl_vec_vec_t strikesColl;
+    strikesColl.emplace_back(beagle::dbl_vec_t{0.8613, 0.8796, 0.8979, 0.9163, 0.9346, 0.9529, 0.9712, 0.9896, 1.0079, 1.0262, 1.0445, 1.0629, 1.0812, 1.0995, 1.1178});
+    strikesColl.emplace_back(beagle::dbl_vec_t{0.8796, 0.8979, 0.9163, 0.9346, 0.9529, 0.9712, 0.9896, 1.0079, 1.0262, 1.0445, 1.0629, 1.0812, 1.0995, 1.1178});
+    strikesColl.emplace_back(beagle::dbl_vec_t{0.8796, 0.8979, 0.9163, 0.9346, 0.9529, 0.9712, 0.9896, 1.0079, 1.0262, 1.0445, 1.0629, 1.0812, 1.0995, 1.1178});
+    strikesColl.emplace_back(beagle::dbl_vec_t{0.7697, 0.8063, 0.8430, 0.8796, 0.9163, 0.9529, 0.9896, 1.0262, 1.0629, 1.0995, 1.1362, 1.1728, 1.2095, 1.2461});
+    strikesColl.emplace_back(beagle::dbl_vec_t{0.7697, 0.8063, 0.8430, 0.8796, 0.9163, 0.9529, 0.9896, 1.0262, 1.0629, 1.0995, 1.1362, 1.1728, 1.2095, 1.2461});
+    strikesColl.emplace_back(beagle::dbl_vec_t{0.7697, 0.8063, 0.8430, 0.8796, 0.9163, 0.9529, 0.9896, 1.0262, 1.0629, 1.0995, 1.1362, 1.1728, 1.2095, 1.2461});
+    strikesColl.emplace_back(beagle::dbl_vec_t{0.7697, 0.8063, 0.8430, 0.8796, 0.9163, 0.9529, 0.9896, 1.0262, 1.0629, 1.0995, 1.1362, 1.1728, 1.2095, 1.2461});
+    strikesColl.emplace_back(beagle::dbl_vec_t{0.8063, 0.8796, 0.9529, 1.0262, 1.0995, 1.1728});
+    strikesColl.emplace_back(beagle::dbl_vec_t{0.5131, 0.5864, 0.6597, 0.7330, 0.8063, 0.8796, 0.9529, 1.0262, 1.0995, 1.1728, 1.2461, 1.3194, 1.3927, 1.4660});
+    strikesColl.emplace_back(beagle::dbl_vec_t{0.5131, 0.5864, 0.6597, 0.7330, 0.8063, 0.8796, 1.0262, 1.0995, 1.1728, 1.2461, 1.3194, 1.3927, 1.4660});
+    strikesColl.emplace_back(beagle::dbl_vec_t{0.6597, 0.7330, 0.8063, 0.8796, 0.9529, 1.0262, 1.0995, 1.1728, 1.2461, 1.3194, 1.3927, 1.4660});
+    strikesColl.emplace_back(beagle::dbl_vec_t{0.8063, 0.8796, 0.9529, 1.0262, 1.0995, 1.1728, 1.2461, 1.3194, 1.3927});
+
+    beagle::dbl_vec_vec_t volsColl;
+    volsColl.emplace_back(beagle::dbl_vec_t{0.3365, 0.3216, 0.3043, 0.2880, 0.2724, 0.2586, 0.2466, 0.2358, 0.2247, 0.2159, 0.2091, 0.2056, 0.2045, 0.2025, 0.1933});
+    volsColl.emplace_back(beagle::dbl_vec_t{0.2906, 0.2797, 0.2690, 0.2590, 0.2488, 0.2390, 0.2300, 0.2213, 0.2140, 0.2076, 0.2024, 0.1982, 0.1959, 0.1929});
+    volsColl.emplace_back(beagle::dbl_vec_t{0.2764, 0.2672, 0.2578, 0.2489, 0.2405, 0.2329, 0.2253, 0.2184, 0.2123, 0.2069, 0.2025, 0.1984, 0.1944, 0.1920});
+    volsColl.emplace_back(beagle::dbl_vec_t{0.3262, 0.3058, 0.2887, 0.2717, 0.2557, 0.2407, 0.2269, 0.2142, 0.2039, 0.1962, 0.1902, 0.1885, 0.1867, 0.1871});
+    volsColl.emplace_back(beagle::dbl_vec_t{0.3079, 0.2936, 0.2798, 0.2663, 0.2531, 0.2404, 0.2284, 0.2173, 0.2074, 0.1988, 0.1914, 0.1854, 0.1811, 0.1785});
+    volsColl.emplace_back(beagle::dbl_vec_t{0.3001, 0.2876, 0.2750, 0.2637, 0.2519, 0.2411, 0.2299, 0.2198, 0.2104, 0.2022, 0.1950, 0.1888, 0.1839, 0.1793});
+    volsColl.emplace_back(beagle::dbl_vec_t{0.2843, 0.2753, 0.2666, 0.2575, 0.2497, 0.2418, 0.2347, 0.2283, 0.2213, 0.2151, 0.2091, 0.2039, 0.1990, 0.1945});
+    volsColl.emplace_back(beagle::dbl_vec_t{0.2713, 0.2555, 0.2410, 0.2275, 0.2161, 0.2058});
+    volsColl.emplace_back(beagle::dbl_vec_t{0.3366, 0.3178, 0.3019, 0.2863, 0.2711, 0.2580, 0.2448, 0.2322, 0.2219, 0.2122, 0.2054, 0.1988, 0.1930, 0.1849});
+    volsColl.emplace_back(beagle::dbl_vec_t{0.3291, 0.3129, 0.2976, 0.2848, 0.2711, 0.2585, 0.2384, 0.2269, 0.2186, 0.2103, 0.2054, 0.2002, 0.1964});
+    volsColl.emplace_back(beagle::dbl_vec_t{0.2975, 0.2848, 0.2722, 0.2611, 0.2501, 0.2392, 0.2305, 0.2223, 0.2164, 0.2105, 0.2054, 0.2012});
+    volsColl.emplace_back(beagle::dbl_vec_t{0.2809, 0.2693, 0.2584, 0.2486, 0.2399, 0.2321, 0.2251, 0.2190, 0.2135});
+    
+    beagle::volatility_smile_coll_t volSmiles;
+    for (int i=0; i<expiries.size(); ++i)
+    {
+      beagle::dbl_vec_t strikes = strikesColl[i];
+      for (int j=0; j<strikes.size(); ++j)
+        strikes[j] *= spot;
+
+      volSmiles.emplace_back(expiries[i], std::make_pair(strikes, volsColl[i]));
+    }
   
-  double r = 0.04;
-  double q = 0.02;
-  double spot = 100;
-  beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
-                                            [=](double arg) { return std::exp(-r * arg);});
-  beagle::real_function_ptr_t funding = beagle::math::RealFunction::createUnaryFunction(
-                                            [=](double arg) { return std::exp(-(r-q) * arg);});
-  beagle::real_function_ptr_t forward = beagle::math::RealFunction::createGeneralForwardAssetPriceFunction(
-                                            spot,
-                                            funding,
-                                            dividends,
-                                            beagle::valuation::DividendPolicy::liquidator());
-  beagle::valuation::OneDimFiniteDifferenceSettings settings(104, 750, 10.5);
+    double r = 0.0;
+    double q = 0.0;
+    beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
+                                              [=](double arg) { return std::exp(-r * arg);});
+    beagle::real_function_ptr_t funding = beagle::math::RealFunction::createUnaryFunction(
+                                              [=](double arg) { return std::exp(-(r-q) * arg);});
+    beagle::real_function_ptr_t forward = beagle::math::RealFunction::createContinuousForwardAssetPriceFunction(
+                                              spot,
+                                              funding);
+    beagle::valuation::OneDimFiniteDifferenceSettings settings(104, 750, 10.5);
 
-  beagle::real_2d_function_ptr_t localVol =
-    beagle::calibration::util::createCalibratedLocalVolatilitySurface(forward,
-                                                                      discounting,
-                                                                      settings,
-                                                                      volSmiles);
-
+    beagle::real_2d_function_ptr_t localVol =
+      beagle::calibration::util::createCalibratedLocalVolatilitySurface(forward,
+                                                                        discounting,
+                                                                        settings,
+                                                                        volSmiles);
+  }
 
   std::cout << "\nEnd of Test 2\n";
 }
