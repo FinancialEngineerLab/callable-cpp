@@ -49,7 +49,7 @@ void test1( void )
                                             discounting,
                                             dividends,
                                             beagle::valuation::DividendPolicy::liquidator());
-  beagle::valuation::OneDimFiniteDifferenceSettings seetings;
+  beagle::valuation::OneDimFiniteDifferenceSettings settings;
 
   // Set up options
   double expiry = 5.;
@@ -75,12 +75,12 @@ void test1( void )
                                                                beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0.),
                                                                beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(vol),
                                                                beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0),
-                                                               seetings );
+                                                               settings );
     beagle::pricer_ptr_t odfpeop  = beagle::valuation::Pricer::formOneDimForwardPDEEuroOptionPricer(
                                                                forward,
                                                                discounting,
                                                                beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(vol),
-                                                               seetings );
+                                                               settings );
 
     std::cout << "European option price (CF)   is: " << bscfeop->value( euroOption ) << std::endl;
     std::cout << "European option price (FD-B) is: " << odbpop->value( euroOption ) << std::endl;    
@@ -99,45 +99,78 @@ void test2( void )
 {
   std::cout << "\nStart of Test 2:\n\n";
 
-  //{
-  //  beagle::dividend_schedule_t dividends;
-  //  //dividends.emplace_back(0.4, 0.0, 3.0);
-  //  //dividends.emplace_back(0.6, 0.0, 2.0);
-  //  //dividends.emplace_back(0.8, 0.0, 1.0);
+  {
+    beagle::dividend_schedule_t dividends;
+    dividends.emplace_back(0.6, 0.0, 3.0);
+    dividends.emplace_back(1.4, 0.0, 3.0);
 
-  //  beagle::dbl_vec_t strikes{90., 92.5, 95., 97.5, 100., 102.5, 105., 107.5, 110.};
-  //  beagle::dbl_vec_t vols{.33, .32, .31, .30, .29, .28, .28, .29, .31};
+    beagle::dbl_vec_t strikes{90., 92.5, 95., 97.5, 100., 102.5, 105., 107.5, 110.};
+    beagle::dbl_vec_t vols{.33, .32, .31, .30, .29, .28, .28, .29, .30};
 
-  //  beagle::volatility_smile_coll_t volSmiles;
-  //  volSmiles.emplace_back(0.25, std::make_pair(strikes, vols));
-  //  volSmiles.emplace_back(0.50, std::make_pair(strikes, vols));
-  //  volSmiles.emplace_back(0.75, std::make_pair(strikes, vols));
-  //  volSmiles.emplace_back(1.00, std::make_pair(strikes, vols));
-  //  volSmiles.emplace_back(1.25, std::make_pair(strikes, vols));
-  //  volSmiles.emplace_back(1.50, std::make_pair(strikes, vols));
-  //  volSmiles.emplace_back(1.75, std::make_pair(strikes, vols));
-  //  volSmiles.emplace_back(2.00, std::make_pair(strikes, vols));
-  //
-  //  double r = 0.04;
-  //  double q = 0.02;
-  //  double spot = 100;
-  //  beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
-  //                                            [=](double arg) { return std::exp(-r * arg);});
-  //  beagle::real_function_ptr_t funding = beagle::math::RealFunction::createUnaryFunction(
-  //                                            [=](double arg) { return std::exp(-(r-q) * arg);});
-  //  beagle::real_function_ptr_t forward = beagle::math::RealFunction::createGeneralForwardAssetPriceFunction(
-  //                                            spot,
-  //                                            funding,
-  //                                            dividends,
-  //                                            beagle::valuation::DividendPolicy::liquidator());
-  //  beagle::valuation::OneDimFiniteDifferenceSettings settings(104, 750, 10.5);
+    beagle::volatility_smile_coll_t volSmiles;
+    volSmiles.emplace_back(0.25, std::make_pair(strikes, vols));
+    volSmiles.emplace_back(0.50, std::make_pair(strikes, vols));
+    volSmiles.emplace_back(0.75, std::make_pair(strikes, vols));
+    volSmiles.emplace_back(1.00, std::make_pair(strikes, vols));
+    volSmiles.emplace_back(1.25, std::make_pair(strikes, vols));
+    volSmiles.emplace_back(1.50, std::make_pair(strikes, vols));
+    volSmiles.emplace_back(1.75, std::make_pair(strikes, vols));
+    volSmiles.emplace_back(2.00, std::make_pair(strikes, vols));
+  
+    double r = 0.04;
+    double q = 0.02;
+    double spot = 100;
+    beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
+                                              [=](double arg) { return std::exp(-r * arg);});
+    beagle::real_function_ptr_t funding = beagle::math::RealFunction::createUnaryFunction(
+                                              [=](double arg) { return std::exp(-(r-q) * arg);});
+    beagle::real_function_ptr_t forward = beagle::math::RealFunction::createGeneralForwardAssetPriceFunction(
+                                              spot,
+                                              funding,
+                                              dividends,
+                                              beagle::valuation::DividendPolicy::liquidator());
+    beagle::valuation::OneDimFiniteDifferenceSettings settings(104, 750, 10.5);
 
-  //  beagle::real_2d_function_ptr_t localVol =
-  //    beagle::calibration::util::createCalibratedLocalVolatilitySurface(forward,
-  //                                                                      discounting,
-  //                                                                      settings,
-  //                                                                      volSmiles);
-  //}
+    beagle::real_2d_function_ptr_t localVol =
+      beagle::calibration::util::createCalibratedLocalVolatilitySurface(forward,
+                                                                        discounting,
+                                                                        settings,
+                                                                        volSmiles);
+    //// Generate data for plot
+    //beagle::dbl_vec_t expiries{.25, .5, .75, 1., 1.25, 1.5, 1.75, 2.};
+    //beagle::dbl_vec_t expiriesPlot{0.};
+    //for (double expiry : expiries)
+    //{
+    //  expiriesPlot.push_back(expiry - .00001);
+    //  expiriesPlot.push_back(expiry);
+    //  expiriesPlot.push_back(expiry + .00001);
+    //}
+    
+    //beagle::dbl_vec_t strikesPlot(21U);
+    //for (int i=0; i<21; ++i)
+    //  strikesPlot[i] = 90 + i;
+
+    //std::ofstream out(".\\figure\\AndreasenHuge\\local_vol_artificial3.txt");
+    //out << "[";
+    //for (double expiry : expiriesPlot)
+    //  out << expiry << ", ";
+    //out << "]\n";
+
+    //out << "[";
+    //for (double strike : strikesPlot)
+    //  out << strike << ", ";
+    //out << "]\n";
+
+    //out << "[";
+    //for (double expiry : expiriesPlot)
+    //{
+    //  out << "[";
+    //  for (double strike : strikesPlot)
+    //    out << localVol->value(expiry, strike) << ", ";
+    //  out << "],\n";
+    //}
+    //out << "]";
+  }
 
   {
     double spot = 2772.70;
@@ -198,6 +231,40 @@ void test2( void )
                                                                         discounting,
                                                                         settings,
                                                                         volSmiles);
+
+    //// Generate data for plot
+    //beagle::dbl_vec_t expiriesPlot{0.};
+    //for (double expiry : expiries)
+    //{
+    //  expiriesPlot.push_back(expiry - .00001);
+    //  expiriesPlot.push_back(expiry);
+    //  expiriesPlot.push_back(expiry + .00001);
+    //}
+    //
+    //beagle::dbl_vec_t strikesPlot(713U);
+    //for (int i=0; i<713; ++i)
+    //  strikesPlot[i] = 2388 + i;
+
+    //std::ofstream out(".\\figure\\AndreasenHuge\\local_vol.txt");
+    //out << "[";
+    //for (double expiry : expiriesPlot)
+    //  out << expiry << ", ";
+    //out << "]\n";
+
+    //out << "[";
+    //for (double strike : strikesPlot)
+    //  out << strike << ", ";
+    //out << "]\n";
+
+    //out << "[";
+    //for (double expiry : expiriesPlot)
+    //{
+    //  out << "[";
+    //  for (double strike : strikesPlot)
+    //    out << localVol->value(expiry, strike) << ", ";
+    //  out << "],\n";
+    //}
+    //out << "]";
   }
 
   std::cout << "\nEnd of Test 2\n";
@@ -1311,7 +1378,7 @@ void generateAndersenBuffumTableOne( void )
 int main( void )
 {
   //test1();
-  test2();
+  //test2();
   //test3();
   //test4();
   //test5();

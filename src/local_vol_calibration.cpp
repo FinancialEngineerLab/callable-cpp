@@ -4,6 +4,7 @@
 #include "calibration_adapter.hpp"
 #include "calibration_functor.hpp"
 #include "util.hpp"
+#include "option.hpp"
 #include "payoff.hpp"
 #include "pricer.hpp"
 #include "interpolation_builder.hpp"
@@ -39,9 +40,6 @@ namespace beagle
             m_StateVars(stateVars),
             m_Prices(prices)
           {
-            double df = discounting->value(end);
-            double fwd = forward->value(end);
-
             m_Strikes = smile.first;
             beagle::dbl_vec_t vols = smile.second;
 
@@ -49,9 +47,23 @@ namespace beagle
             for (beagle::dbl_vec_t::size_type i=0; i<m_Strikes.size(); ++i)
             {
               double strike = m_Strikes[i];
-              double call = beagle::util::bsCall(m_Strikes[i], fwd, end, vols[i]);
-              m_Targets.emplace_back(df * call);
+              beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption( m_End,
+                                                                                                        strike,
+                                                                                                        payoff );
+              beagle::pricer_ptr_t odbpop  = beagle::valuation::Pricer::formOneDimBackwardPDEOptionPricer(
+                                                            forward,
+                                                            discounting,
+                                                            beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0.),
+                                                            beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(vols[i]),
+                                                            beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0),
+                                                            beagle::valuation::OneDimFiniteDifferenceSettings() );
+              m_Targets.emplace_back(odbpop->value(euroOption));
             }
+
+            std::cout << "\nFor this expiry, the targets are: \n";
+            for (beagle::dbl_vec_t::size_type i=0; i<m_Targets.size(); ++i)
+              std::cout << m_Targets[i] << "\t";
+            std::cout << "\n";
           }
           virtual ~LocalVolatilityCalibrationAdapter( void ) = default;
         public:
@@ -119,18 +131,24 @@ namespace beagle
               }
             }
             
-            // output parameters
-            std::cout << "\nFor this iteration, the calibrated parameters are: \n";
-            for (beagle::dbl_vec_t::size_type i=0; i<parameters.size(); ++i)
-              std::cout << parameters[i] << "\t";
-            std::cout << "\n";
+            //// output parameters
+            //std::cout << "\nFor this iteration, the calibrated parameters are: \n";
+            //for (beagle::dbl_vec_t::size_type i=0; i<parameters.size(); ++i)
+            //  std::cout << parameters[i] << "\t";
+            //std::cout << "\n";
 
             // output residuals
             beagle::dbl_vec_t results = values(parameters);
-            std::cout << "\nFor this iteration, the errors are: \n";
+            double max = 0.;
+            std::cout << "\nFor this iteration, the relative errors are: \n";
             for (beagle::dbl_vec_t::size_type i=0; i<results.size(); ++i)
-              std::cout << results[i] << "\t";
+            {
+              if (std::fabs(results[i] / m_Targets[i]) > max)
+                max = results[i] / m_Targets[i];
+              std::cout << results[i] / m_Targets[i] << "\t";
+            }
             std::cout << "\n";
+            std::cout << "The max relative error is: " << max << "\n";
 
             return result;
           }
