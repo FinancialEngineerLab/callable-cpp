@@ -137,18 +137,18 @@ namespace beagle
             //  std::cout << parameters[i] << "\t";
             //std::cout << "\n";
 
-            // output residuals
-            beagle::dbl_vec_t results = values(parameters);
-            double max = 0.;
-            std::cout << "\nFor this iteration, the relative errors are: \n";
-            for (beagle::dbl_vec_t::size_type i=0; i<results.size(); ++i)
-            {
-              if (std::fabs(results[i] / m_Targets[i]) > max)
-                max = results[i] / m_Targets[i];
-              std::cout << results[i] / m_Targets[i] << "\t";
-            }
-            std::cout << "\n";
-            std::cout << "The max relative error is: " << max << "\n";
+            //// output residuals
+            //beagle::dbl_vec_t results = values(parameters);
+            //double max = 0.;
+            //std::cout << "\nFor this iteration, the relative errors are: \n";
+            //for (beagle::dbl_vec_t::size_type i=0; i<results.size(); ++i)
+            //{
+            //  if (std::fabs(results[i] / m_Targets[i]) > max)
+            //    max = results[i] / m_Targets[i];
+            //  std::cout << results[i] / m_Targets[i] << "\t";
+            //}
+            //std::cout << "\n";
+            //std::cout << "The max relative error is: " << max << "\n";
 
             return result;
           }
@@ -260,11 +260,11 @@ namespace beagle
           expiries.emplace_back(end);
           localVolFuncs.emplace_back(localVol);
 
-          std::cout << "\nCalibrated parameters are: \n";
-          for (beagle::dbl_vec_t::size_type i=0; i<guesses.size(); ++i)
-            std::cout << guesses[i] << "\n";
+          //std::cout << "\nCalibrated parameters are: \n";
+          //for (beagle::dbl_vec_t::size_type i=0; i<guesses.size(); ++i)
+          //  std::cout << guesses[i] << "\n";
 
-          std::cout << "\n";
+          //std::cout << "\n";
         }
 
         return beagle::math::RealTwoDimFunction::createPiecewiseConstantRightFunction(expiries, localVolFuncs);

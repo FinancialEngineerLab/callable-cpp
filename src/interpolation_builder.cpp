@@ -25,7 +25,7 @@ namespace beagle
         virtual beagle::real_function_ptr_t formFunction( const dbl_vec_t& xValues,
                                                           const dbl_vec_t& yValues ) const override
         {
-          return beagle::math::RealFunction::createNaturalCubicSplineInterpolatedFunction( xValues, yValues );
+          return beagle::math::RealFunction::createNaturalCubicSplineWithFlatExtrapolationInterpolatedFunction( xValues, yValues );
         }
       };
       

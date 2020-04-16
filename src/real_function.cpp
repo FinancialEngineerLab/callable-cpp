@@ -110,10 +110,10 @@ namespace beagle
         }
       };
 
-      struct NaturalCubicSplineInterpolatedFunction : public InterpolatedFunction
+      struct NaturalCubicSplineWithFlatExtrapolationInterpolatedFunction : public InterpolatedFunction
       {
-        NaturalCubicSplineInterpolatedFunction( const beagle::dbl_vec_t& xValues,
-                                                const beagle::dbl_vec_t& yValues ) :
+        NaturalCubicSplineWithFlatExtrapolationInterpolatedFunction( const beagle::dbl_vec_t& xValues,
+                                                                     const beagle::dbl_vec_t& yValues ) :
           InterpolatedFunction(xValues, yValues)
         {
           // By construction, the number of interpolation parameters is at least 3
@@ -141,7 +141,7 @@ namespace beagle
                     rhs.cend(),
                     m_SecondDerivs.begin() + 1U);
         }
-        virtual ~NaturalCubicSplineInterpolatedFunction( void ) = default;
+        virtual ~NaturalCubicSplineWithFlatExtrapolationInterpolatedFunction( void ) = default;
       public:
         virtual double value( double arg ) const override
         {
@@ -152,63 +152,40 @@ namespace beagle
                                      xValues.cend(),
                                      arg);
 
-          double x1;
-          double x2;
-          double y1;
-          double y2;
-          double d1;
-          double d2;
           if (it == xValues.cend())
           {
-            x1 = *(it - 2U);
-            x2 = *(it - 1U);
-
-            auto jt = yValues.cend();
-            y1 = *(jt - 2U);
-            y2 = *(jt - 1U);
-
-            auto kt = m_SecondDerivs.cend();
-            d1 = *(kt - 2U);
-            d2 = *(kt - 1U);
+            return yValues.back();
           }
           else if (it == xValues.cbegin())
           {
-            x1 = *it;
-            x2 = *(it + 1U);
-
-            auto jt = yValues.cbegin();
-            y1 = *jt;
-            y2 = *(jt + 1U);
-
-            auto kt = m_SecondDerivs.cbegin();
-            d1 = *kt;
-            d2 = *(kt + 1U);
+            return yValues.front();
           }
           else
           {
-            x1 = *(it - 1U);
-            x2 = *it;
-
             auto diff = std::distance(xValues.cbegin(), it);
+
+            double x1 = *(it - 1U);
+            double x2 = *it;
+
             auto jt = yValues.cbegin();
             std::advance(jt, diff);
-            y1 = *(jt - 1U);
-            y2 = *jt;
+            double y1 = *(jt - 1U);
+            double y2 = *jt;
 
             auto kt = m_SecondDerivs.cbegin();
             std::advance(kt, diff);
-            d1 = *(kt - 1U);
-            d2 = *kt;
+            double d1 = *(kt - 1U);
+            double d2 = *kt;
+
+            double delta1 = x2 - arg;
+            double delta2 = arg - x1;
+            double h = x2 - x1;
+
+            return std::pow(delta1, 3.) * d1 / 6. / h
+                 + std::pow(delta2, 3.) * d2 / 6. / h
+                 + delta1 * (y1 / h - h * d1 / 6.)
+                 + delta2 * (y2 / h - h * d2 / 6.);
           }
-
-          double delta1 = x2 - arg;
-          double delta2 = arg - x1;
-          double h = x2 - x1;
-
-          return std::pow(delta1, 3.) * d1 / 6. / h
-               + std::pow(delta2, 3.) * d2 / 6. / h
-               + delta1 * (y1 / h - h * d1 / 6.)
-               + delta2 * (y2 / h - h * d2 / 6.);
         }
       private:
         beagle::dbl_vec_t m_SecondDerivs; 
@@ -374,7 +351,7 @@ namespace beagle
     }
 
     beagle::real_function_ptr_t
-    RealFunction::createNaturalCubicSplineInterpolatedFunction(
+    RealFunction::createNaturalCubicSplineWithFlatExtrapolationInterpolatedFunction(
                                                          const beagle::dbl_vec_t& xValues,
                                                          const beagle::dbl_vec_t& yValues )
     {
@@ -386,7 +363,7 @@ namespace beagle
       else if (xValues.size() == 2U)
         return createLinearWithFlatExtrapolationInterpolatedFunction(xValues, yValues);
       else
-        return std::make_shared<impl::NaturalCubicSplineInterpolatedFunction>( xValues,  yValues );
+        return std::make_shared<impl::NaturalCubicSplineWithFlatExtrapolationInterpolatedFunction>( xValues,  yValues );
     }
 
     beagle::real_function_ptr_t
