@@ -60,10 +60,10 @@ namespace beagle
               m_Targets.emplace_back(odbpop->value(euroOption));
             }
 
-            std::cout << "\nFor this expiry, the targets are: \n";
-            for (beagle::dbl_vec_t::size_type i=0; i<m_Targets.size(); ++i)
-              std::cout << m_Targets[i] << "\t";
-            std::cout << "\n";
+            // std::cout << "\nFor this expiry, the targets are: \n";
+            // for (beagle::dbl_vec_t::size_type i=0; i<m_Targets.size(); ++i)
+            //   std::cout << m_Targets[i] << "\t";
+            // std::cout << "\n";
           }
           virtual ~LocalVolatilityCalibrationAdapter( void ) = default;
         public:
@@ -260,11 +260,11 @@ namespace beagle
           expiries.emplace_back(end);
           localVolFuncs.emplace_back(localVol);
 
-          //std::cout << "\nCalibrated parameters are: \n";
-          //for (beagle::dbl_vec_t::size_type i=0; i<guesses.size(); ++i)
-          //  std::cout << guesses[i] << "\n";
+          std::cout << "\nCalibrated parameters are: \n";
+          for (beagle::dbl_vec_t::size_type i=0; i<guesses.size(); ++i)
+           std::cout << guesses[i] << "\n";
 
-          //std::cout << "\n";
+          std::cout << "\n";
         }
 
         return beagle::math::RealTwoDimFunction::createPiecewiseConstantRightFunction(expiries, localVolFuncs);
