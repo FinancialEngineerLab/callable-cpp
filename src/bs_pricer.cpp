@@ -71,16 +71,23 @@ namespace beagle
                                        { return value < std::get<0>(dividend); });
 
             auto diff = std::distance(dividends.cbegin(), it);
-            beagle::dbl_vec_t exDivTimes(diff);
-            std::transform(dividends.cbegin(), it, exDivTimes.begin(),
-                           [](const beagle::dividend_schedule_t::value_type& dividend)
-                           { return std::get<0>(dividend); });
-            
             beagle::dbl_vec_t discreteDividends(diff);
             std::transform(dividends.cbegin(), it, discreteDividends.begin(),
                            [](const beagle::dividend_schedule_t::value_type& dividend)
                            { return std::get<2>(dividend); });
 
+            bool zeroes = std::all_of(discreteDividends.cbegin(),
+                                      discreteDividends.cend(),
+                                      [](double dividend)
+                                      { return std::fabs(dividend) < util::epsilon(); });
+            if (zeroes)
+              return;
+
+            beagle::dbl_vec_t exDivTimes(diff);
+            std::transform(dividends.cbegin(), it, exDivTimes.begin(),
+                           [](const beagle::dividend_schedule_t::value_type& dividend)
+                           { return std::get<0>(dividend); });
+            
             auto pAF = dynamic_cast<beagle::math::mixins::AssetForward*>( m_Forward.get() );
 
             double discount = m_Discounting->value(expiry);

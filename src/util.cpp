@@ -6,16 +6,22 @@ namespace beagle
 {
   namespace util
   {
-    double pi( void )
+    const double& pi( void )
     {
       static const double PI = 3.14159265358979323846;
       return PI;
     }
 
-    double rootTwo( void )
+    const double& rootTwo( void )
     {
       static const double rootTwo = 1.41421356237;
       return rootTwo;
+    }
+
+    const double& epsilon( void )
+    {
+      static const double eps = std::numeric_limits<double>::epsilon();
+      return eps;
     }
 
     double standardNormal( double arg )

@@ -19,16 +19,16 @@ void test1( void )
 
   // Set up dividend
   beagle::dividend_schedule_t dividends;
-  dividends.emplace_back( 0.5, 0.04, 3.0 );
-  dividends.emplace_back( 1.5, 0.0, 3.0 );
-  dividends.emplace_back( 2.5, 0.01, 3.0 );
-  dividends.emplace_back( 3.5, 0.0, 3.0 );
-  dividends.emplace_back( 4.5, 0.03, 3.0 );
-  dividends.emplace_back( 5.5, 0.0, 3.0 );
-  dividends.emplace_back( 6.5, 0.0, 3.0 );
-  dividends.emplace_back( 7.5, 0.0, 3.0 );
-  dividends.emplace_back( 8.5, 0.0, 3.0 );
-  dividends.emplace_back( 9.5, 0.0, 3.0 );
+  dividends.emplace_back( 0.5, 0.04, .0 );
+  //dividends.emplace_back( 1.5, 0.0, 3.0 );
+  //dividends.emplace_back( 2.5, 0.01, .0 );
+  //dividends.emplace_back( 3.5, 0.0, 3.0 );
+  //dividends.emplace_back( 4.5, 0.03, .0 );
+  //dividends.emplace_back( 5.5, 0.0, 3.0 );
+  //dividends.emplace_back( 6.5, 0.0, 3.0 );
+  //dividends.emplace_back( 7.5, 0.0, 3.0 );
+  //dividends.emplace_back( 8.5, 0.0, 3.0 );
+  //dividends.emplace_back( 9.5, 0.0, 3.0 );
 
   beagle::discrete_dividend_schedule_t discDivs(dividends.size());
   std::transform(dividends.cbegin(),

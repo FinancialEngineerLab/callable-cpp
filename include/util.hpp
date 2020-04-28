@@ -7,9 +7,11 @@ namespace beagle
 {
   namespace util
   {
-    double pi( void );
+    const double& pi( void );
     
-    double rootTwo( void );
+    const double& rootTwo( void );
+
+    const double& epsilon( void );
 
     double standardNormal( double arg );
 
