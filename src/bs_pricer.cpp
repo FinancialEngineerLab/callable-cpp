@@ -60,9 +60,6 @@ namespace beagle
                                              double& adjustedSpot,
                                              double& adjustedStrike ) const
         {
-          adjustedSpot = spot;
-          adjustedStrike = strike;
-
           if (auto pCD = dynamic_cast<beagle::math::mixins::ContainsDividends*>(m_Forward.get()))
           {
             const beagle::dividend_schedule_t& dividends = pCD->dividendSchedule();
@@ -109,72 +106,39 @@ namespace beagle
               a[i] = - (factor / thisFactor * nDI - thisDiscount / discount * nDTwo) / factor / denominator;
               b[i] =   (thisDiscount / discount * nDOne - factor / thisFactor * nDI) / denominator;
 
-              adjustedSpot   = spot   + a[i] * discreteDividends[i];
-              adjustedStrike = strike + b[i] * discreteDividends[i];
+              adjustedSpot   += a[i] * discreteDividends[i];
+              adjustedStrike += b[i] * discreteDividends[i];
             }
 
-          //  double phiDOne = util::standardNormal(dOne);
-          //  double phiDTwo = util::standardNormal(dTwo);
-          //  double phiDiff = phiDOne - phiDTwo;
-          //  double crossDiff = phiDOne * nDTwo - phiDTwo * nDOne;
+            double phiDOne = util::standardNormal(dOne);
+            double phiDTwo = util::standardNormal(dTwo);
+            double oneOverSpotVolRootT = 1. / spot / sigmaRootT;
+            double prefactor = oneOverSpotVolRootT / denominator;
+            for (int i=0; i<diff; ++i)
+            {
+              for (int j=i; j<diff; ++j)
+              {
+                double thisFactorI = pAF->multiplicativeForwardFactor(exDivTimes[i]);
+                double thisFactorJ = pAF->multiplicativeForwardFactor(exDivTimes[j]);
+                double dI = dOne - m_Volatility * (exDivTimes[i] + exDivTimes[j]) / rootT;
+                double nDI = util::standardNormal(dI);
 
-          //  double gamma = m_Spot * sigmaRootT * phiDOne * denominator * denominator * denominator;
-          //  double a = - crossDiff * crossDiff;
-          //  double b = phiDiff * crossDiff;
-          //  double c = - phiDiff * phiDiff;
-          //  double d = phiDOne * denominator * denominator;
+                double aIJ = 1. / thisFactorI / thisFactorJ * std::exp(m_Volatility*m_Volatility*exDivTimes[i]) * nDI
+                           - (a[i] * phiDOne - b[i] / factor * phiDTwo) * (a[j] - spot * b[j] / strike);
+                aIJ *= prefactor;
+                double bIJ = aIJ * factor;
 
-          //  auto numDivs = m_Dividends.size();
-          //  for (discrete_dividend_schedule_t::size_type i = 0U; i < numDivs; ++i)
-          //  {
-          //    double exDivTimeI = m_Dividends[i].first;
-          //    double divAmountI = m_Dividends[i].second;
+                if (i==j)
+                {
+                  aIJ /= 2.;
+                  bIJ /= 2.;
+                }
 
-          //    if (exDivTimeI <= expiry)
-          //    {
-          //      /// First order term
-          //      double discountingExDivTimeI = std::exp( - m_Rate * exDivTimeI );
-          //      double dI = dOne - m_Volatility * exDivTimeI / rootT;
-          //      double nDI = util::cumulativeStandardNormal(dI);
-
-          //      double numeratorA =  nDI - nDTwo;
-          //      double numeratorB = denominator - numeratorA;
-
-          //      double aI = - discountingExDivTimeI * numeratorA / denominator;
-          //      double bI = expRateT * discountingExDivTimeI * numeratorB / denominator;
-
-          //      adjustedSpot += aI * divAmountI;
-          //      adjustedStrike += bI * divAmountI;
-
-          //      for (discrete_dividend_schedule_t::size_type j = i; j < numDivs; ++j)
-          //      {
-          //        double exDivTimeJ = m_Dividends[j].first;
-          //        double divAmountJ = m_Dividends[j].second;
-
-          //        if (exDivTimeJ <= expiry)
-          //        {
-          //          double discountingExDivTimeJ = std::exp( - m_Rate * exDivTimeJ );
-          //          double dJ = dOne - m_Volatility * exDivTimeJ / rootT;
-          //          double nDJ = util::cumulativeStandardNormal(dJ);
-
-          //          double aIJ = a + b * (nDI + nDJ) + c * nDI * nDJ;
-
-          //          double dIJ = dOne - m_Volatility * (exDivTimeI + exDivTimeJ) / rootT;
-          //          double phiDIJ = util::standardNormal(dIJ);
-          //          aIJ += d * std::exp(m_Volatility*m_Volatility*exDivTimeI) * phiDIJ;
-
-          //          aIJ /= gamma;
-          //          aIJ *= std::exp( -m_Rate * (exDivTimeI + exDivTimeJ));
-
-          //          if (i == j)
-          //            aIJ /= 2.;
-
-          //          adjustedSpot += aIJ * divAmountI * divAmountJ;
-          //          adjustedStrike += expRateT * aIJ * divAmountI * divAmountJ;
-          //        }
-          //      }
-          //    }
-          //  }
+                adjustedSpot   += aIJ * discreteDividends[i] * discreteDividends[j];
+                adjustedStrike += bIJ * discreteDividends[i] * discreteDividends[j];
+              
+              }
+            }
           }
         }
       private:

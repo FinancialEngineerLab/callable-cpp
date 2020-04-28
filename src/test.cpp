@@ -19,16 +19,16 @@ void test1( void )
 
   // Set up dividend
   beagle::dividend_schedule_t dividends;
-  dividends.emplace_back( 0.5, 0.0, 3.0 );
+  dividends.emplace_back( 0.5, 0.04, 3.0 );
   dividends.emplace_back( 1.5, 0.0, 3.0 );
-  dividends.emplace_back( 2.5, 0.0, 3.0 );
+  dividends.emplace_back( 2.5, 0.01, 3.0 );
   dividends.emplace_back( 3.5, 0.0, 3.0 );
-  dividends.emplace_back( 4.5, 0.0, 3.0 );
-  //dividends.emplace_back( 5.5, 0.0, 3.0 );
-  //dividends.emplace_back( 6.5, 0.0, 3.0 );
-  //dividends.emplace_back( 7.5, 0.0, 3.0 );
-  //dividends.emplace_back( 8.5, 0.0, 3.0 );
-  //dividends.emplace_back( 9.5, 0.0, 3.0 );
+  dividends.emplace_back( 4.5, 0.03, 3.0 );
+  dividends.emplace_back( 5.5, 0.0, 3.0 );
+  dividends.emplace_back( 6.5, 0.0, 3.0 );
+  dividends.emplace_back( 7.5, 0.0, 3.0 );
+  dividends.emplace_back( 8.5, 0.0, 3.0 );
+  dividends.emplace_back( 9.5, 0.0, 3.0 );
 
   beagle::discrete_dividend_schedule_t discDivs(dividends.size());
   std::transform(dividends.cbegin(),
@@ -40,7 +40,7 @@ void test1( void )
   // Model parameters
   double spot = 100.;
   double rate = .03;
-  double carry = .0;
+  double carry = .01;
   double vol = .3;
 
   beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
@@ -52,12 +52,12 @@ void test1( void )
                                             funding,
                                             dividends,
                                             beagle::valuation::DividendPolicy::liquidator());
-  beagle::valuation::OneDimFiniteDifferenceSettings settings;
+  beagle::valuation::OneDimFiniteDifferenceSettings settings(750, 1501, 4.5);
 
   // Set up options
   double expiry = 5.;
-  double strike = 100.;
-  beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::put();
+  double strike = 125.;
+  beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::call();
 
   beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption( expiry,
                                                                                             strike,
