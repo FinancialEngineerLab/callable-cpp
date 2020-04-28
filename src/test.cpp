@@ -19,11 +19,11 @@ void test1( void )
 
   // Set up dividend
   beagle::dividend_schedule_t dividends;
-  dividends.emplace_back( 0.5, 0.1, 0.0 );
-  //dividends.emplace_back( 1.5, 0.0, 3.0 );
-  //dividends.emplace_back( 2.5, 0.0, 3.0 );
-  //dividends.emplace_back( 3.5, 0.0, 3.0 );
-  //dividends.emplace_back( 4.5, 0.0, 3.0 );
+  dividends.emplace_back( 0.5, 0.0, 3.0 );
+  dividends.emplace_back( 1.5, 0.0, 3.0 );
+  dividends.emplace_back( 2.5, 0.0, 3.0 );
+  dividends.emplace_back( 3.5, 0.0, 3.0 );
+  dividends.emplace_back( 4.5, 0.0, 3.0 );
   //dividends.emplace_back( 5.5, 0.0, 3.0 );
   //dividends.emplace_back( 6.5, 0.0, 3.0 );
   //dividends.emplace_back( 7.5, 0.0, 3.0 );
@@ -40,7 +40,7 @@ void test1( void )
   // Model parameters
   double spot = 100.;
   double rate = .03;
-  double carry = .02;
+  double carry = .0;
   double vol = .3;
 
   beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
@@ -55,9 +55,9 @@ void test1( void )
   beagle::valuation::OneDimFiniteDifferenceSettings settings;
 
   // Set up options
-  double expiry = 1.;
+  double expiry = 5.;
   double strike = 100.;
-  beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::call();
+  beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::put();
 
   beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption( expiry,
                                                                                             strike,
