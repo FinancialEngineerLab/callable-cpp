@@ -220,7 +220,8 @@ namespace beagle
         }
       };
 
-      struct ContinuousForwardAssetPriceFunction : public RealFunction
+      struct ContinuousForwardAssetPriceFunction : public RealFunction,
+                                                   public mixins::AssetForward
       {
         ContinuousForwardAssetPriceFunction( double spot,
                                              const beagle::real_function_ptr_t& funding ) :
@@ -233,13 +234,22 @@ namespace beagle
         {
           return m_Spot / m_Funding->value(arg);
         }
+        virtual double multiplicativeForwardFactor(double expiry) const override
+        {
+          return 1. / m_Funding->value(expiry);
+        }
+        virtual double spot(void) const override
+        {
+          return m_Spot;
+        }
       private:
         double m_Spot;
         beagle::real_function_ptr_t m_Funding;
       };
 
       struct GeneralForwardAssetPriceFunction : public RealFunction,
-                                                public mixins::ContainsDividends
+                                                public mixins::ContainsDividends,
+                                                public mixins::AssetForward
       {
         GeneralForwardAssetPriceFunction( double spot,
                                           const beagle::real_function_ptr_t& funding,
@@ -306,6 +316,25 @@ namespace beagle
         virtual const beagle::cum_ex_dividend_prices_t& cumAndExDividendForwards( void ) const override
         {
           return m_Forwards;
+        }
+        virtual double multiplicativeForwardFactor(double expiry) const override
+        {
+          double result = 1. / m_Funding->value(expiry);
+
+          auto it = std::upper_bound(m_Dividends.cbegin(),
+                                     m_Dividends.cend(),
+                                     expiry,
+                                     [](double value,
+                                        const beagle::dividend_schedule_t::value_type& dividend)
+                                     { return value < std::get<0>(dividend); });
+          for (auto jt = m_Dividends.cbegin(); jt != it; ++jt)
+            result *= (1. - std::get<1>(*jt));
+
+          return result;
+        }
+        virtual double spot(void) const override
+        {
+          return m_Spot;
         }
       private:
         double m_Spot;

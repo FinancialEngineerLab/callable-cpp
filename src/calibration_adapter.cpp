@@ -58,69 +58,6 @@ namespace beagle
       }
     }
 
-    namespace impl
-    {
-      struct PricerAdapter : public CalibrationAdapter
-      {
-        PricerAdapter( const pricer_ptr_t& pricer,
-                       const product_ptr_coll_t& products ) :
-          m_Pricer(pricer),
-          m_Products(products)
-        { }
-        virtual ~PricerAdapter( void ) = default;
-      public:
-        dbl_vec_t values( const dbl_vec_t& parameters ) const override
-        {
-          pricer_ptr_t pricer;
-          auto pCWNMP = dynamic_cast<beagle::valuation::mixins::CloneWithNewModelParameters*>(m_Pricer.get());
-          if (pCWNMP)
-            pricer = pCWNMP->createPricerWithNewModelParameters(parameters);
-          else
-            throw("Cannot update model parameters");
-
-          dbl_vec_t result(m_Products.size());
-          std::transform(m_Products.cbegin(),
-                         m_Products.cend(),
-                         result.begin(),
-                         [&pricer](const product_ptr_t& product)
-                         { return pricer->value(product); });
-
-          return result;
-        }
-        dbl_mat_t derivativeWithRespectToParameters( const dbl_vec_t& parameters ) const override
-        {
-          auto pCWNMP = dynamic_cast<beagle::valuation::mixins::CloneWithNewModelParameters*>(m_Pricer.get());
-          if (!pCWNMP)
-            throw("Cannot update model parameters");
-
-          dbl_mat_t result(m_Products.size());
-          for (auto row : result)
-            row.resize(parameters.size());
-
-          double bump = 1e-4;
-          for (beagle::dbl_vec_t::size_type j=0; j<parameters.size(); ++j)
-          {
-            dbl_vec_t forwardParams(parameters);
-            dbl_vec_t backwardParams(parameters);
-            forwardParams[j] += bump;
-            backwardParams[j] -= bump;
-
-            pricer_ptr_t forwardBumpedPricer = pCWNMP->createPricerWithNewModelParameters(forwardParams);
-            pricer_ptr_t backwardBumpedPricer = pCWNMP->createPricerWithNewModelParameters(backwardParams);
-
-            for (beagle::dbl_vec_t::size_type i=0; i<m_Products.size(); ++i)
-              result[i][j] = ( forwardBumpedPricer->value(m_Products[i])
-                             - backwardBumpedPricer->value(m_Products[i]) ) * .5 / bump;
-          }
-
-          return result;
-        }
-      private:
-        pricer_ptr_t m_Pricer;
-        product_ptr_coll_t m_Products;
-      };
-    }
-
     dbl_vec_t CalibrationAdapter::values( const dbl_vec_t& transformedParamters,
                                           const calibration_bound_constraint_coll_t& constraints ) const
     {
@@ -139,12 +76,6 @@ namespace beagle
       }
 
       return derivs;
-    }
-
-    calibration_adapter_ptr_t CalibrationAdapter::pricerAdapter( const pricer_ptr_t& pricer,
-                                                                       const product_ptr_coll_t& products )
-    {
-      return std::make_shared<impl::PricerAdapter>( pricer, products );
     }
   }
 }

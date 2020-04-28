@@ -21,9 +21,6 @@ namespace beagle
       virtual dbl_mat_t derivativeWithRespectToTransformedParameters(
                      const dbl_vec_t& transformedParamters,
                      const calibration_bound_constraint_coll_t& constraints ) const;
-    public:
-      static calibration_adapter_ptr_t pricerAdapter( const pricer_ptr_t& pricer,
-                                                      const product_ptr_coll_t& products );
     };
 
     namespace util

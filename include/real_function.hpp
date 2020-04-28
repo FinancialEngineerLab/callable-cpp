@@ -46,6 +46,14 @@ namespace beagle
         virtual const beagle::dbl_vec_t& yParameters( void ) const = 0;
       };
 
+      struct AssetForward
+      {
+        virtual ~AssetForward( void ) = default;
+      public:
+        virtual double multiplicativeForwardFactor(double expiry) const = 0;
+        virtual double spot(void) const = 0;
+      };
+
       struct ContainsDividends
       {
         virtual ~ContainsDividends( void ) = default;

@@ -19,16 +19,16 @@ void test1( void )
 
   // Set up dividend
   beagle::dividend_schedule_t dividends;
-  dividends.emplace_back( 0.5, 0.0, 3.0 );
-  dividends.emplace_back( 1.5, 0.0, 3.0 );
-  dividends.emplace_back( 2.5, 0.0, 3.0 );
-  dividends.emplace_back( 3.5, 0.0, 3.0 );
-  dividends.emplace_back( 4.5, 0.0, 3.0 );
-  dividends.emplace_back( 5.5, 0.0, 3.0 );
-  dividends.emplace_back( 6.5, 0.0, 3.0 );
-  dividends.emplace_back( 7.5, 0.0, 3.0 );
-  dividends.emplace_back( 8.5, 0.0, 3.0 );
-  dividends.emplace_back( 9.5, 0.0, 3.0 );
+  dividends.emplace_back( 0.5, 0.1, 0.0 );
+  //dividends.emplace_back( 1.5, 0.0, 3.0 );
+  //dividends.emplace_back( 2.5, 0.0, 3.0 );
+  //dividends.emplace_back( 3.5, 0.0, 3.0 );
+  //dividends.emplace_back( 4.5, 0.0, 3.0 );
+  //dividends.emplace_back( 5.5, 0.0, 3.0 );
+  //dividends.emplace_back( 6.5, 0.0, 3.0 );
+  //dividends.emplace_back( 7.5, 0.0, 3.0 );
+  //dividends.emplace_back( 8.5, 0.0, 3.0 );
+  //dividends.emplace_back( 9.5, 0.0, 3.0 );
 
   beagle::discrete_dividend_schedule_t discDivs(dividends.size());
   std::transform(dividends.cbegin(),
@@ -40,19 +40,22 @@ void test1( void )
   // Model parameters
   double spot = 100.;
   double rate = .03;
+  double carry = .02;
   double vol = .3;
 
   beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
                                             [=](double arg) { return std::exp(-rate * arg);});
+  beagle::real_function_ptr_t funding = beagle::math::RealFunction::createUnaryFunction(
+                                            [=](double arg) { return std::exp(-(rate - carry) * arg);});
   beagle::real_function_ptr_t forward = beagle::math::RealFunction::createGeneralForwardAssetPriceFunction(
                                             spot,
-                                            discounting,
+                                            funding,
                                             dividends,
                                             beagle::valuation::DividendPolicy::liquidator());
   beagle::valuation::OneDimFiniteDifferenceSettings settings;
 
   // Set up options
-  double expiry = 5.;
+  double expiry = 1.;
   double strike = 100.;
   beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::call();
 
@@ -65,10 +68,9 @@ void test1( void )
 
   try
   {
-    beagle::pricer_ptr_t bscfeop = beagle::valuation::Pricer::formBlackScholesClosedFormEuropeanOptionPricer(spot, 
-                                                                                                             rate, 
-                                                                                                             vol, 
-                                                                                                             discDivs );
+    beagle::pricer_ptr_t bscfeop = beagle::valuation::Pricer::formBlackScholesClosedFormEuropeanOptionPricer(forward, 
+                                                                                                             discounting, 
+                                                                                                             vol );
     beagle::pricer_ptr_t odbpop  = beagle::valuation::Pricer::formOneDimBackwardPDEOptionPricer(
                                                                forward,
                                                                discounting,
@@ -1377,8 +1379,8 @@ void generateAndersenBuffumTableOne( void )
 
 int main( void )
 {
-  //test1();
-  test2();
+  test1();
+  //test2();
   //test3();
   //test4();
   //test5();

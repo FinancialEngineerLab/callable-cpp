@@ -35,11 +35,9 @@ namespace beagle
     public:
       virtual double value( const beagle::product_ptr_t& product ) const = 0;
     public:
-      static beagle::pricer_ptr_t formBlackScholesClosedFormEuropeanOptionPricer(
-                                                                          double spot,
-                                                                          double rate,
-                                                                          double volatility,
-                                                                          const discrete_dividend_schedule_t& dividends );
+      static beagle::pricer_ptr_t formBlackScholesClosedFormEuropeanOptionPricer(const beagle::real_function_ptr_t& forward,
+                                                                                 const beagle::real_function_ptr_t& discounting,
+                                                                                 double volatility );
       static beagle::pricer_ptr_t formOneDimForwardPDEArrowDebreuPricer(const beagle::real_function_ptr_t& forward,
                                                                         const beagle::real_function_ptr_t& discounting,
                                                                         const beagle::real_2d_function_ptr_t& drift,
@@ -67,13 +65,6 @@ namespace beagle
 
     namespace mixins
     {
-      struct CloneWithNewModelParameters
-      {
-        virtual ~CloneWithNewModelParameters( void ) = default;
-      public:
-        virtual beagle::pricer_ptr_t createPricerWithNewModelParameters( const beagle::dbl_vec_t& parameters ) const = 0;
-      };
-
       struct OneDimFokkerPlanck
       {
         virtual ~OneDimFokkerPlanck( void ) = default;
