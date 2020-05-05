@@ -1,0 +1,87 @@
+\documentclass[12pt]{article}
+\usepackage{amsfonts}
+\usepackage[hscale=.8,vscale=.8]{geometry}
+\usepackage{hyperref}
+
+\begin{document}
+
+  Consider a dividend paying stock. On an ex-dividend date, the stock prices before and after the
+  dividend payment are related by
+  \begin{equation}
+    S(t+) = S(t-)(1-y)-c,
+  \end{equation}
+  where $y$ and $c$ are the relative and absolute dividends, respectively. Assuming constant risk
+  free rate $r$ and dividend yield $q$, the forward stock price in the presense of multiple dividends
+  is
+  \begin{equation}
+    F(t,T)=S(t)e^{(r-q)(T-t)}\prod_{t\le t_i\le T}(1-y_i)
+          -\sum_{t\le t_j\le T}c_je^{(r-q)(T-t_j)}\prod_{t_j< t_i\le T}(1-y_i),
+  \end{equation}
+  where $t_i$'s and $t_j$'s are the relative and discrete dividend payment times.
+
+  Define the multiplicative forward factor between two times as
+  \begin{equation}
+    M(t,T)=e^{(r-q)(T-t)}\prod_{t\le t_i\le T}(1-y_i),
+  \end{equation}
+  and denote the price of a European call option written on the stock as a function of discrete
+  dividends,
+  \begin{equation}
+    {\rm Call}({C_i}) \equiv {\rm Call}\left(S(0),K; {C_i}\right),
+  \end{equation}
+  the sensitivity of the European call price with respect to the discrete dividends in the vanishing
+  limit is \cite{GS}
+  \begin{eqnarray}
+    &&\frac{\partial^k{\rm Call}}{\partial C_{i_1}\cdots\partial C_{i_k}}\left({\bf 0}\right) \nonumber\\
+    =&&(-)^k\frac{\partial^k{\rm Call}_{BS}}{\partial S^k}\left(S(0)e^{-\sigma^2\sum_{p=1}^kT_{i_p}}, K, T\right)
+     \prod_{p=1}^kM(0,T_{i_p})^{-1}e^{-\sigma^2\sum_{p=2}^k(p-2)T_{i_p}},
+  \end{eqnarray}
+  where
+  \begin{equation}
+    {\rm Call}_{BS}\left(S(0), K, T\right) = P(0,T)(S(0)M(0,T)N(d_+)-KN(d_-)),
+  \end{equation}
+  is the vanilla call option price without any discrete dividend, with $P(0,T)$ as the discount factor
+  between time 0 and $T$,
+  \begin{equation}
+    d_{\pm} = \frac{1}{\sigma\sqrt{T}}\log\left(\frac{S(0)M(0,T)}{K}\right)\pm\frac{1}{2}\sigma\sqrt{T},
+  \end{equation}
+  and $N(x)=(2\pi)^{-1/2}\int_{-\infty}^xe^{-u^2/2}du$ is the standard normal cumulative
+  distribution function.
+
+  Following \cite{GS}, define a proxy European option price as
+  \begin{equation}
+    {\rm Proxy}\left(C_1,\cdots, C_k\right)
+    = {\rm Call}_{BS}\left(S^*\left(C_1,\cdots, C_k\right), K^*\left(C_1,\cdots, C_k\right), T\right),
+  \end{equation}
+  where, up to second order,
+  \begin{equation}
+    S^*\left(C_1,\cdots, C_k\right) = S(0) + \sum_{i=1}^k\left(a_iC_i+\frac{1}{2}a_{ii}C_i^2\right)
+                                    + \sum_{i=1}^k\sum_{j>i}^ka_{ij}C_iC_j,
+  \end{equation}
+  and
+  \begin{equation}
+    K^*\left(C_1,\cdots, C_k\right) = K    + \sum_{i=1}^k\left(b_iC_i+\frac{1}{2}b_{ii}C_i^2\right)
+                                    + \sum_{i=1}^k\sum_{j>i}^kb_{ij}C_iC_j.
+  \end{equation}
+
+  We can determine the coefficients by two relations. First, the sensitivity of the proxy in the vanishing
+  dividend limit should coincide with that of the real option price, {\it i.e.},
+  \begin{equation}
+    \frac{\partial^k{\rm Proxy}}{\partial C_{i_1}\cdots\partial C_{i_k}}\left({\bf 0}\right)
+    =\frac{\partial^k{\rm Call}}{\partial C_{i_1}\cdots\partial C_{i_k}}\left({\bf 0}\right).
+  \end{equation}
+  For both sides of the above equation, we have closed form expressions. The other relation is the call-put
+  parity,
+  \begin{equation}
+    P(0,T)\left(S^*M(0,T)-K^*\right)=S(0) - P(0,T) K - \sum_{i=1}^k P(0,T_i)C_i.
+  \end{equation}
+
+
+\begin{thebibliography}{99}
+  \bibitem{GS}
+    Arnaud Gocsei and Fouad Sahel,
+    {\it Analysis of the sensitivity to discrete dividends: A new approach for pricing vanillas},
+    \href{https://arxiv.org/pdf/1008.3880.pdf}{arXiv:1008.3880}.
+\end{thebibliography}
+
+
+\end{document}
