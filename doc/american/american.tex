@@ -7,6 +7,16 @@
 
   \section{Early Exercise Premium}
 
+    Consider an American option price, $V_A(t,S(t))$, with strike $K$ and maturity $T$, for an underlying
+    asset following the Black-Scholes dynamics in the risk neutral measure,
+    \begin{equation}
+      dS(t) = (r(t)-q(t))S(t)dt + \sigma(t)S(t)dW(t),
+    \end{equation}
+    with $S(0)=S$. Define the forward curve as $F(t)=S\exp(\int_0^t(r(u)-q(u))du)$, and $x(t)=\log(S(t)/F(t)$,
+    then the dynamics of $x(t)$ is given by
+    \begin{equation}
+      dx(t) = -\frac{1}{2}\sigma(t)^2dt + \sigma(t)dW(t).
+    \end{equation}
 
 
 
