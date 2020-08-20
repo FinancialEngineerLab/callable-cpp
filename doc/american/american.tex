@@ -5,6 +5,27 @@
 
 \begin{document}
 
+  \section{Model Setup}
+
+    Consider an underlying asset following a geometric Brownian motion with time dependent but deterministic
+    parameters, in the risk-neutral measure $\mathbb{Q}$ induced by the money market numeraire $\beta(t)=
+    \exp\left(\int_0^tr(u)du\right)$,
+    \begin{equation}
+      \frac{dS(t)}{S(t)}=\left(r(t)-q(t)\right)dt+\sigma(t)dW^{\mathbb{Q}}(t),
+    \end{equation}
+    where $r$, $q$, and $\sigma$ are the risk free rate, the dividend yield, and the volatility, respectively.
+    The forward function for the underlying can be explicitly calculated,
+    \begin{equation}
+      F(t)={\rm E}^{\mathbb{Q}}\left[S(t)\right]=S(0)\exp\left(\int_0^t\left(r(u)-q(u)\right)du\right).
+    \end{equation}
+    Using this deterministic forward function, the underlying dynamics can be reformulated in terms of
+    $X(t)=\log\left(S(t)/F(t)\right)$, which leads to
+    \begin{equation}
+      dX(t) = -\frac{1}{2}\sigma(t)^2dt + \sigma(t)dW^{\mathbb{Q}}(t).
+    \end{equation}
+
+
+
   \section{Early Exercise Premium}
 
     Consider an American option price, $V_A(t,S(t))$, with strike $K$ and maturity $T$, for an underlying
