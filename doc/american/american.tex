@@ -2,6 +2,7 @@
 \usepackage{amsfonts}
 \usepackage[hscale=.8,vscale=.8]{geometry}
 \usepackage{hyperref}
+\usepackage{amsmath}
 
 \begin{document}
 
@@ -24,20 +25,150 @@
       dX(t) = -\frac{1}{2}\sigma(t)^2dt + \sigma(t)dW^{\mathbb{Q}}(t).
     \end{equation}
 
-
-
-  \section{Early Exercise Premium}
-
-    Consider an American option price, $V_A(t,S(t))$, with strike $K$ and maturity $T$, for an underlying
-    asset following the Black-Scholes dynamics in the risk neutral measure,
+    For a European option with expiry $T$ and strike $K$, its discounted price is given by
+    \begin{eqnarray}
+      \label{Euro1}
+      v_E(t,x)&\equiv&P(t)V_E(t,F(t)e^x;T,K,\omega)\nonumber\\
+                         &=&\omega P(T)F(T)\bigg(e^x\Phi\big(\omega d_+\left(x-x^*,\Sigma(t,T)\right)\big)\nonumber\\
+                         &&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -e^{x^*}\Phi\big(\omega d_-\left(x-x^*,\Sigma(t,T)\right)\big)\bigg),
+    \end{eqnarray}
+    where $\omega=\pm 1$ for call/put options, $x^*=\log(K/F(T))$ is the moneyness of the option, $\Phi(x)$
+    is the cumulative distribution function of the standard normal distribution, $P(t)=\beta(t)^{-1}$ is the discount
+    factor at time $r$, and
     \begin{equation}
-      dS(t) = (r(t)-q(t))S(t)dt + \sigma(t)S(t)dW(t),
+      d_{\pm}(x, v)=\frac{x}{v}\pm\frac{1}{2}v,
     \end{equation}
-    with $S(0)=S$. Define the forward curve as $F(t)=S\exp(\int_0^t(r(u)-q(u))du)$, and $x(t)=\log(S(t)/F(t)$,
-    then the dynamics of $x(t)$ is given by
+    with
     \begin{equation}
-      dx(t) = -\frac{1}{2}\sigma(t)^2dt + \sigma(t)dW(t).
+      \Sigma(t,T)^2=\int_t^T\sigma(u)^2du
     \end{equation}
+    Also, the discounted European option price satisfies the following Black-Scholes equation,
+    \begin{equation}
+      \frac{\partial v_E(t,x)}{\partial t}-\frac{1}{2}\sigma(t)^2\frac{\partial v_E(t,x)}{\partial x}
+         +\frac{1}{2}\sigma(t)^2\frac{\partial^2 v_E(t,x)}{\partial x^2}=0.
+    \end{equation}
+
+
+
+  \section{Early Exercise Premium Representation}
+
+    Now, let us consider the valuation of American options. Due to the early exercise provision, it is preferable
+    to exercise the option and receive the intric value of the option, when the underlying prices moves above or
+    below the optimal exercise boundary for a call or put option. Otherwise, the American option is identical to
+    its European counterpart. Denote the optimal exercise boundary as $B(t)$, and normalize it with respect to
+    the forward, $X_T(t)=\log(B(t)/F(t))$, the discounted American option price can be written as
+    \begin{equation}
+      v_A(t,x(t))=P(t)V_A(t,F(t)e^{x(t)};T,K,\omega)
+              =\begin{cases}
+                 \omega P(t)\left(F(t)e^{x(t)}-K\right), & \mbox{if } \omega x(t) \geq \omega X_T(t),\\
+                 v_E(t,x), & \mbox{otherwise}.
+               \end{cases}
+    \end{equation}
+    The dynamics of the discounted American option price can be obtained by the application of Ito's lemma in the
+    continuation and the exercise regions,
+    \begin{eqnarray}
+      dv_A(t,x(t))&=&\mathbf{1}_{\{\omega x(t) \geq \omega X_T(t)\}}\omega\bigg(P^{\prime}(t)\left(F(t)e^{x(t)}-K\right)dt
+                                                                     +P(t)F^{\prime}(t)e^{x(t)}dt\nonumber\\
+               &&\quad\quad\quad\quad\quad\quad\quad\quad +P(t)F(t)e^{x(t)}\left(-\frac{1}{2}\sigma(t)^2dt
+                                                          + \sigma(t)dW^{\mathbb{Q}}(t)\right)\nonumber\\
+               &&\quad\quad\quad\quad\quad\quad\quad\quad +P(t)F(t)e^{x(t)}\frac{1}{2}\sigma(t)^2dt\bigg)\nonumber\\
+               && + \mathbf{1}_{\{\omega x(t)<\omega X_T(t)\}}\bigg[\left(\frac{\partial v_E(t,x)}{\partial t}
+                        -\frac{1}{2}\sigma(t)^2\frac{\partial v_E(t,x)}{\partial x}
+                    +\frac{1}{2}\sigma(t)^2\frac{\partial^2 v_E(t,x)}{\partial x^2}\right)dt\nonumber\\
+               &&\quad\quad\quad\quad\quad\quad\quad\quad +\sigma(t)\frac{\partial v_E(t,x)}{\partial x}dW^{\mathbb{Q}}(t)\bigg].
+    \end{eqnarray}
+    Notice the Black-Scholes equation for the discounted European option price, we have
+    \begin{eqnarray}
+      dv_A(t,x(t))&=&\mathbf{1}_{\{\omega x(t)\geq\omega X_T(t)\}}\omega\bigg(\left(\left(P(t)F(t)\right)^{\prime}e^{x(t)}
+                                                                          -P^{\prime}(t)K\right)dt
+                                              +P(t)F(t)e^{x(t)} \sigma(t)dW^{\mathbb{Q}}(t)\bigg)\nonumber\\
+               && + \mathbf{1}_{\{\omega x(t)<\omega X_T(t)\}}
+                    \bigg[\sigma(t)\frac{\partial v_E(t,x)}{\partial x}dW^{\mathbb{Q}}(t)\bigg].
+    \end{eqnarray}
+    Integrate both sides, and take the risk neutral expectation, the integration with respect to the Brownian motion
+    will drop out, we are left with
+    \begin{eqnarray}
+      &&{\rm E}_t^{\mathbb{Q}}\left[v_A(T,x(T))\right]-v_A(t,x(t)) \nonumber\\
+      &&\quad=\omega\int_t^T\left(\left(P(u)F(u)\right)^{\prime}
+               {\rm E}_t^{\mathbb{Q}}\left[\mathbf{1}_{\{\omega x(u)\geq\omega X_T(u)\}}e^{x(u)}\right]
+               -P^{\prime}(u)K{\rm E}_t^{\mathbb{Q}}\left[\mathbf{1}_{\{\omega x(u)\geq\omega X_T(u)\}}\right]\right)du,
+    \end{eqnarray}
+    or equivalently,
+    \begin{eqnarray}
+      v_A(t,x(t))&=&{\rm E}_t^{\mathbb{Q}}\left[v_A(T,x(T))\right]-\omega\int_t^T\bigg(\left(P(u)F(u)\right)^{\prime}
+               {\rm E}_t^{\mathbb{Q}}\left[\mathbf{1}_{\{\omega x(u)\geq\omega X_T(u)\}}e^{x(u)}\right]\nonumber\\
+               &&\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad-P^{\prime}(u)K
+               {\rm E}_t^{\mathbb{Q}}\left[\mathbf{1}_{\{\omega x(u)\geq\omega X_T(u)\}}\right]\bigg)du.
+    \end{eqnarray}
+    This formula is a generic result, and can be applied to any local volatility model.
+
+    At expiry, the payoff of the American option coincides with the European option,
+    \begin{equation}
+      v_A(T,x(T)) = v_E(T,x(T))=P(T)\left[\omega\left(F(T)e^{x(T)}-K\right)\right]^+,
+    \end{equation}
+    the risk neutral expectation of which will actually reproduce the discounted European option price, Eq. (\ref{Euro1}).
+    Also notice that, under our model setup,
+    \begin{equation}
+      {\rm E}_t^{\mathbb{Q}}\left[\mathbf{1}_{\{\omega x(u)\geq\omega X_T(u)\}}e^{x(u)}\right]
+       = e^{x(t)}\Phi\left(\omega d_+\left(x(t)-X_T(u), \Sigma(t,u)\right)\right),
+    \end{equation}
+    and
+    \begin{equation}
+      {\rm E}_t^{\mathbb{Q}}\left[\mathbf{1}_{\{\omega x(u)\geq\omega X_T(u)\}}\right]
+       = \Phi\left(\omega d_-\left(x(t)-X_T(u), \Sigma(t,u)\right)\right),
+    \end{equation}
+    then the discounted American option price can be represented as the sum of the discounted European
+    option price and the early exercise premium,
+    \begin{eqnarray}
+      \label{EEP}
+      v_A(t,x(t))&=&v_E(t,x(t))+\omega\int_t^T\bigg[P^{\prime}(u)K\Phi\left(\omega d_-\left(x(t)-X_T(u), \Sigma(t,u)\right)\right)\nonumber\\
+                 &&\quad\quad\quad\quad\quad\quad\quad
+                  -\left(P(u)F(u)\right)^{\prime}e^{x(t)}\Phi\left(\omega d_+\left(x(t)-X_T(u), \Sigma(t,u)\right)\right)\bigg]du.
+    \end{eqnarray}
+
+  \section{Optimal Exercise Boundary}
+
+    The above representation of the American option price requires the knowledge of the optimal
+    exercise boundary, which is unknown and must be solved in tandem with the computation of the American
+    option price. From Eq. (\ref{EEP}), at the boundary, the American option price becomes its intrinsic
+    value,
+    \begin{eqnarray}
+       \label{Boundary}
+       && P(t)\left(F(t)e^{X_T(t)}-K\right)\nonumber\\
+      =&& P(T)\bigg(F(T)e^{X_T(t)}\Phi\big(\omega d_+\left(X_T(t)-x^*,\Sigma(t,T)\right)\big)
+                                                      -K\Phi\big(\omega d_-\left(X_T(t)-x^*,\Sigma(t,T)\right)\big)\bigg)\nonumber\\
+       &&+\int_t^T\bigg[P^{\prime}(u)K\Phi\left(\omega d_-\left(X_T(t)-X_T(u), \Sigma(t,u)\right)\right)\nonumber\\
+                 &&\quad\quad\quad\quad\quad
+                  -\left(P(u)F(u)\right)^{\prime}e^{X_T(t)}\Phi\left(\omega d_+\left(X_T(t)-X_T(u), \Sigma(t,u)\right)\right)\bigg]du.
+    \end{eqnarray}
+    Using the relations
+    \begin{equation}
+      \int_t^T\left(P(u)F(u)\right)^{\prime}du=P(T)F(T)-P(t)F(t),
+    \end{equation}
+    and
+    \begin{equation}
+      \int_t^TP^{\prime}(u)du=P(T)-P(t),
+    \end{equation}
+    the optimal exercise boundary can be determined from the following equation,
+    \begin{equation}
+      e^{X_T(t)}=e^{x^*}\frac{N(X_T, \Sigma)}{D(X_T, \Sigma)},
+    \end{equation}
+    where the numerator $N$ and the denominator $D$ are functionals of the optimal exercise boundary,
+    \begin{eqnarray}
+      N(X_T, \Sigma)&=&\Phi\big(-\omega d_-\left(X_T(t)-x^*,\Sigma(t,T)\right)\big)\nonumber\\
+      &&-\int_t^T\frac{P^{\prime}(u)}{P(T)}\Phi\big(-\omega d_-\left(X_T(t)-X_T(u),\Sigma(t,u)\right)\big)du,
+    \end{eqnarray}
+    and
+    \begin{eqnarray}
+      D(X_T, \Sigma)&=&\Phi\big(-\omega d_+\left(X_T(t)-x^*,\Sigma(t,T)\right)\big)\nonumber\\
+      &&-\int_t^T\frac{\left(P(u)F(u)\right)^{\prime}}{P(T)F(T)}\Phi\big(-\omega d_+\left(X_T(t)-X_T(u),\Sigma(t,u)\right)\big)du.
+    \end{eqnarray}
+
+    From the above formulation, the optimal exercise boundary can be determined by iteration. At the start of
+    each iteration, with the knowledge of the optimal exercise boundary $X_T^{(j)}(t)$ from the previous iteration,
+    a new boundary $X_T^{(j+1)}(t)$ can be found. This process can be repeated until convergence is reached.
+
+
 
 
 
