@@ -528,7 +528,7 @@ namespace beagle
                                                            constraints,
                                                            elimIndices );
           Eigen::LevenbergMarquardt<beagle::calibration::CalibrationFunctor> lm(functor);
-          lm.parameters.xtol = 1.0e-4;
+          lm.parameters.xtol = 1.0e-6;
           Eigen::LevenbergMarquardtSpace::Status status = lm.minimize(calibParams);
 
           for (beagle::dbl_vec_t::size_type i=0; i<guesses.size(); ++i)
