@@ -20,5 +20,7 @@ namespace beagle
 
     void generateAndersenBuffumTableOneNaivePrice(void);
 
+    void test_volatility_smile_credit_spread_calibration(void);
+
   }
 }

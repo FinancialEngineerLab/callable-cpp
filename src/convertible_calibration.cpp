@@ -503,7 +503,7 @@ namespace beagle
           guesses.emplace_back(spread);
 
           beagle::calibration_bound_constraint_coll_t constraints(numParams,
-                                                                  beagle::calibration::CalibrationBoundConstraint::lowerBoundCalibrationConstraint(0.));
+                                                                  beagle::calibration::CalibrationBoundConstraint::twoSidedBoundCalibrationConstraint(0., 1.));
           beagle::int_vec_t elimIndices(0U);
 
           guesses = beagle::calibration::util::getTransformedParameters( guesses, constraints );
