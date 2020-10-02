@@ -68,8 +68,8 @@ void test1( void )
 
   try
   {
-    beagle::pricer_ptr_t bscfeop = beagle::valuation::Pricer::formBlackScholesClosedFormEuropeanOptionPricer(forward, 
-                                                                                                             discounting, 
+    beagle::pricer_ptr_t bscfeop = beagle::valuation::Pricer::formBlackScholesClosedFormEuropeanOptionPricer(forward,
+                                                                                                             discounting,
                                                                                                              vol );
     beagle::pricer_ptr_t odbpop  = beagle::valuation::Pricer::formOneDimBackwardPDEOptionPricer(
                                                                forward,
@@ -85,7 +85,7 @@ void test1( void )
                                                                settings );
 
     std::cout << "European option price (CF)   is: " << bscfeop->value( euroOption ) << std::endl;
-    std::cout << "European option price (FD-B) is: " << odbpop->value( euroOption ) << std::endl;    
+    std::cout << "European option price (FD-B) is: " << odbpop->value( euroOption ) << std::endl;
     std::cout << "American option price (FD-B) is: " << odbpop->value( amerOption ) << std::endl;
     std::cout << "European option price (FD-F) is: " << odfpeop->value( euroOption ) << std::endl;
 
@@ -118,7 +118,7 @@ void test2( void )
     volSmiles.emplace_back(1.50, std::make_pair(strikes, vols));
     volSmiles.emplace_back(1.75, std::make_pair(strikes, vols));
     volSmiles.emplace_back(2.00, std::make_pair(strikes, vols));
-  
+
     double r = 0.04;
     double q = 0.02;
     double spot = 100;
@@ -147,7 +147,7 @@ void test2( void )
     //  expiriesPlot.push_back(expiry);
     //  expiriesPlot.push_back(expiry + .00001);
     //}
-    
+
     //beagle::dbl_vec_t strikesPlot(21U);
     //for (int i=0; i<21; ++i)
     //  strikesPlot[i] = 90 + i;
@@ -206,7 +206,7 @@ void test2( void )
     volsColl.emplace_back(beagle::dbl_vec_t{0.3291, 0.3129, 0.2976, 0.2848, 0.2711, 0.2585, 0.2384, 0.2269, 0.2186, 0.2103, 0.2054, 0.2002, 0.1964});
     volsColl.emplace_back(beagle::dbl_vec_t{0.2975, 0.2848, 0.2722, 0.2611, 0.2501, 0.2392, 0.2305, 0.2223, 0.2164, 0.2105, 0.2054, 0.2012});
     volsColl.emplace_back(beagle::dbl_vec_t{0.2809, 0.2693, 0.2584, 0.2486, 0.2399, 0.2321, 0.2251, 0.2190, 0.2135});
-    
+
     beagle::volatility_smile_coll_t volSmiles;
     for (int i=0; i<expiries.size(); ++i)
     {
@@ -216,7 +216,7 @@ void test2( void )
 
       volSmiles.emplace_back(expiries[i], std::make_pair(strikes, volsColl[i]));
     }
-  
+
     double r = 0.0;
     double q = 0.0;
     beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
@@ -433,7 +433,7 @@ void test5( void )
                                                       discounting ) << "\t"
               << bondPrice << "\t"
               << -std::log(bondPrice) / expiry - r << "\n\n";
-  
+
   }
 
   std::cout << "\nEnd of Test 5\n";
@@ -497,7 +497,7 @@ void test6( void )
                                                               rate,
                                                               recovery,
                                                               beagle::valuation::OneDimFiniteDifferenceSettings(100, 500, 4.5) );
-  
+
   // Create a fixed coupon bond: 10-year maturity, 3% coupon, semi-annual
   fcb = beagle::product::bond::Bond::createFixedCouponBond(10, .03, 2);
   std::cout << "The bond price is: " << odbpbp->value(fcb) << "\n";
@@ -567,7 +567,7 @@ void test7( void )
                                                               rate,
                                                               recovery,
                                                               settings );
-      
+
       std::cout << "The bond floor is:             " << odbpbp->value(fcb) << " for p = " << p << "\n";
       std::cout << "The convertible bond price is: " << odbpbp->value(cb) << " for p = " << p << "\n\n";
     }
@@ -591,7 +591,7 @@ void test7( void )
     int frequency = 2;
 
     beagle::valuation::OneDimFiniteDifferenceSettings settings(104, 250, 4.5);
-    
+
     beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
                                               [=](double arg) { return std::exp(-r*arg); });
     beagle::real_function_ptr_t forward = beagle::math::RealFunction::createContinuousForwardAssetPriceFunction(
@@ -628,7 +628,7 @@ void test7( void )
                                                               rate,
                                                               recovery,
                                                               settings );
-      
+
       std::cout << "The bond floor is:             " << odbpbp->value(fcb) << " for p = " << p << "\n";
       std::cout << "The convertible bond price is: " << odbpbp->value(cb) << " for p = " << p << "\n\n";
     }
@@ -661,7 +661,7 @@ void test8( void )
                                             discounting,
                                             dividends,
                                             beagle::valuation::DividendPolicy::liquidator());
-  
+
   beagle::dbl_vec_t expiries{.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5};
   for (double expiry : expiries)
   {
@@ -1244,7 +1244,7 @@ void generateAndersenBuffumTableOne( void )
     int numExpiries = static_cast<int>(expiry * 12);
     beagle::dbl_vec_t expiries(numExpiries);
     for (int i=0; i<numExpiries; ++i)
-      expiries[i] = (i+1) * 10. / numExpiries;
+      expiries[i] = (i+1) * expiry / numExpiries;
 
     beagle::andersen_buffum_param_t quotes(numExpiries, beagle::two_dbl_t{sigma, c});
 
@@ -1283,7 +1283,7 @@ void generateAndersenBuffumTableOne( void )
                                                               rate,
                                                               recovery,
                                                               settings );
-      
+
       std::cout << "The bond floor is:             " << odbpbp->value(fcb) << " for p = " << p << "\n";
       std::cout << "The convertible bond price is: " << odbpbp->value(cb) << " for p = " << p << "\n\n";
     }
@@ -1329,7 +1329,7 @@ void generateAndersenBuffumTableOne( void )
     int numExpiries = static_cast<int>(expiry * 12);
     beagle::dbl_vec_t expiries(numExpiries);
     for (int i=0; i<numExpiries; ++i)
-      expiries[i] = (i+1) * 10. / numExpiries;
+      expiries[i] = (i+1) * expiry / numExpiries;
 
     beagle::andersen_buffum_param_t quotes(numExpiries, beagle::two_dbl_t{sigma, c});
 
@@ -1368,7 +1368,7 @@ void generateAndersenBuffumTableOne( void )
                                                               rate,
                                                               recovery,
                                                               settings );
-      
+
       std::cout << "The bond floor is:             " << odbpbp->value(fcb) << " for p = " << p << "\n";
       std::cout << "The convertible bond price is: " << odbpbp->value(cb) << " for p = " << p << "\n\n";
     }

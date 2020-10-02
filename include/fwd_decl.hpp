@@ -86,17 +86,19 @@ namespace beagle
   using notional_flows_t = std::vector<two_dbl_t>;
   using puttable_schedule_t = std::vector<two_dbl_t>;
 
-  // For each callable schedule entry, the two doubles indicate the 
+  // For each callable schedule entry, the two doubles indicate the
   // start and end of the call period.
   using callable_schedule_t = std::vector<std::tuple<double, beagle::real_function_ptr_t, double>>;
 
   using andersen_buffum_param_t = std::vector<two_dbl_t>;
+  using andersen_buffum_curve_pair_t = std::pair<beagle::real_2d_function_ptr_t,
+                                                 beagle::real_2d_function_ptr_t>;
 
   // Strikes and implied volatilities
   using volatility_smile_t = std::pair<beagle::dbl_vec_t, beagle::dbl_vec_t>;
   using volatility_smile_coll_t = std::vector<std::pair<double, beagle::volatility_smile_t>>;
   using volatility_smile_credit_spread_coll_t = std::vector<std::tuple<double, beagle::volatility_smile_t, double>>;
-  
+
   using three_dbl_t = std::tuple<double, double, double>;
   using dividend_schedule_t = std::vector<three_dbl_t>;
   using cum_ex_dividend_prices_t = std::vector<two_dbl_t>;
