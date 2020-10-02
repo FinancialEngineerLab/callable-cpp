@@ -4,12 +4,11 @@
 #include "payoff.hpp"
 #include "real_function.hpp"
 #include "real_2d_function.hpp"
-#include "dividend_policy.hpp"
 #include "interpolation_builder.hpp"
 #include "util.hpp"
 #include "convertible_calibration.hpp"
-#include "local_vol_calibration.hpp"
 #include "andersen_buffum.hpp"
+
 #include <iostream>
 #include <fstream>
 
@@ -519,7 +518,7 @@ namespace beagle
       }
     }
 
-    void generateAndersenBuffumTableOne( void )
+    void generateAndersenBuffumTableOneCalibratedPrice( void )
     {
       // Convertible bond, Case A
       {
@@ -547,7 +546,7 @@ namespace beagle
 
         // Create a fixed coupon bond: 5-year maturity, 1.5% coupon, semi-annual
         beagle::callable_schedule_t callSchedule;
-        callSchedule.emplace_back(5., beagle::math::RealFunction::createConstantFunction(106.), 10.);
+        callSchedule.emplace_back(5., beagle::math::RealFunction::createConstantFunction(107.), 10.);
 
         beagle::puttable_schedule_t putSchedule;
         putSchedule.emplace_back(6., 100.);
@@ -633,7 +632,7 @@ namespace beagle
 
         // Create a fixed coupon bond: 5-year maturity, 1.5% coupon, semi-annual
         beagle::callable_schedule_t callSchedule;
-        callSchedule.emplace_back(3., beagle::math::RealFunction::createConstantFunction(104.), 5.);
+        callSchedule.emplace_back(3., beagle::math::RealFunction::createConstantFunction(107.), 5.);
 
         beagle::puttable_schedule_t putSchedule;
         putSchedule.emplace_back(4., 100.);
@@ -691,6 +690,136 @@ namespace beagle
 
         std::cout << "\n";
       }
+    }
+
+    void generateAndersenBuffumTableOneNaivePrice(void)
+    {
+      std::cout << "\nStart of Test 7:\n\n";
+
+      // Convertible bond, Case A
+      {
+        std::cout << "\nConvertible bond, Case A\n";
+        double spot = 50;
+        double r = .04;
+        double q = .02;
+        double sigma = .4;
+
+        double c = .03;
+        double rec = 0.4;
+
+        double expiry = 10.;
+        double coupon = .03;
+        int frequency = 2;
+
+        beagle::valuation::OneDimFiniteDifferenceSettings settings(104, 250, 4.5);
+
+        beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
+                                                  [=](double arg) { return std::exp(-r*arg); });
+        beagle::real_function_ptr_t forward = beagle::math::RealFunction::createContinuousForwardAssetPriceFunction(
+                                                  spot,
+                                                  beagle::math::RealFunction::createUnaryFunction(
+                                                  [=](double arg) { return std::exp(-(r-q)*arg); }));
+        beagle::real_2d_function_ptr_t volatility = beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(sigma);
+
+        // Create a fixed coupon bond: 5-year maturity, 1.5% coupon, semi-annual
+        beagle::callable_schedule_t callSchedule;
+        callSchedule.emplace_back(5., beagle::math::RealFunction::createConstantFunction(107.), 10.);
+
+        beagle::puttable_schedule_t putSchedule;
+        putSchedule.emplace_back(6., 100.);
+        putSchedule.emplace_back(8., 100.);
+
+        beagle::real_function_ptr_t conversionRatio = beagle::math::RealFunction::createConstantFunction(1.);
+        beagle::product_ptr_t fcb = beagle::product::bond::Bond::createFixedCouponBond(expiry, coupon, frequency);
+        beagle::product_ptr_t cb = beagle::product::bond::Bond::createConvertibleBond(fcb, conversionRatio, callSchedule, putSchedule);
+
+        beagle::dbl_vec_t ps{0., .5, 1., 2.};
+        for (double p : ps)
+        {
+          beagle::real_2d_function_ptr_t drift = beagle::math::RealTwoDimFunction::createBinaryFunction(
+                                                    [=](double time, double price){ return c * std::pow(price / spot, -p); } );
+          beagle::real_2d_function_ptr_t rate = beagle::math::RealTwoDimFunction::createBinaryFunction(
+                                                    [=](double time, double price){ return c * std::pow(price / spot, -p); } );
+          beagle::real_2d_function_ptr_t recovery = beagle::math::RealTwoDimFunction::createBinaryFunction(
+                                                    [=](double time, double price){ return -100. * rec * c * std::pow(price / spot, -p); } );
+          beagle::pricer_ptr_t odbpbp  = beagle::valuation::Pricer::formOneDimBackwardPDEBondPricer(
+                                                                  forward,
+                                                                  discounting,
+                                                                  drift,
+                                                                  volatility,
+                                                                  rate,
+                                                                  recovery,
+                                                                  settings );
+
+          std::cout << "The bond floor is:             " << odbpbp->value(fcb) << " for p = " << p << "\n";
+          std::cout << "The convertible bond price is: " << odbpbp->value(cb) << " for p = " << p << "\n\n";
+        }
+
+        std::cout << "\n";
+      }
+
+      // Convertible bond, Case B
+      {
+        std::cout << "\nConvertible bond, Case B\n";
+        double spot = 50;
+        double r = .04;
+        double q = .02;
+        double sigma = .25;
+
+        double c = .02;
+        double rec = 0.4;
+
+        double expiry = 5.;
+        double coupon = .015;
+        int frequency = 2;
+
+        beagle::valuation::OneDimFiniteDifferenceSettings settings(104, 250, 4.5);
+
+        beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
+                                                  [=](double arg) { return std::exp(-r*arg); });
+        beagle::real_function_ptr_t forward = beagle::math::RealFunction::createContinuousForwardAssetPriceFunction(
+                                                  spot,
+                                                  beagle::math::RealFunction::createUnaryFunction(
+                                                  [=](double arg) { return std::exp(-(r-q)*arg); }));
+        beagle::real_2d_function_ptr_t volatility = beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(sigma);
+
+        // Create a fixed coupon bond: 5-year maturity, 1.5% coupon, semi-annual
+        beagle::callable_schedule_t callSchedule;
+        callSchedule.emplace_back(3., beagle::math::RealFunction::createConstantFunction(105.), 5.);
+
+        beagle::puttable_schedule_t putSchedule;
+        putSchedule.emplace_back(4., 100.);
+
+        beagle::real_function_ptr_t conversionRatio = beagle::math::RealFunction::createConstantFunction(1.);
+        beagle::product_ptr_t fcb = beagle::product::bond::Bond::createFixedCouponBond(expiry, coupon, frequency);
+        beagle::product_ptr_t cb = beagle::product::bond::Bond::createConvertibleBond(fcb, conversionRatio, callSchedule, putSchedule);
+
+        beagle::dbl_vec_t ps{0., .5, 1., 2.};
+        for (double p : ps)
+        {
+          beagle::real_2d_function_ptr_t drift = beagle::math::RealTwoDimFunction::createBinaryFunction(
+                                                    [=](double time, double price){ return c * std::pow(price / spot, -p); } );
+          beagle::real_2d_function_ptr_t rate = beagle::math::RealTwoDimFunction::createBinaryFunction(
+                                                    [=](double time, double price){ return c * std::pow(price / spot, -p); } );
+          beagle::real_2d_function_ptr_t recovery = beagle::math::RealTwoDimFunction::createBinaryFunction(
+                                                    [=](double time, double price){ return -100. * rec * c * std::pow(price / spot, -p); } );
+          beagle::pricer_ptr_t odbpbp  = beagle::valuation::Pricer::formOneDimBackwardPDEBondPricer(
+                                                                  forward,
+                                                                  discounting,
+                                                                  drift,
+                                                                  volatility,
+                                                                  rate,
+                                                                  recovery,
+                                                                  settings );
+
+          std::cout << "The bond floor is:             " << odbpbp->value(fcb) << " for p = " << p << "\n";
+          std::cout << "The convertible bond price is: " << odbpbp->value(cb) << " for p = " << p << "\n\n";
+        }
+
+        std::cout << "\n";
+      }
+
+      std::cout << "\nEnd of Test 7\n";
     }
   }
 }

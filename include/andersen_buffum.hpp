@@ -16,7 +16,9 @@ namespace beagle
 
     void generateAndersenBuffumFigureSeven(void);
 
-    void generateAndersenBuffumTableOne(void);
+    void generateAndersenBuffumTableOneCalibratedPrice(void);
+
+    void generateAndersenBuffumTableOneNaivePrice(void);
 
   }
 }
