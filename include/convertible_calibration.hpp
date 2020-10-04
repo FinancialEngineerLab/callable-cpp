@@ -11,7 +11,7 @@ namespace beagle
     {
       // This function calibrates a model to a constant ATMF volatility and a constant risky spread.
       // See Andersen and Buffum, Calibration and Implementation of Convertible Bond Models, for details.
-      beagle::andersen_buffum_param_t
+      beagle::andersen_buffum_curve_pair_t
       createCalibratedAndersenBuffumParameters(const beagle::real_function_ptr_t& forward,
                                                const beagle::real_function_ptr_t& discounting,
                                                const beagle::valuation::OneDimFiniteDifferenceSettings& settings,

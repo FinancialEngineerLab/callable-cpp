@@ -309,7 +309,7 @@ namespace beagle
         };
       }
 
-      beagle::andersen_buffum_param_t
+      beagle::andersen_buffum_curve_pair_t
       createCalibratedAndersenBuffumParameters(const beagle::real_function_ptr_t& forward,
                                                const beagle::real_function_ptr_t& discounting,
                                                const beagle::valuation::OneDimFiniteDifferenceSettings& settings,
@@ -331,121 +331,12 @@ namespace beagle
                                                    quotes[i].second));
         }
 
-        beagle::andersen_buffum_curve_pair_t curves =
-                    createCalibratedAndersenBuffumParameters(forward,
-                                                             discounting,
-                                                             settings,
-                                                             exponent,
-                                                             calibQuotes,
-                                                             beagle::math::InterpolationBuilder::piecewiseConstantRight());
-
-        beagle::andersen_buffum_param_t params;
-        double spot = forward->value(0.0);
-        for (beagle::dbl_vec_t::size_type i=0; i<expiries.size(); ++i)
-        {
-          double expiry = expiries[i];
-          params.emplace_back(curves.first->value(expiry, spot),
-                              curves.second->value(expiry, spot));
-        }
-
-        // // Set up the spatial finite difference grid and the initial condition
-        // beagle::real_2d_function_ptr_t drift;
-        // beagle::real_2d_function_ptr_t volatility;
-        // beagle::real_2d_function_ptr_t rate;
-        // double spot = forward->value(0.0);
-        // formModelParameters(quotes.back().first,
-        //                     quotes.back().second,
-        //                     spot,
-        //                     exponent,
-        //                     drift,
-        //                     volatility,
-        //                     rate);
-
-        // beagle::pricer_ptr_t forwardPricer = beagle::valuation::Pricer::formOneDimForwardPDEArrowDebreuPricer(
-        //                                                          forward,
-        //                                                          discounting,
-        //                                                          drift,
-        //                                                          volatility,
-        //                                                          rate,
-        //                                                          settings);
-        // auto pODFP = dynamic_cast<beagle::valuation::mixins::OneDimFokkerPlanck*>(forwardPricer.get());
-
-        // beagle::dbl_vec_t stateVars;
-        // beagle::dbl_vec_t density;
-        // pODFP->formInitialCondition(expiries.back(), stateVars, density);
-
-        // beagle::dbl_vec_t::size_type numParams(2U);
-
-        // // Now perform calibration by bootstrapping
-        // beagle::andersen_buffum_param_t params;
-        // double start = 0.;
-        // for (beagle::dbl_vec_t::size_type i=0; i<1U; ++i)
-        // {
-        //   double end = expiries[i];
-        //   beagle::dbl_vec_t guesses{quotes[i].first, quotes[i].second};
-
-        //   // std::cout << end << std::endl;
-        //   // std::cout << guesses[0] << "    " << guesses[1] << std::endl;
-
-        //   beagle::calibration_bound_constraint_coll_t constraints(numParams,
-        //                                                           beagle::calibration::CalibrationBoundConstraint::lowerBoundCalibrationConstraint(0.));
-        //   beagle::int_vec_t elimIndices(0U);
-
-        //   guesses = beagle::calibration::util::getTransformedParameters( guesses, constraints );
-        //   Eigen::VectorXd calibParams(guesses.size());
-        //   for (beagle::dbl_vec_t::size_type i=0; i<guesses.size(); ++i)
-        //     calibParams(i) = guesses[i];
-
-        //   beagle::calibration_adapter_ptr_t adapter = std::make_shared<AndersenBuffumCalibrationAdapter>(forward,
-        //                                                                                                  discounting,
-        //                                                                                                  settings,
-        //                                                                                                  start,
-        //                                                                                                  end,
-        //                                                                                                  spot,
-        //                                                                                                  exponent,
-        //                                                                                                  stateVars,
-        //                                                                                                  density,
-        //                                                                                                  quotes[i]);
-
-        //   beagle::calibration::CalibrationFunctor functor( beagle::dbl_vec_t(2U, 0.),
-        //                                                    adapter,
-        //                                                    calibParams,
-        //                                                    constraints,
-        //                                                    elimIndices );
-        //   Eigen::LevenbergMarquardt<beagle::calibration::CalibrationFunctor> lm(functor);
-        //   lm.parameters.xtol = 1.0e-4;
-        //   Eigen::LevenbergMarquardtSpace::Status status = lm.minimize(calibParams);
-
-        //   for (beagle::dbl_vec_t::size_type i=0; i<guesses.size(); ++i)
-        //     guesses[i] = calibParams(i);
-
-        //   guesses = beagle::calibration::util::getOriginalParameters( guesses, constraints );
-        //   params.emplace_back(guesses[0], guesses[1]);
-
-        //   // std::cout << guesses[0] << "    " << guesses[1] << std::endl;
-
-        //   // Evolve density
-        //   formModelParameters(guesses[0],
-        //                       guesses[1],
-        //                       spot,
-        //                       exponent,
-        //                       drift,
-        //                       volatility,
-        //                       rate);
-        //   beagle::pricer_ptr_t forwardPricer = beagle::valuation::Pricer::formOneDimForwardPDEArrowDebreuPricer(
-        //                                                            forward,
-        //                                                            discounting,
-        //                                                            drift,
-        //                                                            volatility,
-        //                                                            rate,
-        //                                                            settings);
-        //   auto pODFP = dynamic_cast<beagle::valuation::mixins::OneDimFokkerPlanck*>(forwardPricer.get());
-        //   pODFP->evolve(start, end, stateVars, density);
-
-        //   start = expiries[i];
-        // }
-
-        return params;
+        return createCalibratedAndersenBuffumParameters(forward,
+                                                        discounting,
+                                                        settings,
+                                                        exponent,
+                                                        calibQuotes,
+                                                        beagle::math::InterpolationBuilder::piecewiseConstantRight());
       }
 
       beagle::andersen_buffum_curve_pair_t

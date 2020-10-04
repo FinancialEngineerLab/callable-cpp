@@ -499,19 +499,22 @@ namespace beagle
       beagle::dbl_vec_t ps{0., .5, 1., 2.};
       for (double p : ps)
       {
-        beagle::andersen_buffum_param_t params = beagle::calibration::util::createCalibratedAndersenBuffumParameters(forward,
-                                                                                                                     discounting,
-                                                                                                                     settings,
-                                                                                                                     p,
-                                                                                                                     expiries,
-                                                                                                                     quotes);
+        beagle::andersen_buffum_curve_pair_t curves =
+                beagle::calibration::util::createCalibratedAndersenBuffumParameters(forward,
+                                                                                    discounting,
+                                                                                    settings,
+                                                                                    p,
+                                                                                    expiries,
+                                                                                    quotes);
 
         outA << "[";
         outB << "[";
         for (int i=0; i<numExpiries; ++i)
         {
-          outA << params[i].first << ", ";
-          outB << params[i].second << ", ";
+          double expiry = expiries[i];
+          double fwd = forward->value(expiry);
+          outA << curves.first->value(expiry, fwd) << ", ";
+          outB << curves.second->value(expiry, spot) << ", ";
         }
         outA << "]\n";
         outB << "]\n";
@@ -566,27 +569,16 @@ namespace beagle
         beagle::dbl_vec_t ps{0., .5, 1., 2.};
         for (double p : ps)
         {
-          beagle::andersen_buffum_param_t params = beagle::calibration::util::createCalibratedAndersenBuffumParameters(forward,
-                                                                                                                       discounting,
-                                                                                                                       settings,
-                                                                                                                       p,
-                                                                                                                       expiries,
-                                                                                                                       quotes);
+          beagle::andersen_buffum_curve_pair_t curves =
+                  beagle::calibration::util::createCalibratedAndersenBuffumParameters(forward,
+                                                                                      discounting,
+                                                                                      settings,
+                                                                                      p,
+                                                                                      expiries,
+                                                                                      quotes);
 
-          beagle::dbl_vec_t volatilities(numExpiries);
-          beagle::dbl_vec_t intensities(numExpiries);
-          for (int i=0; i<numExpiries; ++i)
-          {
-            volatilities[i] = params[i].first;
-            intensities[i] = params[i].second;
-          }
-
-          beagle::real_function_ptr_t volTermStructure = beagle::math::RealFunction::createPiecewiseConstantRightInterpolatedFunction(expiries, volatilities);
-          beagle::real_function_ptr_t intTermStructure = beagle::math::RealFunction::createPiecewiseConstantRightInterpolatedFunction(expiries, intensities);
-          beagle::real_2d_function_ptr_t drift = beagle::math::RealTwoDimFunction::createBinaryFunction(
-                                                    [=](double time, double price){ return intTermStructure->value(time) * std::pow(price / spot, -p); } );
-          beagle::real_2d_function_ptr_t volatility = beagle::math::RealTwoDimFunction::createBinaryFunction(
-                                                    [=](double time, double price){ return volTermStructure->value(time); });
+          beagle::real_2d_function_ptr_t drift = curves.second;
+          beagle::real_2d_function_ptr_t volatility = curves.first;
           beagle::real_2d_function_ptr_t rate = drift;
           beagle::real_2d_function_ptr_t recovery = beagle::math::RealTwoDimFunction::createBinaryFunction(
                                                     [=](double time, double price){ return -100. * rec * rate->value(time, price); } );
@@ -651,27 +643,16 @@ namespace beagle
         beagle::dbl_vec_t ps{0., .5, 1., 2.};
         for (double p : ps)
         {
-          beagle::andersen_buffum_param_t params = beagle::calibration::util::createCalibratedAndersenBuffumParameters(forward,
-                                                                                                                       discounting,
-                                                                                                                       settings,
-                                                                                                                       p,
-                                                                                                                       expiries,
-                                                                                                                       quotes);
+          beagle::andersen_buffum_curve_pair_t curves =
+                  beagle::calibration::util::createCalibratedAndersenBuffumParameters(forward,
+                                                                                      discounting,
+                                                                                      settings,
+                                                                                      p,
+                                                                                      expiries,
+                                                                                      quotes);
 
-          beagle::dbl_vec_t volatilities(numExpiries);
-          beagle::dbl_vec_t intensities(numExpiries);
-          for (int i=0; i<numExpiries; ++i)
-          {
-            volatilities[i] = params[i].first;
-            intensities[i] = params[i].second;
-          }
-
-          beagle::real_function_ptr_t volTermStructure = beagle::math::RealFunction::createPiecewiseConstantRightInterpolatedFunction(expiries, volatilities);
-          beagle::real_function_ptr_t intTermStructure = beagle::math::RealFunction::createPiecewiseConstantRightInterpolatedFunction(expiries, intensities);
-          beagle::real_2d_function_ptr_t drift = beagle::math::RealTwoDimFunction::createBinaryFunction(
-                                                    [=](double time, double price){ return intTermStructure->value(time) * std::pow(price / spot, -p); } );
-          beagle::real_2d_function_ptr_t volatility = beagle::math::RealTwoDimFunction::createBinaryFunction(
-                                                    [=](double time, double price){ return volTermStructure->value(time); });
+          beagle::real_2d_function_ptr_t drift = curves.second;
+          beagle::real_2d_function_ptr_t volatility = curves.first;
           beagle::real_2d_function_ptr_t rate = drift;
           beagle::real_2d_function_ptr_t recovery = beagle::math::RealTwoDimFunction::createBinaryFunction(
                                                     [=](double time, double price){ return -100. * rec * rate->value(time, price); } );
