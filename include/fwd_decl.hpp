@@ -1,5 +1,4 @@
-#ifndef FWD_DECL_HPP
-#define FWD_DECL_HPP
+#pragma once
 
 #include <memory>
 #include <vector>
@@ -103,7 +102,3 @@ namespace beagle
   using dividend_schedule_t = std::vector<three_dbl_t>;
   using cum_ex_dividend_prices_t = std::vector<two_dbl_t>;
 }
-
-
-
-#endif

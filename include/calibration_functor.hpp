@@ -1,5 +1,4 @@
-#ifndef CALIBRATION_FUNCTOR_HPP
-#define CALIBRATION_FUNCTOR_HPP
+#pragma once
 
 #include "fwd_decl.hpp"
 #include "calibration_adapter.hpp"
@@ -55,5 +54,3 @@ namespace beagle
     };
   }
 }
-
-#endif

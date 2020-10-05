@@ -1,5 +1,4 @@
-#ifndef CALIBRATION_CONSTRAINT_HPP
-#define CALIBRATION_CONSTRAINT_HPP
+#pragma once
 
 #include "fwd_decl.hpp"
 
@@ -27,6 +26,3 @@ namespace beagle
     };
   }
 }
-
-
-#endif

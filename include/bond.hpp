@@ -1,5 +1,4 @@
-#ifndef BOND_HPP
-#define BOND_HPP
+#pragma once
 
 #include "fwd_decl.hpp"
 #include "product.hpp"
@@ -41,7 +40,7 @@ namespace beagle
         public:
           virtual const beagle::callable_schedule_t& callSchedule( void ) const=0;
         };
-        
+
         struct Puttable
         {
           virtual ~Puttable( void ) = default;
@@ -59,5 +58,3 @@ namespace beagle
     }
   }
 }
-
-#endif

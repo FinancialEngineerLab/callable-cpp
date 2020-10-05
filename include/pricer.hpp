@@ -1,5 +1,4 @@
-#ifndef PRICER_HPP
-#define PRICER_HPP
+#pragma once
 
 #include "fwd_decl.hpp"
 
@@ -95,6 +94,3 @@ namespace beagle
     }
   }
 }
-
-
-#endif

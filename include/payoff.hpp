@@ -1,5 +1,4 @@
-#ifndef PAYOFF_HPP
-#define PAYOFF_HPP
+#pragma once
 
 #include "fwd_decl.hpp"
 
@@ -27,5 +26,3 @@ namespace beagle
     }
   }
 }
-
-#endif

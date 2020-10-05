@@ -1,5 +1,4 @@
-#ifndef REAL_2D_FUNCTION_HPP
-#define REAL_2D_FUNCTION_HPP
+#pragma once
 
 #include "fwd_decl.hpp"
 
@@ -22,6 +21,3 @@ namespace beagle
     };
   }
 }
-
-
-#endif

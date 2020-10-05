@@ -1,5 +1,4 @@
-#ifndef UTIL_HPP
-#define UTIL_HPP
+#pragma once
 
 #include "fwd_decl.hpp"
 
@@ -8,7 +7,7 @@ namespace beagle
   namespace util
   {
     const double& pi( void );
-    
+
     const double& rootTwo( void );
 
     const double& epsilon( void );
@@ -41,5 +40,3 @@ namespace beagle
     void inverseMatrix( beagle::dbl_vec_vec_t& inputMat );
   }
 }
-
-#endif

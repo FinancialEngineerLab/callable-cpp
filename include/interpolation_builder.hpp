@@ -1,5 +1,4 @@
-#ifndef INTERPOLATION_BUILDER_HPP
-#define INTERPOLATION_BUILDER_HPP
+#pragma once
 
 #include "fwd_decl.hpp"
 
@@ -20,7 +19,3 @@ namespace beagle
     };
   }
 }
-
-
-
-#endif

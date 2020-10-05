@@ -1,5 +1,4 @@
-#ifndef SOLVER_HPP
-#define SOLVER_HPP
+#pragma once
 
 #include "fwd_decl.hpp"
 
@@ -31,7 +30,3 @@ namespace beagle
   }
 
 }
-
-
-
-#endif // !SOLVER_HPP

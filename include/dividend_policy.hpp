@@ -1,5 +1,4 @@
-#ifndef DIVIDEND_POLICY_HPP
-#define DIVIDEND_POLICY_HPP
+#pragma once
 
 #include "fwd_decl.hpp"
 
@@ -21,6 +20,3 @@ namespace beagle
     };
   }
 }
-
-
-#endif

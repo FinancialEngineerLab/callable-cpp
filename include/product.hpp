@@ -1,5 +1,4 @@
-#ifndef PRODUCT_HPP
-#define PRODUCT_HPP
+#pragma once
 
 #include "fwd_decl.hpp"
 
@@ -36,5 +35,3 @@ namespace beagle
     }
   }
 }
-
-#endif

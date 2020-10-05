@@ -1,5 +1,4 @@
-#ifndef REAL_FUNCTION_HPP
-#define REAL_FUNCTION_HPP
+#pragma once
 
 #include "fwd_decl.hpp"
 
@@ -83,6 +82,3 @@ namespace beagle
     }
   }
 }
-
-
-#endif

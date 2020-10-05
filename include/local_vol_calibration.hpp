@@ -1,5 +1,4 @@
-#ifndef LOCAL_VOL_CALIBRATION_HPP
-#define LOCAL_VOL_CALIBRATION_HPP
+#pragma once
 
 #include "fwd_decl.hpp"
 
@@ -17,5 +16,3 @@ namespace beagle
     }
   }
 }
-
-#endif

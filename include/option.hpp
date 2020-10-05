@@ -1,5 +1,4 @@
-#ifndef OPTION_HPP
-#define OPTION_HPP
+#pragma once
 
 #include "fwd_decl.hpp"
 #include "product.hpp"
@@ -51,5 +50,3 @@ namespace beagle
     }
   }
 }
-
-#endif
