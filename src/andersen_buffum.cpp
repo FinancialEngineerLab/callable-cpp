@@ -885,11 +885,89 @@ namespace beagle
       //   }
       // }
 
-      // Conan's setup
+      // // Conan's setup
+      // {
+      //   double spot = 100;
+      //   double r = .04;
+      //   double q = -.01;
+
+      //   beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
+      //                                             [=](double arg) { return std::exp(-r*arg); });
+      //   beagle::real_function_ptr_t forward = beagle::math::RealFunction::createContinuousForwardAssetPriceFunction(
+      //                                             spot,
+      //                                             beagle::math::RealFunction::createUnaryFunction(
+      //                                             [=](double arg) { return std::exp(-(r-q)*arg); }));
+      //   beagle::valuation::OneDimFiniteDifferenceSettings settings(104, 250, 4.5);
+
+      //   beagle::dbl_vec_t expiries{1., 2.};
+      //   beagle::dbl_vec_vec_t strikes{{105, 125}, {110, 128}};
+      //   beagle::dbl_vec_vec_t volatilities{{.3753, .3253},
+      //                                      {.4053, .3653}};
+      //   beagle::dbl_vec_t spreads{.1, .1};
+
+      //   beagle::volatility_smile_credit_spread_coll_t quotes;
+      //   for (beagle::dbl_vec_t::size_type i=0; i<expiries.size(); ++i)
+      //   {
+      //     double expiry = expiries[i];
+      //     quotes.emplace_back(expiry,
+      //                         std::make_pair(strikes[i], volatilities[i]),
+      //                         spreads[i]);
+      //   }
+
+      //   beagle::dbl_vec_t ps{1.5};
+      //   for (double p : ps)
+      //   {
+      //     beagle::andersen_buffum_curve_pair_t curves =
+      //       beagle::calibration::util::createCalibratedAndersenBuffumParameters(forward,
+      //                                                                           discounting,
+      //                                                                           settings,
+      //                                                                           p,
+      //                                                                           quotes,
+      //                                                                           beagle::math::InterpolationBuilder::piecewiseConstantRight());
+
+      //     beagle::pricer_ptr_t odfpeop  = beagle::valuation::Pricer::formOneDimForwardPDEArrowDebreuPricer(
+      //                                                               forward,
+      //                                                               discounting,
+      //                                                               curves.second,
+      //                                                               curves.first,
+      //                                                               curves.second,
+      //                                                               settings );
+
+      //     std::cout << "\np = " << p << "\n\n";
+      //     for (beagle::dbl_vec_t::size_type i=0; i<expiries.size(); ++i)
+      //     {
+      //       double expiry = expiries[i];
+      //       double df = discounting->value(expiry);
+      //       double fwd = forward->value(expiry);
+      //       beagle::dbl_vec_t thisStrikes = strikes[i];
+
+      //       std::cout << "expiry = " << expiry;
+      //       for (beagle::dbl_vec_t::size_type j=0; j<thisStrikes.size(); ++j)
+      //       {
+      //         double strike = thisStrikes[j];
+      //         std::cout << "\n" << strike << "    " << curves.first->value(expiry, strike);
+      //         beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption( expiry,
+      //                                                                                                   strike,
+      //                                                                                                   beagle::product::option::Payoff::call() );
+      //         std::cout << "    " << odfpeop->value(euroOption)
+      //                   << "    " << df * beagle::util::bsCall(strike, fwd, expiry, volatilities[i][j]);
+      //       }
+
+      //       std::cout << "\n\n" << curves.second->value(expiry, spot);
+      //       beagle::product_ptr_t riskyBond = beagle::product::option::Option::createEuropeanOption( expiry,
+      //                                                                                                0.,
+      //                                                                                                beagle::product::option::Payoff::digitalCall() );
+      //       std::cout << "    " << odfpeop->value(riskyBond)
+      //                 << "    " << df * std::exp(-spreads[i] * expiry) << "\n\n";
+      //     }
+      //   }
+      // }
+
       {
+        // Forward is identical to spot
         double spot = 100;
-        double r = .04;
-        double q = -.01;
+        double r = .0;
+        double q = .0;
 
         beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
                                                   [=](double arg) { return std::exp(-r*arg); });
@@ -897,12 +975,12 @@ namespace beagle
                                                   spot,
                                                   beagle::math::RealFunction::createUnaryFunction(
                                                   [=](double arg) { return std::exp(-(r-q)*arg); }));
-        beagle::valuation::OneDimFiniteDifferenceSettings settings(104, 250, 4.5);
+        beagle::valuation::OneDimFiniteDifferenceSettings settings(365, 151, 4.5);
 
-        beagle::dbl_vec_t expiries{1., 2.};
-        beagle::dbl_vec_vec_t strikes{{105, 125}, {110, 128}};
-        beagle::dbl_vec_vec_t volatilities{{.3753, .3253},
-                                           {.4053, .3653}};
+        beagle::dbl_vec_t expiries{31./365, 61./365};
+        beagle::dbl_vec_t strikes{90., 95., 100., 105., 110.};
+        beagle::dbl_vec_vec_t volatilities{{.301734649, .275963922, .253982532, .237653385, .228700874},
+                                           {.303568185, .277643443, .255530526, .239103854, .230098533}};
         beagle::dbl_vec_t spreads{.1, .1};
 
         beagle::volatility_smile_credit_spread_coll_t quotes;
@@ -910,7 +988,7 @@ namespace beagle
         {
           double expiry = expiries[i];
           quotes.emplace_back(expiry,
-                              std::make_pair(strikes[i], volatilities[i]),
+                              std::make_pair(strikes, volatilities[i]),
                               spreads[i]);
         }
 
@@ -938,19 +1016,17 @@ namespace beagle
           {
             double expiry = expiries[i];
             double df = discounting->value(expiry);
-            double fwd = forward->value(expiry);
-            beagle::dbl_vec_t thisStrikes = strikes[i];
 
             std::cout << "expiry = " << expiry;
-            for (beagle::dbl_vec_t::size_type j=0; j<thisStrikes.size(); ++j)
+            for (beagle::dbl_vec_t::size_type j=0; j<strikes.size(); ++j)
             {
-              double strike = thisStrikes[j];
+              double strike = strikes[j];
               std::cout << "\n" << strike << "    " << curves.first->value(expiry, strike);
               beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption( expiry,
                                                                                                         strike,
                                                                                                         beagle::product::option::Payoff::call() );
               std::cout << "    " << odfpeop->value(euroOption)
-                        << "    " << df * beagle::util::bsCall(strike, fwd, expiry, volatilities[i][j]);
+                        << "    " << df * beagle::util::bsCall(strike, spot, expiry, volatilities[i][j]);
             }
 
             std::cout << "\n\n" << curves.second->value(expiry, spot);
@@ -962,6 +1038,7 @@ namespace beagle
           }
         }
       }
+
       std::cout << "\nEnd of test\n";
     }
   }

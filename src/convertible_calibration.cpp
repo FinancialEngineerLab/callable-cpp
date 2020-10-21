@@ -126,7 +126,6 @@ namespace beagle
             }
 
             results.emplace_back(df*bond - m_Targets.back());
-            // std::cout << results[0] << "    " << results[1] << std::endl;
             return results;
           }
           dbl_mat_t derivativeWithRespectToParameters( const dbl_vec_t& parameters ) const override
