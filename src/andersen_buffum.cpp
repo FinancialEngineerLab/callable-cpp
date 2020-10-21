@@ -977,6 +977,11 @@ namespace beagle
                                                   [=](double arg) { return std::exp(-(r-q)*arg); }));
         beagle::valuation::OneDimFiniteDifferenceSettings settings(365, 151, 4.5);
 
+        // Volatility surface generated with SABR:
+        // alpha =  0.4
+        // beta  =  0.9
+        // rho   = -0.5
+        // nu    =  1.5
         beagle::dbl_vec_t expiries{31./365, 61./365};
         beagle::dbl_vec_t strikes{90., 95., 100., 105., 110.};
         beagle::dbl_vec_vec_t volatilities{{.301734649, .275963922, .253982532, .237653385, .228700874},
