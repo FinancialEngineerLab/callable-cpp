@@ -24,7 +24,7 @@ namespace beagle
 
       // Set up dividend
       beagle::dividend_schedule_t dividends;
-      dividends.emplace_back( 0.5, 0.04, 1.0 );
+      dividends.emplace_back( 0.5, 0.0, 3.0 );
       //dividends.emplace_back( 1.5, 0.0, 3.0 );
       //dividends.emplace_back( 2.5, 0.01, .0 );
       //dividends.emplace_back( 3.5, 0.0, 3.0 );
@@ -60,7 +60,7 @@ namespace beagle
       beagle::valuation::OneDimFiniteDifferenceSettings settings(750, 1501, 4.5);
 
       // Set up options
-      double expiry = 5.;
+      double expiry = 1.;
       double strike = 125.;
       beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::put();
 
@@ -74,8 +74,8 @@ namespace beagle
       try
       {
         beagle::pricer_ptr_t bscfeop = beagle::valuation::Pricer::formBlackScholesClosedFormEuropeanOptionPricer(forward,
-                                                                                                                discounting,
-                                                                                                                vol );
+                                                                                                                 discounting,
+                                                                                                                 vol );
         beagle::pricer_ptr_t odbpop  = beagle::valuation::Pricer::formOneDimBackwardPDEOptionPricer(
                                                                   forward,
                                                                   discounting,
@@ -557,21 +557,21 @@ namespace beagle
       beagle::interp_builder_ptr_t spline = beagle::math::InterpolationBuilder::naturalCubicSpline();
       beagle::real_function_ptr_t func = spline->formFunction(xValues, yValues);
 
-      beagle::dbl_vec_t xs(601U);
+      beagle::dbl_vec_t xs(61U);
       std::cout << "[";
-      for (int i=0; i<601; ++i)
+      for (int i=0; i<61; ++i)
       {
-        xs[i] = i * .01;
+        xs[i] = i * .1;
         std::cout << xs[i] << ", ";
       }
-      std::cout << "]";
+      std::cout << "]\n";
 
       std::cout << "[";
       for (double x : xs)
       {
         std::cout << func->value(x) << ", ";
       }
-      std::cout << "]";
+      std::cout << "]\n";
 
       std::cout << "\nEnd of Test 9\n";
     }
