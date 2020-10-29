@@ -237,7 +237,7 @@ namespace beagle
                               strikes.cend(),
                               prices.begin(),
                               [=](double strike)
-                              { return cumForward * results->value(strike) / exForward; } );
+                              { return cumForward *  (1. - jt->first) * results->value(strike) / exForward; } );
             }
 
             start = end;
@@ -245,11 +245,11 @@ namespace beagle
 
           double forward = forwardCurve()->value(expiry);
           beagle::dbl_vec_t strikes(stateVars);
-          std::transform(strikes.begin(),
-                         strikes.end(),
+          std::transform(moneynesses.begin(),
+                         moneynesses.end(),
                          strikes.begin(),
-                         [=](double logMoneyness)
-                         { return forward * std::exp(logMoneyness); });
+                         [=](double moneyness)
+                         { return forward * moneyness; });
           beagle::real_function_ptr_t result = finiteDifferenceSettings().interpolationMethod()->formFunction(strikes, prices);
           return discountCurve()->value(expiry) * forward * result->value(strike);
         }

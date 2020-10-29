@@ -24,7 +24,7 @@ namespace beagle
 
       // Set up dividend
       beagle::dividend_schedule_t dividends;
-      dividends.emplace_back( 0.5, 0.04, .0 );
+      dividends.emplace_back( 0.5, 0.04, 1.0 );
       //dividends.emplace_back( 1.5, 0.0, 3.0 );
       //dividends.emplace_back( 2.5, 0.01, .0 );
       //dividends.emplace_back( 3.5, 0.0, 3.0 );
