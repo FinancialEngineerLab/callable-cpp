@@ -1,6 +1,13 @@
 #include "one_dim_pde_pricer.hpp"
 #include "solver.hpp"
 #include "bond.hpp"
+#include "real_function.hpp"
+#include "real_2d_function.hpp"
+#include "option.hpp"
+#include "payoff.hpp"
+#include "pricer.hpp"
+#include "dividend_policy.hpp"
+#include "interpolation_builder.hpp"
 
 #include <iterator>
 

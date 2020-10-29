@@ -213,10 +213,10 @@ namespace beagle
         volsColl.emplace_back(beagle::dbl_vec_t{0.2809, 0.2693, 0.2584, 0.2486, 0.2399, 0.2321, 0.2251, 0.2190, 0.2135});
 
         beagle::volatility_smile_coll_t volSmiles;
-        for (int i=0; i<expiries.size(); ++i)
+        for (beagle::dbl_vec_t::size_type i=0; i<expiries.size(); ++i)
         {
           beagle::dbl_vec_t strikes = strikesColl[i];
-          for (int j=0; j<strikes.size(); ++j)
+          for (beagle::dbl_vec_t::size_type j=0; j<strikes.size(); ++j)
             strikes[j] *= spot;
 
           volSmiles.emplace_back(expiries[i], std::make_pair(strikes, volsColl[i]));
