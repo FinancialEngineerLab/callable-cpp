@@ -1,3 +1,14 @@
 .vscode/
+.ipynb_checkpoints/
+.vs/
 build/
 Eigen/
+Beagle.*
+Debug/
+Release/
+doc/american/american.aux
+doc/american/american.log
+doc/american/american.out
+doc/black_scholes/black_scholes.aux
+doc/black_scholes/black_scholes.log
+doc/black_scholes/black_scholes.out
