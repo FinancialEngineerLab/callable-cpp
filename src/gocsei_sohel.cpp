@@ -24,7 +24,7 @@ namespace beagle
 
       // Set up dividend
       beagle::dividend_schedule_t dividends;
-      dividends.emplace_back( 0.5, 0.0, 3.0 );
+      dividends.emplace_back( 121. / 365., 0.0, 1.0 );
       //dividends.emplace_back( 1.5, 0.0, 3.0 );
       //dividends.emplace_back( 2.5, 0.01, .0 );
       //dividends.emplace_back( 3.5, 0.0, 3.0 );
@@ -43,10 +43,10 @@ namespace beagle
                     { return std::make_pair(std::get<0>(item), std::get<2>(item)); });
 
       // Model parameters
-      double spot = 100.;
-      double rate = .03;
-      double carry = .01;
-      double vol = .3;
+      double spot = 10.;
+      double rate = .01;
+      double carry = .0;
+      double vol = .2;
 
       beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
                                                 [=](double arg) { return std::exp(-rate * arg);});
@@ -60,8 +60,8 @@ namespace beagle
       beagle::valuation::OneDimFiniteDifferenceSettings settings(750, 1501, 4.5);
 
       // Set up options
-      double expiry = 1.;
-      double strike = 125.;
+      double expiry = 364. / 365.;
+      double strike = 10.;
       beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::put();
 
       beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption( expiry,

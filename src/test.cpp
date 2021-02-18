@@ -3,7 +3,7 @@
 
 int main( void )
 {
-  // beagle::test::test_gocsei_sohel();
+  beagle::test::test_gocsei_sohel();
   // beagle::test::test_local_vol_calibration();
   // beagle::test::test_cev_finite_difference();
   // beagle::test::test_tridiagonal_solver();
@@ -20,7 +20,7 @@ int main( void )
   // beagle::test::generateAndersenBuffumTableOneCalibratedPrice();
   // beagle::test::generateAndersenBuffumTableOneNaivePrice();
 
-  beagle::test::test_volatility_smile_credit_spread_calibration();
+  // beagle::test::test_volatility_smile_credit_spread_calibration();
 
   return 0;
 }
