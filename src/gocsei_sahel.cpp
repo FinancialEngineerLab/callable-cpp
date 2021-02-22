@@ -1,4 +1,4 @@
-#include "gocsei_sohel.hpp"
+#include "gocsei_sahel.hpp"
 #include "pricer.hpp"
 #include "option.hpp"
 #include "bond.hpp"
@@ -18,7 +18,7 @@ namespace beagle
 {
   namespace test
   {
-    void test_gocsei_sohel(void)
+    void test_gocsei_sahel(void)
     {
       std::cout << "\nStart of Test 1:\n\n";
 

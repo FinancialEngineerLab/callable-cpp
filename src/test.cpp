@@ -1,9 +1,9 @@
-#include "gocsei_sohel.hpp"
+#include "gocsei_sahel.hpp"
 #include "andersen_buffum.hpp"
 
 int main( void )
 {
-  beagle::test::test_gocsei_sohel();
+  beagle::test::test_gocsei_sahel();
   // beagle::test::test_local_vol_calibration();
   // beagle::test::test_cev_finite_difference();
   // beagle::test::test_tridiagonal_solver();

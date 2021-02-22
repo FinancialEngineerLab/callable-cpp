@@ -4,7 +4,7 @@ namespace beagle
 {
   namespace test
   {
-    void test_gocsei_sohel(void);
+    void test_gocsei_sahel(void);
 
     void test_local_vol_calibration(void);
 

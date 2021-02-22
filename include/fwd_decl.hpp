@@ -33,6 +33,7 @@ namespace beagle
     struct TwoDimInterpolationBuilder;
     struct OneDimParabolicPDESolver;
     struct BoundaryCondition;
+    struct IntegrationMethod;
   }
 
   namespace valuation
@@ -60,6 +61,7 @@ namespace beagle
   using interp_builder_2d_ptr_t = std::shared_ptr<math::TwoDimInterpolationBuilder>;
   using parabolic_pde_solver_ptr_t = std::shared_ptr<math::OneDimParabolicPDESolver>;
   using boundary_condition_ptr_t = std::shared_ptr<math::BoundaryCondition>;
+  using integration_method_ptr_t = std::shared_ptr<math::IntegrationMethod>;
 
   using pricer_ptr_t = std::shared_ptr<valuation::Pricer>;
   using dividend_policy_ptr_t = std::shared_ptr<valuation::DividendPolicy>;

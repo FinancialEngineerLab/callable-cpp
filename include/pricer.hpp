@@ -60,6 +60,44 @@ namespace beagle
                                                                   const beagle::real_2d_function_ptr_t& rate,
                                                                   const beagle::real_2d_function_ptr_t& recovery,
                                                                   const beagle::valuation::OneDimFiniteDifferenceSettings& settings);
+      static beagle::pricer_ptr_t formClosedFormSABREuropeanOptionPricer(const beagle::real_function_ptr_t& alpha,
+                                                                         const beagle::real_function_ptr_t& beta,
+                                                                         const beagle::real_function_ptr_t& rho,
+                                                                         const beagle::real_function_ptr_t& nu );
+      static beagle::pricer_ptr_t formClosedFormShiftedSABREuropeanOptionPricer(const beagle::real_function_ptr_t& alpha,
+                                                                                const beagle::real_function_ptr_t& beta,
+                                                                                const beagle::real_function_ptr_t& rho,
+                                                                                const beagle::real_function_ptr_t& nu,
+                                                                                double shift );
+      static beagle::pricer_ptr_t formClosedFormExactSABREuropeanOptionPricer(const beagle::real_function_ptr_t& alpha,
+                                                                              const beagle::real_function_ptr_t& beta,
+                                                                              const beagle::real_function_ptr_t& rho,
+                                                                              const beagle::real_function_ptr_t& nu,
+                                                                              bool useApproximateKernel,
+                                                                              const beagle::integration_method_ptr_t& quadMethod);
+      static beagle::pricer_ptr_t formClosedFormFreeBoundarySABREuropeanOptionPricer(const beagle::real_function_ptr_t& alpha,
+                                                                                     const beagle::real_function_ptr_t& beta,
+                                                                                     const beagle::real_function_ptr_t& rho,
+                                                                                     const beagle::real_function_ptr_t& nu,
+                                                                                     bool useApproximateKernel,
+                                                                                     const beagle::integration_method_ptr_t& quadMethod);
+      static beagle::pricer_ptr_t formClsoedFormNormalImprovedFreeBoundarySABREuropeanOptionPricer(const beagle::real_function_ptr_t& alpha,
+                                                                                                   const beagle::real_function_ptr_t& beta,
+                                                                                                   const beagle::real_function_ptr_t& rho,
+                                                                                                   const beagle::real_function_ptr_t& nu,
+                                                                                                   bool useApproximateKernel,
+                                                                                                   const beagle::integration_method_ptr_t& quadMethod );
+      static beagle::pricer_ptr_t formClosedFormNormalFreeBoundarySABREuropeanOptionPricer(const beagle::real_function_ptr_t& alpha,
+                                                                                           const beagle::real_function_ptr_t& rho,
+                                                                                           const beagle::real_function_ptr_t& nu,
+                                                                                           bool useApproximateKernel,
+                                                                                           const beagle::integration_method_ptr_t& quadMethod );
+      static beagle::pricer_ptr_t formClosedFormExactCEVEuropeanOptionPricer(const beagle::real_function_ptr_t& beta,
+                                                                             const beagle::real_function_ptr_t& sigma,
+                                                                             const beagle::integration_method_ptr_t& quadMethod );
+      static beagle::pricer_ptr_t formClosedFormFreeBoundaryCEVEuropeanOptionPricer(const beagle::real_function_ptr_t& beta,
+                                                                                    const beagle::real_function_ptr_t& sigma,
+                                                                                    const beagle::integration_method_ptr_t& quadMethod);
     };
 
     namespace mixins
@@ -91,6 +129,18 @@ namespace beagle
                             const beagle::dbl_vec_t& stateVars,
                             beagle::dbl_vec_t& prices) const=0;
       };
+
+      struct ModelParameters
+      {
+        virtual int numberOfParameters(void) const = 0;
+      };
     }
+
+    struct ClosedFormEuropeanOptionPricer : public Pricer,
+                                            public mixins::ModelParameters
+    {
+    public:
+      virtual int numberOfParameters(void) const = 0;
+    };
   }
 }
