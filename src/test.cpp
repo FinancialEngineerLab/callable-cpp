@@ -24,6 +24,7 @@ int main( void )
   // beagle::test::test_volatility_smile_credit_spread_calibration();
 
   beagle::test::test_sabr();
+  beagle::test::test_shifted_sabr();
 
   return 0;
 }
