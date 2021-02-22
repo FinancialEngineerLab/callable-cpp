@@ -15,14 +15,16 @@ namespace beagle
         void checkSABRParameters(double alpha,
                                  double beta,
                                  double rho,
-                                 double nu)
+                                 double nu,
+                                 bool isFreeBoundarySABR)
         {
+          double betaMax = isFreeBoundarySABR ? .5 : 1.;
           const double& eps = util::epsilon();
           if (alpha < eps)
             throw("The alpha parameter of the SABR model must be positive!");
-          if (beta < eps || beta-1. > eps)
-            throw("The beta parameter of the SABR model must be between zero and one!");
-          if (rho+1. < eps || rho-1. > eps)
+          if (beta < eps || beta - betaMax > eps)
+            throw("The beta parameter of the SABR model must be between zero and " + std::to_string(betaMax) + "!");
+          if (rho + 1. < eps || rho - 1. > eps)
             throw("The rho parameter of the SABR model must be between minus one and one!");
           if (nu < eps)
             throw("The nu parameter of the SABR model must be positive!");
@@ -89,7 +91,7 @@ namespace beagle
           double beta = m_Beta->value(expiry);
           double rho = m_Rho->value(expiry);
           double nu = m_Nu->value(expiry);
-          checkSABRParameters(alpha, beta, rho, nu);
+          checkSABRParameters(alpha, beta, rho, nu, false);
 
           double result = 0.;
 
@@ -198,7 +200,7 @@ namespace beagle
           double beta = m_Beta->value(expiry);
           double rho = m_Rho->value(expiry);
           double nu = m_Nu->value(expiry);
-          checkSABRParameters(alpha, beta, rho, nu);
+          checkSABRParameters(alpha, beta, rho, nu, false);
 
           double result = 0.;
 

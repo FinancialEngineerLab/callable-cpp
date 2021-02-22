@@ -26,5 +26,8 @@ int main( void )
   beagle::test::test_sabr();
   beagle::test::test_shifted_sabr();
 
+  beagle::test::test_cev();
+  beagle::test::test_free_boundary_cev();
+
   return 0;
 }
