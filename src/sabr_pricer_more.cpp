@@ -5,6 +5,8 @@
 #include "real_function.hpp"
 #include "integration_method.hpp"
 
+#include <iostream>
+
 namespace beagle
 {
   namespace valuation
@@ -22,6 +24,8 @@ namespace beagle
                                                                 const beagle::real_function_ptr_t& nu,
                                                                 bool useApproximateKernel,
                                                                 const beagle::integration_method_ptr_t& quadMethod) :
+          m_Forward(forward),
+          m_Discounting(discounting),
           m_Alpha(alpha),
           m_Beta(beta),
           m_Rho(rho),
@@ -217,22 +221,6 @@ namespace beagle
         const beagle::real_function_ptr_t& discountCurve(void) const
         {
           return m_Discounting;
-        }
-        const beagle::real_function_ptr_t& alpha(void) const
-        {
-          return m_Alpha;
-        }
-        const beagle::real_function_ptr_t& beta(void) const
-        {
-          return m_Beta;
-        }
-        const beagle::real_function_ptr_t& rho(void) const
-        {
-          return m_Rho;
-        }
-        const beagle::real_function_ptr_t& nu(void) const
-        {
-          return m_Nu;
         }
         bool kernelMethod(void) const
         {
