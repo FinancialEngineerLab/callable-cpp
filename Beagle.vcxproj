@@ -114,10 +114,12 @@
     <ClCompile Include="src\calibration_adapter.cpp" />
     <ClCompile Include="src\calibration_constraint.cpp" />
     <ClCompile Include="src\calibration_functor.cpp" />
+    <ClCompile Include="src\cev_pricer.cpp" />
     <ClCompile Include="src\convertible_calibration.cpp" />
     <ClCompile Include="src\dividend_policy.cpp" />
     <ClCompile Include="src\forward_pde_pricer.cpp" />
-    <ClCompile Include="src\gocsei_sohel.cpp" />
+    <ClCompile Include="src\gocsei_sahel.cpp" />
+    <ClCompile Include="src\integration_method.cpp" />
     <ClCompile Include="src\interpolation_builder.cpp" />
     <ClCompile Include="src\interpolation_builder_2d.cpp" />
     <ClCompile Include="src\local_vol_calibration.cpp" />
@@ -128,6 +130,10 @@
     <ClCompile Include="src\product.cpp" />
     <ClCompile Include="src\real_2d_function.cpp" />
     <ClCompile Include="src\real_function.cpp" />
+    <ClCompile Include="src\sabr.cpp" />
+    <ClCompile Include="src\sabr_pricer.cpp" />
+    <ClCompile Include="src\sabr_pricer_more.cpp" />
+    <ClCompile Include="src\sabr_pricer_normal.cpp" />
     <ClCompile Include="src\solver.cpp" />
     <ClCompile Include="src\test.cpp" />
     <ClCompile Include="src\util.cpp" />

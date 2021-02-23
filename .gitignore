@@ -3,7 +3,8 @@
 .vs/
 build/
 Eigen/
-Beagle.*
+Beagle.sdf
+Beagle.vcxproj.filters
 Debug/
 Release/
 doc/american/american.aux

@@ -59,7 +59,6 @@ namespace beagle
           else
           {
             double mappedAlphaZerothOrder;
-            double mappedAlphaFirstOrder;
             if ( std::fabs( forward - strike ) > eps )
             {
               double mappedBeta = effectiveZeroCorrelationBeta(strike, forward, expiry);
@@ -185,7 +184,7 @@ namespace beagle
 
               return jacobian * sPlusTanTheta * exponentialTerm * squareRootTerm;
             };
-            return factor * m_QuadMethod->quadrature(beagle::math::RealFunction::createUnaryFunction(f), 0, .5 * pi );;
+            return factor * m_QuadMethod->quadrature(beagle::math::RealFunction::createUnaryFunction(f), 0, .495 * pi );;
           }
           else
           {
@@ -323,13 +322,13 @@ namespace beagle
         beagle::pricer_ptr_t updateModelParameters(const beagle::real_function_ptr_coll_t& params) const override
         {
           return Pricer::formClosedFormExactSABREuropeanOptionPricer(m_Forward,
-                                                                           m_Discounting,
-                                                                           params[0],
-                                                                           params[1],
-                                                                           params[2],
-                                                                           params[3],
-                                                                           m_KernelMethod,
-                                                                           m_QuadMethod);
+                                                                     m_Discounting,
+                                                                     params[0],
+                                                                     params[1],
+                                                                     params[2],
+                                                                     params[3],
+                                                                     m_KernelMethod,
+                                                                     m_QuadMethod);
         }
       private:
         double doEffectiveStrike( double strike,
@@ -443,13 +442,13 @@ namespace beagle
         beagle::pricer_ptr_t updateModelParameters( const beagle::real_function_ptr_coll_t& params ) const override
         {
           return Pricer::formClosedFormFreeBoundarySABREuropeanOptionPricer(m_Forward,
-                                                                                  m_Discounting,
-                                                                                  params[0],
-                                                                                  params[1],
-                                                                                  params[2],
-                                                                                  params[3],
-                                                                                  m_KernelMethod,
-                                                                                  m_QuadMethod);
+                                                                            m_Discounting,
+                                                                            params[0],
+                                                                            params[1],
+                                                                            params[2],
+                                                                            params[3],
+                                                                            m_KernelMethod,
+                                                                            m_QuadMethod);
         }
       private:
         double doEffectiveStrike( double strike,
@@ -460,26 +459,28 @@ namespace beagle
       };
     }
 
-    beagle::pricer_ptr_t formClosedFormExactSABREuropeanOptionPricer(const beagle::real_function_ptr_t& forward,
-                                                                     const beagle::real_function_ptr_t& discounting,
-                                                                     const beagle::real_function_ptr_t& alpha,
-                                                                     const beagle::real_function_ptr_t& beta,
-                                                                     const beagle::real_function_ptr_t& rho,
-                                                                     const beagle::real_function_ptr_t& nu,
-                                                                     bool useApproximateKernel,
-                                                                     const beagle::integration_method_ptr_t& quadMethod)
+    beagle::pricer_ptr_t
+    Pricer::formClosedFormExactSABREuropeanOptionPricer(const beagle::real_function_ptr_t& forward,
+                                                        const beagle::real_function_ptr_t& discounting,
+                                                        const beagle::real_function_ptr_t& alpha,
+                                                        const beagle::real_function_ptr_t& beta,
+                                                        const beagle::real_function_ptr_t& rho,
+                                                        const beagle::real_function_ptr_t& nu,
+                                                        bool useApproximateKernel,
+                                                        const beagle::integration_method_ptr_t& quadMethod)
     {
       return std::make_shared<impl::ClosedFormExactSABREuropeanOptionPricer>(forward, discounting, alpha, beta, rho, nu, useApproximateKernel, quadMethod);
     }
 
-    beagle::pricer_ptr_t formClosedFormFreeBoundarySABREuropeanOptionPricer(const beagle::real_function_ptr_t& forward,
-                                                                            const beagle::real_function_ptr_t& discounting,
-                                                                            const beagle::real_function_ptr_t& alpha,
-                                                                            const beagle::real_function_ptr_t& beta,
-                                                                            const beagle::real_function_ptr_t& rho,
-                                                                            const beagle::real_function_ptr_t& nu,
-                                                                            bool useApproximateKernel,
-                                                                            const beagle::integration_method_ptr_t& quadMethod)
+    beagle::pricer_ptr_t
+    Pricer::formClosedFormFreeBoundarySABREuropeanOptionPricer(const beagle::real_function_ptr_t& forward,
+                                                               const beagle::real_function_ptr_t& discounting,
+                                                               const beagle::real_function_ptr_t& alpha,
+                                                               const beagle::real_function_ptr_t& beta,
+                                                               const beagle::real_function_ptr_t& rho,
+                                                               const beagle::real_function_ptr_t& nu,
+                                                               bool useApproximateKernel,
+                                                               const beagle::integration_method_ptr_t& quadMethod)
     {
       return std::make_shared<impl::ClosedFormFreeBoundarySABREuropeanOptionPricer>(forward, discounting, alpha, beta, rho, nu, useApproximateKernel, quadMethod);
     }

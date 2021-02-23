@@ -169,7 +169,7 @@ namespace beagle
       double q = .02;
 
       double a = .25;
-      double b = .5;
+      double b = .3;
       double c = -.3;
       double d = .45;
 
@@ -211,7 +211,7 @@ namespace beagle
       double q = .02;
 
       double a = .25;
-      double b = .5;
+      double b = .3;
       double c = -.3;
       double d = .45;
 
