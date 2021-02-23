@@ -12,5 +12,8 @@ namespace beagle
 
     void test_exact_sabr(void);
     void test_free_boundary_sabr(void);
+
+    void test_normal_free_boundary_sabr(void);
+    void test_normal_enhanced_free_boundary_sabr(void);
   }
 }

@@ -12,6 +12,7 @@ int main( void )
   // beagle::test::test_bond_pricer();
   // beagle::test::test_discontinuous_forward_curve();
   // beagle::test::test_natural_cubic_spline();
+
   // beagle::test::generateAndersenBuffumFigureTwo();
   // beagle::test::generateAndersenBuffumFigureThree();
   // beagle::test::generateAndersenBuffumFigureFour();
@@ -31,6 +32,9 @@ int main( void )
 
   beagle::test::test_exact_sabr();
   beagle::test::test_free_boundary_sabr();
+
+  beagle::test::test_normal_free_boundary_sabr();
+  beagle::test::test_normal_enhanced_free_boundary_sabr();
 
   return 0;
 }
