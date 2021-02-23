@@ -209,10 +209,43 @@ namespace beagle
             return factor * (R + deltaR);
           }
         }
+      protected:
+        const beagle::real_function_ptr_t& forwardCurve(void) const
+        {
+          return m_Forward;
+        }
+        const beagle::real_function_ptr_t& discountCurve(void) const
+        {
+          return m_Discounting;
+        }
+        const beagle::real_function_ptr_t& alpha(void) const
+        {
+          return m_Alpha;
+        }
+        const beagle::real_function_ptr_t& beta(void) const
+        {
+          return m_Beta;
+        }
+        const beagle::real_function_ptr_t& rho(void) const
+        {
+          return m_Rho;
+        }
+        const beagle::real_function_ptr_t& nu(void) const
+        {
+          return m_Nu;
+        }
+        bool kernelMethod(void) const
+        {
+          return m_KernelMethod;
+        }
+        const beagle::integration_method_ptr_t& integrationMethod(void) const
+        {
+          return m_QuadMethod;
+        }
       private:
         virtual double doEffectiveStrike(double strike,
                                          double forward)  const = 0;
-      protected:
+      private:
         beagle::real_function_ptr_t m_Forward;
         beagle::real_function_ptr_t m_Discounting;
         beagle::real_function_ptr_t m_Alpha;
@@ -255,8 +288,8 @@ namespace beagle
 
           double expiry = pO->expiry();
           double strike = pO->strike();
-          double forward = m_Forward->value(expiry);
-          double discouting = m_Discounting->value(expiry);
+          double forward = forwardCurve()->value(expiry);
+          double discouting = discountCurve()->value(expiry);
           const double& eps = beagle::util::epsilon();
           const double& pi = beagle::util::pi();
 
@@ -266,11 +299,11 @@ namespace beagle
 
           if (nuToUse < eps)
           {
-            return Pricer::formClosedFormExactCEVEuropeanOptionPricer(m_Forward,
-                                                                      m_Discounting,
+            return Pricer::formClosedFormExactCEVEuropeanOptionPricer(forwardCurve(),
+                                                                      discountCurve(),
                                                                       beagle::math::RealFunction::createConstantFunction(betaToUse),
                                                                       beagle::math::RealFunction::createConstantFunction(alphaToUse),
-                                                                      m_QuadMethod)->value(product);
+                                                                      integrationMethod())->value(product);
           }
 
           double result = 0.;
@@ -290,7 +323,7 @@ namespace beagle
             return std::sin(eta * theta) * std::sin(theta) / temp
                    * kernel( tau, s ) / std::cosh(s);
           };
-          result += m_QuadMethod->quadrature( beagle::math::RealFunction::createUnaryFunction(fOne), 0, pi );
+          result += integrationMethod()->quadrature( beagle::math::RealFunction::createUnaryFunction(fOne), 0, pi );
 
           // double theta = 3e-4*PI;
           // double temp = b - std::cos(theta);
@@ -309,7 +342,7 @@ namespace beagle
                      * (1 + tanTheta * tanTheta)
                      * kernel( tau, std::acosh(tempOne) ) / tempOne;
           };
-          result += m_QuadMethod->quadrature( beagle::math::RealFunction::createUnaryFunction(fTwo), 0, .495 * pi );
+          result += integrationMethod()->quadrature( beagle::math::RealFunction::createUnaryFunction(fTwo), 0, .495 * pi );
 
           result *= factor;
           if (pO->payoff()->isCall())
@@ -321,14 +354,14 @@ namespace beagle
         }
         beagle::pricer_ptr_t updateModelParameters(const beagle::real_function_ptr_coll_t& params) const override
         {
-          return Pricer::formClosedFormExactSABREuropeanOptionPricer(m_Forward,
-                                                                     m_Discounting,
+          return Pricer::formClosedFormExactSABREuropeanOptionPricer(forwardCurve(),
+                                                                     discountCurve(),
                                                                      params[0],
                                                                      params[1],
                                                                      params[2],
                                                                      params[3],
-                                                                     m_KernelMethod,
-                                                                     m_QuadMethod);
+                                                                     kernelMethod(),
+                                                                     integrationMethod());
         }
       private:
         double doEffectiveStrike( double strike,
@@ -370,8 +403,8 @@ namespace beagle
 
           double expiry = pO->expiry();
           double strike = pO->strike();
-          double forward = m_Forward->value(expiry);
-          double discouting = m_Discounting->value(expiry);
+          double forward = forwardCurve()->value(expiry);
+          double discouting = discountCurve()->value(expiry);
           const double& eps = beagle::util::epsilon();
           const double& pi = beagle::util::pi();
 
@@ -381,11 +414,11 @@ namespace beagle
 
           if (nuToUse < eps)
           {
-            return Pricer::formClosedFormFreeBoundaryCEVEuropeanOptionPricer(m_Forward,
-                                                                             m_Discounting,
+            return Pricer::formClosedFormFreeBoundaryCEVEuropeanOptionPricer(forwardCurve(),
+                                                                             discountCurve(),
                                                                              beagle::math::RealFunction::createConstantFunction(betaToUse),
                                                                              beagle::math::RealFunction::createConstantFunction(alphaToUse),
-                                                                             m_QuadMethod)->value(product);
+                                                                             integrationMethod())->value(product);
           }
 
           double result = 0.;
@@ -406,7 +439,7 @@ namespace beagle
                    * kernel( tau, s ) / std::cosh(s);
           };
           if ( !(strike < eps) )
-            result += m_QuadMethod->quadrature( beagle::math::RealFunction::createUnaryFunction(fOne), 0, pi );
+            result += integrationMethod()->quadrature( beagle::math::RealFunction::createUnaryFunction(fOne), 0, pi );
 
           // double theta = 3e-4*PI;
           // double temp = b - std::cos(theta);
@@ -429,7 +462,7 @@ namespace beagle
             else
               return common * std::sinh(eta * tanTheta);
           };
-          result += m_QuadMethod->quadrature( beagle::math::RealFunction::createUnaryFunction(fTwo), 0, .49 * pi );
+          result += integrationMethod()->quadrature( beagle::math::RealFunction::createUnaryFunction(fTwo), 0, .49 * pi );
 
           result *= factor;
           if (pO->payoff()->isCall())
@@ -441,14 +474,14 @@ namespace beagle
         }
         beagle::pricer_ptr_t updateModelParameters( const beagle::real_function_ptr_coll_t& params ) const override
         {
-          return Pricer::formClosedFormFreeBoundarySABREuropeanOptionPricer(m_Forward,
-                                                                            m_Discounting,
+          return Pricer::formClosedFormFreeBoundarySABREuropeanOptionPricer(forwardCurve(),
+                                                                            discountCurve(),
                                                                             params[0],
                                                                             params[1],
                                                                             params[2],
                                                                             params[3],
-                                                                            m_KernelMethod,
-                                                                            m_QuadMethod);
+                                                                            kernelMethod(),
+                                                                            integrationMethod());
         }
       private:
         double doEffectiveStrike( double strike,
