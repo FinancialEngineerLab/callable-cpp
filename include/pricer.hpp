@@ -89,7 +89,7 @@ namespace beagle
                                                                                      const beagle::real_function_ptr_t& nu,
                                                                                      bool useApproximateKernel,
                                                                                      const beagle::integration_method_ptr_t& quadMethod);
-      static beagle::pricer_ptr_t formClsoedFormNormalImprovedFreeBoundarySABREuropeanOptionPricer(const beagle::real_function_ptr_t& forward,
+      static beagle::pricer_ptr_t formClosedFormNormalImprovedFreeBoundarySABREuropeanOptionPricer(const beagle::real_function_ptr_t& forward,
                                                                                                    const beagle::real_function_ptr_t& discounting,
                                                                                                    const beagle::real_function_ptr_t& alpha,
                                                                                                    const beagle::real_function_ptr_t& beta,

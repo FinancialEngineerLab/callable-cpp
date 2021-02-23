@@ -5,6 +5,8 @@
 #include "real_function.hpp"
 #include "integration_method.hpp"
 
+#include <stdio.h>
+
 namespace beagle
 {
   namespace valuation
@@ -77,15 +79,13 @@ namespace beagle
 
           real_func_t fTwo = [=](double theta) {
             double tanTheta = std::tan( theta );
-            double expMinusX = std::exp( -tanTheta );
-            double expMinusTwoX = expMinusX * expMinusX;
-            double expMinusNuX = std::exp( -nu * tanTheta );
-            double temp = 1 + expMinusTwoX + 2. * b * expMinusX;
+            double temp = b + std::cosh(tanTheta);
 
-            return std::sin(nu * pi) * expMinusNuX * (1. - expMinusTwoX) / temp
-                   * std::exp( -qK * qF * temp / 2. / expMinusX / tau) * (1 + tanTheta * tanTheta);
+            return std::sin(nu * pi) * std::exp(-nu * tanTheta) / temp
+                    * std::exp(-qK * qF * temp / tau) * std::sinh(tanTheta)
+                    * (1 + tanTheta * tanTheta);
           };
-          result += m_QuadMethod->quadrature(beagle::math::RealFunction::createUnaryFunction(fTwo), 0, .5 * pi );
+          result += m_QuadMethod->quadrature(beagle::math::RealFunction::createUnaryFunction(fTwo), 0, .499 * pi );
 
           if (pO->payoff()->isCall())
             result = factor * result + std::max(forward - strike, 0.);
@@ -162,21 +162,18 @@ namespace beagle
             result += m_QuadMethod->quadrature(beagle::math::RealFunction::createUnaryFunction(fOne), 0, pi);
 
           real_func_t fTwo = [=](double theta) {
-            double tanTheta = std::tan( theta );
-            double expMinusX = std::exp( -tanTheta );
-            double expMinusTwoX = expMinusX * expMinusX;
-            double expMinusNuX = std::exp( -eta * tanTheta );
-            double temp = 1 + expMinusTwoX + 2. * b * expMinusX;
-
-            double common = std::sin(eta * pi) * (1. - expMinusTwoX) / temp
+            double tanTheta = std::tan(theta);
+            double temp = b + std::cosh(tanTheta);
+            double common = std::sin(eta * pi) / temp
                              * (1 + tanTheta * tanTheta)
-                             * std::exp( -qK * qF * temp / 2. / expMinusX / tau);
+                             * std::exp( -qK * qF * temp / tau)
+                             * std::sinh(tanTheta);
             if ( !(strike < util::epsilon()) )
               return common * std::cosh(eta * tanTheta);
             else
               return common * std::sinh(eta * tanTheta);
           };
-          result += m_QuadMethod->quadrature(beagle::math::RealFunction::createUnaryFunction(fTwo), 0, .49 * pi);
+          result += m_QuadMethod->quadrature(beagle::math::RealFunction::createUnaryFunction(fTwo), 0, .499 * pi);
 
           if (pO->payoff()->isCall())
             result = factor * result + std::max(forward - strike, 0.);

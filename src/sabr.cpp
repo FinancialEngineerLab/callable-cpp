@@ -25,12 +25,12 @@ namespace beagle
 
       double expiry = 1.;
       double strike = 50.;
-      beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::put();
+      beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::call();
       beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption(expiry,
                                                                                                strike,
                                                                                                payoff);
 
-      // put option valuation with discounting, funding, and volatility
+      // call option valuation with discounting, funding, and volatility
       beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
                                                 [=](double arg) { return std::exp(-r * arg);});
       beagle::real_function_ptr_t forward = beagle::math::RealFunction::createContinuousForwardAssetPriceFunction(
@@ -65,12 +65,12 @@ namespace beagle
 
       double expiry = 1.;
       double strike = 50.;
-      beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::put();
+      beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::call();
       beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption(expiry,
                                                                                                strike,
                                                                                                payoff);
 
-      // put option valuation with discounting, funding, and volatility
+      // call option valuation with discounting, funding, and volatility
       beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
                                                 [=](double arg) { return std::exp(-r * arg);});
       beagle::real_function_ptr_t forward = beagle::math::RealFunction::createContinuousForwardAssetPriceFunction(
@@ -94,7 +94,7 @@ namespace beagle
 
     void test_cev(void)
     {
-      double spot = 50;
+      double spot = 1.;
       double r = .04;
       double q = .02;
 
@@ -102,13 +102,13 @@ namespace beagle
       double d = .25;
 
       double expiry = 1.;
-      double strike = 50.;
-      beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::put();
+      double strike = 1.;
+      beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::call();
       beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption(expiry,
                                                                                                strike,
                                                                                                payoff);
 
-      // put option valuation with discounting, funding, and volatility
+      // call option valuation with discounting, funding, and volatility
       beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
                                                 [=](double arg) { return std::exp(-r * arg);});
       beagle::real_function_ptr_t forward = beagle::math::RealFunction::createContinuousForwardAssetPriceFunction(
@@ -129,7 +129,7 @@ namespace beagle
 
     void test_free_boundary_cev( void )
     {
-      double spot = 50;
+      double spot = 1;
       double r = .04;
       double q = .02;
 
@@ -137,13 +137,13 @@ namespace beagle
       double d = .25;
 
       double expiry = 1.;
-      double strike = 50.;
-      beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::put();
+      double strike = 1.;
+      beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::call();
       beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption(expiry,
                                                                                                strike,
                                                                                                payoff);
 
-      // put option valuation with discounting, funding, and volatility
+      // call option valuation with discounting, funding, and volatility
       beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
                                                 [=](double arg) { return std::exp(-r * arg);});
       beagle::real_function_ptr_t forward = beagle::math::RealFunction::createContinuousForwardAssetPriceFunction(
