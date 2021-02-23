@@ -46,7 +46,7 @@ namespace beagle
           calculateAdjustedSpotAndStrike( expiry, spot, strike, adjustedSpot, adjustedStrike );
 
           double discounting = m_Discounting->value( expiry );
-          double result = util::bsCall( adjustedStrike, adjustedSpot * factor, expiry, m_Volatility ) * discounting;
+          double result = beagle::util::bsCall( adjustedStrike, adjustedSpot * factor, expiry, m_Volatility ) * discounting;
 
           if (pO->payoff()->isCall())
             return result;
@@ -79,7 +79,7 @@ namespace beagle
             bool zeroes = std::all_of(discreteDividends.cbegin(),
                                       discreteDividends.cend(),
                                       [](double dividend)
-                                      { return std::fabs(dividend) < util::epsilon(); });
+                                      { return std::fabs(dividend) < beagle::util::epsilon(); });
             if (zeroes)
               return;
 
@@ -87,7 +87,7 @@ namespace beagle
             std::transform(dividends.cbegin(), it, exDivTimes.begin(),
                            [](const beagle::dividend_schedule_t::value_type& dividend)
                            { return std::get<0>(dividend); });
-            
+
             auto pAF = dynamic_cast<beagle::math::mixins::AssetForward*>( m_Forward.get() );
 
             double discount = m_Discounting->value(expiry);
@@ -97,8 +97,8 @@ namespace beagle
             double dOne = std::log( spot * factor / strike ) / sigmaRootT + .5 * sigmaRootT;
             double dTwo = dOne - sigmaRootT;
 
-            double nDOne = util::cumulativeStandardNormal(dOne);
-            double nDTwo = util::cumulativeStandardNormal(dTwo);
+            double nDOne = beagle::util::cumulativeStandardNormal(dOne);
+            double nDTwo = beagle::util::cumulativeStandardNormal(dTwo);
             double denominator = nDOne - nDTwo;
 
             beagle::dbl_vec_t a(diff);
@@ -108,7 +108,7 @@ namespace beagle
               double thisDiscount = m_Discounting->value(exDivTimes[i]);
               double thisFactor = pAF->multiplicativeForwardFactor(exDivTimes[i]);
               double dI = dOne - m_Volatility * exDivTimes[i] / rootT;
-              double nDI = util::cumulativeStandardNormal(dI);
+              double nDI = beagle::util::cumulativeStandardNormal(dI);
 
               a[i] = - (factor / thisFactor * nDI - thisDiscount / discount * nDTwo) / factor / denominator;
               b[i] =   (thisDiscount / discount * nDOne - factor / thisFactor * nDI) / denominator;
@@ -117,8 +117,8 @@ namespace beagle
               adjustedStrike += b[i] * discreteDividends[i];
             }
 
-            double phiDOne = util::standardNormal(dOne);
-            double phiDTwo = util::standardNormal(dTwo);
+            double phiDOne = beagle::util::standardNormal(dOne);
+            double phiDTwo = beagle::util::standardNormal(dTwo);
             double oneOverSpotVolRootT = 1. / spot / sigmaRootT;
             double prefactor = oneOverSpotVolRootT / denominator;
             for (int i=0; i<diff; ++i)
@@ -128,7 +128,7 @@ namespace beagle
                 double thisFactorI = pAF->multiplicativeForwardFactor(exDivTimes[i]);
                 double thisFactorJ = pAF->multiplicativeForwardFactor(exDivTimes[j]);
                 double dI = dOne - m_Volatility * (exDivTimes[i] + exDivTimes[j]) / rootT;
-                double nDI = util::standardNormal(dI);
+                double nDI = beagle::util::standardNormal(dI);
 
                 double aIJ = 1. / thisFactorI / thisFactorJ * std::exp(m_Volatility*m_Volatility*exDivTimes[i]) * nDI
                            - (a[i] * phiDOne - b[i] / factor * phiDTwo) * (a[j] - spot * b[j] / strike);
@@ -143,7 +143,7 @@ namespace beagle
 
                 adjustedSpot   += aIJ * discreteDividends[i] * discreteDividends[j];
                 adjustedStrike += bIJ * discreteDividends[i] * discreteDividends[j];
-              
+
               }
             }
           }

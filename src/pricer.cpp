@@ -2,6 +2,7 @@
 #include "real_2d_function.hpp"
 #include "dividend_policy.hpp"
 #include "interpolation_builder.hpp"
+#include "util.hpp"
 
 #include <iostream>
 
@@ -50,10 +51,43 @@ namespace beagle
       return m_NumStdev;
     }
 
-    const beagle::interp_builder_ptr_t& 
+    const beagle::interp_builder_ptr_t&
     OneDimFiniteDifferenceSettings::interpolationMethod( void ) const
     {
       return m_Interp;
+    }
+
+    namespace util
+    {
+      void checkSABRParameters(double alpha,
+                                double beta,
+                                double rho,
+                                double nu,
+                                bool isFreeBoundarySABR)
+      {
+        double betaMax = isFreeBoundarySABR ? .5 : 1.;
+        const double& eps = beagle::util::epsilon();
+        if (alpha < eps)
+          throw("The alpha parameter of the SABR model must be positive!");
+        if (beta < eps || beta - betaMax > eps)
+          throw("The beta parameter of the SABR model must be between zero and " + std::to_string(betaMax) + "!");
+        if (rho + 1. < eps || rho - 1. > eps)
+          throw("The rho parameter of the SABR model must be between minus one and one!");
+        if (nu < eps)
+          throw("The nu parameter of the SABR model must be positive!");
+      }
+
+      void checkCEVParameters(double beta,
+                              double sigma,
+                              bool isFreeBoundaryCEV)
+      {
+        double betaMax = isFreeBoundaryCEV ? .5 : 1.;
+        const double& eps = beagle::util::epsilon();
+        if (beta < eps || beta - betaMax > eps)
+          throw("The beta parameter of the CEV model must be between zero and " + std::to_string(betaMax) + "!");
+        if (sigma < eps)
+          throw("The sigma parameter of the CEV model must be positive!");
+      }
     }
   }
 }

@@ -9,5 +9,8 @@ namespace beagle
 
     void test_cev(void);
     void test_free_boundary_cev(void);
+
+    void test_exact_sabr(void);
+    void test_free_boundary_sabr(void);
   }
 }

@@ -146,20 +146,53 @@ namespace beagle
                             beagle::dbl_vec_t& prices) const=0;
       };
 
-      struct ModelParameters
+      struct ClosedFormEuroOption
       {
-        virtual ~ModelParameters(void) = default;
+        virtual ~ClosedFormEuroOption(void) = default;
       public:
         virtual int numberOfParameters(void) const = 0;
         virtual double impliedBlackScholesVolatility(const beagle::product_ptr_t& product) const = 0;
+        virtual beagle::real_function_ptr_coll_t modelParameters(void) const = 0;
+        virtual beagle::pricer_ptr_t updateModelParameters(const beagle::real_function_ptr_coll_t& params) const = 0;
+      };
+
+      struct MappedZeroCorrelationSABRParameters
+      {
+        virtual ~MappedZeroCorrelationSABRParameters( void ) = default;
+      public:
+        virtual double effectiveZeroCorrelationAlpha(double strike,
+                                                     double forward,
+                                                     double expiry)  const = 0;
+        virtual double effectiveZeroCorrelationBeta(double strike,
+                                                    double forward,
+                                                    double expiry)  const = 0;
+        virtual double effectiveZeroCorrelationNu(double strike,
+                                                  double forward,
+                                                  double expiry)  const = 0;
       };
     }
 
     struct ClosedFormEuropeanOptionPricer : public Pricer,
-                                            public mixins::ModelParameters
+                                            public mixins::ClosedFormEuroOption
     {
     public:
       virtual int numberOfParameters(void) const = 0;
+      virtual double impliedBlackScholesVolatility(const beagle::product_ptr_t& product) const = 0;
+      virtual beagle::real_function_ptr_coll_t modelParameters(void) const = 0;
+      virtual beagle::pricer_ptr_t updateModelParameters(const beagle::real_function_ptr_coll_t& params) const = 0;
     };
+
+    namespace util
+    {
+      void checkSABRParameters(double alpha,
+                               double beta,
+                               double rho,
+                               double nu,
+                               bool isFreeBoundarySABR);
+
+      void checkCEVParameters(double beta,
+                              double sigma,
+                              bool isFreeBoundaryCEV);
+    }
   }
 }

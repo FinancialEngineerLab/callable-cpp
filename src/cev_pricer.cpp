@@ -11,21 +11,6 @@ namespace beagle
   {
     namespace impl
     {
-      namespace
-      {
-        void checkCEVParameters(double beta,
-                                double sigma,
-                                bool isFreeBoundaryCEV)
-        {
-          double betaMax = isFreeBoundaryCEV ? .5 : 1.;
-          const double& eps = util::epsilon();
-          if (beta < eps || beta - betaMax > eps)
-            throw("The beta parameter of the CEV model must be between zero and " + std::to_string(betaMax) + "!");
-          if (sigma < eps)
-            throw("The sigma parameter of the CEV model must be positive!");
-        }
-      }
-
       struct ClosedFormExactCEVEuropeanOptionPricer : public ClosedFormEuropeanOptionPricer
       {
         ClosedFormExactCEVEuropeanOptionPricer(const beagle::real_function_ptr_t& forward,
@@ -56,8 +41,8 @@ namespace beagle
           double discounting = m_Discounting->value(expiry);
           double beta = m_Beta->value(expiry);
           double sigma = m_Sigma->value(expiry);
-          checkCEVParameters(beta, sigma, false);
-          const double& pi = util::pi();
+          util::checkCEVParameters(beta, sigma, false);
+          const double& pi = beagle::util::pi();
 
           double result = 0.;
           double oneMinusBeta = 1 - beta;
@@ -102,6 +87,18 @@ namespace beagle
         {
           return 0.0;
         }
+        beagle::real_function_ptr_coll_t modelParameters(void) const override
+        {
+          return {m_Beta, m_Sigma};
+        }
+        beagle::pricer_ptr_t updateModelParameters(const beagle::real_function_ptr_coll_t& params) const override
+        {
+          return Pricer::formClosedFormExactCEVEuropeanOptionPricer(m_Forward,
+                                                                    m_Discounting,
+                                                                    params[0],
+                                                                    params[1],
+                                                                    m_QuadMethod);
+        }
       private:
         beagle::real_function_ptr_t m_Forward;
         beagle::real_function_ptr_t m_Discounting;
@@ -140,8 +137,8 @@ namespace beagle
           double discouting = m_Discounting->value(expiry);
           double beta = m_Beta->value(expiry);
           double sigma = m_Sigma->value(expiry);
-          checkCEVParameters(beta, sigma, true);
-          const double& pi = util::pi();
+          util::checkCEVParameters(beta, sigma, true);
+          const double& pi = beagle::util::pi();
 
           double result = 0.;
           double oneMinusBeta = 1 - beta;
@@ -158,7 +155,7 @@ namespace beagle
             return std::sin(eta * theta) * std::sin(theta) / temp
                    * std::exp(-qK * qF * temp / tau);
           };
-          if ( !(strike < util::epsilon()) )
+          if ( !(strike < beagle::util::epsilon()) )
             result += m_QuadMethod->quadrature(beagle::math::RealFunction::createUnaryFunction(fOne), 0, pi);
 
           real_func_t fTwo = [=](double theta) {
@@ -171,7 +168,7 @@ namespace beagle
             double common = std::sin(eta * pi) * (1. - expMinusTwoX) / temp
                              * (1 + tanTheta * tanTheta)
                              * std::exp( -qK * qF * temp / 2. / expMinusX / tau);
-            if ( !(strike < util::epsilon()) )
+            if ( !(strike < beagle::util::epsilon()) )
               return common * std::cosh(eta * tanTheta);
             else
               return common * std::sinh(eta * tanTheta);
@@ -192,6 +189,18 @@ namespace beagle
         double impliedBlackScholesVolatility(const beagle::product_ptr_t& product) const override
         {
           return 0.0;
+        }
+        beagle::real_function_ptr_coll_t modelParameters(void) const override
+        {
+          return {m_Beta, m_Sigma};
+        }
+        beagle::pricer_ptr_t updateModelParameters(const beagle::real_function_ptr_coll_t& params) const override
+        {
+          return Pricer::formClosedFormFreeBoundaryCEVEuropeanOptionPricer(m_Forward,
+                                                                           m_Discounting,
+                                                                           params[0],
+                                                                           params[1],
+                                                                           m_QuadMethod);
         }
       private:
         beagle::real_function_ptr_t m_Forward;
