@@ -175,11 +175,19 @@ namespace beagle
     struct ClosedFormEuropeanOptionPricer : public Pricer,
                                             public mixins::ClosedFormEuroOption
     {
+      ClosedFormEuropeanOptionPricer(const beagle::real_function_ptr_t& forward,
+                                     const beagle::real_function_ptr_t& discounting);
     public:
       virtual int numberOfParameters(void) const = 0;
-      virtual double impliedBlackScholesVolatility(const beagle::product_ptr_t& product) const = 0;
+      virtual double impliedBlackScholesVolatility(const beagle::product_ptr_t& product) const;
       virtual beagle::real_function_ptr_coll_t modelParameters(void) const = 0;
       virtual beagle::pricer_ptr_t updateModelParameters(const beagle::real_function_ptr_coll_t& params) const = 0;
+    protected:
+      const beagle::real_function_ptr_t& forwardCurve(void) const;
+      const beagle::real_function_ptr_t& discountCurve(void) const;
+    private:
+      beagle::real_function_ptr_t m_Forward;
+      beagle::real_function_ptr_t m_Discounting;
     };
 
     namespace util

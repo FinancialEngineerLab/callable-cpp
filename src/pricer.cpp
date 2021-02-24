@@ -1,8 +1,10 @@
 #include "pricer.hpp"
 #include "real_2d_function.hpp"
+#include "real_function.hpp"
 #include "dividend_policy.hpp"
 #include "interpolation_builder.hpp"
 #include "util.hpp"
+#include "option.hpp"
 
 #include <iostream>
 
@@ -55,6 +57,38 @@ namespace beagle
     OneDimFiniteDifferenceSettings::interpolationMethod( void ) const
     {
       return m_Interp;
+    }
+
+    ClosedFormEuropeanOptionPricer::ClosedFormEuropeanOptionPricer(const beagle::real_function_ptr_t& forward,
+                                                                   const beagle::real_function_ptr_t& discounting) :
+      m_Forward(forward),
+      m_Discounting(discounting)
+    { }
+
+    double ClosedFormEuropeanOptionPricer::impliedBlackScholesVolatility(const beagle::product_ptr_t& product) const
+    {
+      auto pE = dynamic_cast<beagle::product::option::mixins::European*>(product.get());
+      if (!pE)
+        throw(std::string("Cannot value an option with non-European exercise style in closed form!"));
+
+      auto pO = dynamic_cast<beagle::product::mixins::Option*>( product.get() );
+      if (!pO)
+        throw(std::string("The incoming product is not an option!"));
+
+      double expiry = pO->expiry();
+      double strike = pO->strike();
+      double forward = m_Forward->value(expiry);
+      double price = value(product);
+      return beagle::util::impliedBlackVolatility(price, strike, forward, expiry, m_Discounting);
+    }
+
+    const beagle::real_function_ptr_t& ClosedFormEuropeanOptionPricer::forwardCurve(void) const
+    {
+      return m_Forward;
+    }
+    const beagle::real_function_ptr_t& ClosedFormEuropeanOptionPricer::discountCurve(void) const
+    {
+      return m_Discounting;
     }
 
     namespace util

@@ -18,8 +18,7 @@ namespace beagle
                                            const beagle::real_function_ptr_t& beta,
                                            const beagle::real_function_ptr_t& rho,
                                            const beagle::real_function_ptr_t& nu) :
-          m_Forward(forward),
-          m_Discounting(discounting),
+          ClosedFormEuropeanOptionPricer(forward, discounting),
           m_Alpha(alpha),
           m_Beta(beta),
           m_Rho(rho),
@@ -38,8 +37,8 @@ namespace beagle
 
           double expiry = pO->expiry();
           double strike = pO->strike();
-          double forward = m_Forward->value(expiry);
-          double discouting = m_Discounting->value(expiry);
+          double forward = forwardCurve()->value(expiry);
+          double discouting = discountCurve()->value(expiry);
 
           double result = beagle::util::bsCall(strike, forward, expiry, impliedBlackScholesVolatility(product));
           const auto& payoff = pO->payoff();
@@ -65,7 +64,7 @@ namespace beagle
           double expiry = pO->expiry();
           double strike = pO->strike();
 
-          double forward = m_Forward->value(expiry);
+          double forward = forwardCurve()->value(expiry);
           double alpha = m_Alpha->value(expiry);
           double beta = m_Beta->value(expiry);
           double rho = m_Rho->value(expiry);
@@ -114,16 +113,14 @@ namespace beagle
         }
         beagle::pricer_ptr_t updateModelParameters(const beagle::real_function_ptr_coll_t& params) const override
         {
-          return Pricer::formClosedFormSABREuropeanOptionPricer(m_Forward,
-                                                                m_Discounting,
+          return Pricer::formClosedFormSABREuropeanOptionPricer(forwardCurve(),
+                                                                discountCurve(),
                                                                 params[0],
                                                                 params[1],
                                                                 params[2],
                                                                 params[3]);
         }
       private:
-        beagle::real_function_ptr_t m_Forward;
-        beagle::real_function_ptr_t m_Discounting;
         beagle::real_function_ptr_t m_Alpha;
         beagle::real_function_ptr_t m_Beta;
         beagle::real_function_ptr_t m_Rho;
@@ -139,8 +136,7 @@ namespace beagle
                                                   const beagle::real_function_ptr_t& rho,
                                                   const beagle::real_function_ptr_t& nu,
                                                   double shift) :
-          m_Forward(forward),
-          m_Discounting(discounting),
+          ClosedFormEuropeanOptionPricer(forward, discounting),
           m_Alpha(alpha),
           m_Beta(beta),
           m_Rho(rho),
@@ -160,8 +156,8 @@ namespace beagle
 
           double expiry = pO->expiry();
           double strike = pO->strike();
-          double forward = m_Forward->value(expiry);
-          double discouting = m_Discounting->value(expiry);
+          double forward = forwardCurve()->value(expiry);
+          double discouting = discountCurve()->value(expiry);
 
           double result = beagle::util::bsCall(strike + m_Shift, forward + m_Shift, expiry, impliedBlackScholesVolatility(product));
           const auto& payoff = pO->payoff();
@@ -187,7 +183,7 @@ namespace beagle
           double expiry = pO->expiry();
           double strike = pO->strike() + m_Shift;
 
-          double forward = m_Forward->value(expiry) + m_Shift;
+          double forward = forwardCurve()->value(expiry) + m_Shift;
           double alpha = m_Alpha->value(expiry);
           double beta = m_Beta->value(expiry);
           double rho = m_Rho->value(expiry);
@@ -236,8 +232,8 @@ namespace beagle
         }
         beagle::pricer_ptr_t updateModelParameters(const beagle::real_function_ptr_coll_t& params) const override
         {
-          return Pricer::formClosedFormShiftedSABREuropeanOptionPricer(m_Forward,
-                                                                       m_Discounting,
+          return Pricer::formClosedFormShiftedSABREuropeanOptionPricer(forwardCurve(),
+                                                                       discountCurve(),
                                                                        params[0],
                                                                        params[1],
                                                                        params[2],
@@ -245,8 +241,6 @@ namespace beagle
                                                                        m_Shift);
         }
       private:
-        beagle::real_function_ptr_t m_Forward;
-        beagle::real_function_ptr_t m_Discounting;
         beagle::real_function_ptr_t m_Alpha;
         beagle::real_function_ptr_t m_Beta;
         beagle::real_function_ptr_t m_Rho;

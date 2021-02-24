@@ -21,8 +21,7 @@ namespace beagle
                                                                 const beagle::real_function_ptr_t& nu,
                                                                 bool useApproximateKernel,
                                                                 const beagle::integration_method_ptr_t& quadMethod) :
-          m_Forward(forward),
-          m_Discounting(discounting),
+          ClosedFormEuropeanOptionPricer(forward, discounting),
           m_Alpha(alpha),
           m_Beta(beta),
           m_Rho(rho),
@@ -44,27 +43,27 @@ namespace beagle
           double expiry = pO->expiry();
           double alpha = m_Alpha->value(expiry);
           double beta = m_Beta->value(expiry);
-          double forward = m_Forward->value(expiry);
+          double forward = forwardCurve()->value(expiry);
           double effectiveAlpha = alpha * std::pow(forward, beta);
 
-          beagle::pricer_ptr_t pFreeBoundarySABRPricer = Pricer::formClosedFormFreeBoundarySABREuropeanOptionPricer(m_Forward,
-                                                                                                                    m_Discounting,
+          beagle::pricer_ptr_t pFreeBoundarySABRPricer = Pricer::formClosedFormFreeBoundarySABREuropeanOptionPricer(forwardCurve(),
+                                                                                                                    discountCurve(),
                                                                                                                     m_Alpha,
                                                                                                                     m_Beta,
                                                                                                                     m_Rho,
                                                                                                                     m_Nu,
                                                                                                                     m_KernelMethod,
                                                                                                                     m_QuadMethod);
-          beagle::pricer_ptr_t pNormalFreeBoundarySABRPricer = Pricer::formClosedFormNormalFreeBoundarySABREuropeanOptionPricer(m_Forward,
-                                                                                                                                m_Discounting,
+          beagle::pricer_ptr_t pNormalFreeBoundarySABRPricer = Pricer::formClosedFormNormalFreeBoundarySABREuropeanOptionPricer(forwardCurve(),
+                                                                                                                                discountCurve(),
                                                                                                                                 beagle::math::RealFunction::createConstantFunction(effectiveAlpha),
                                                                                                                                 m_Rho,
                                                                                                                                 m_Nu,
                                                                                                                                 m_KernelMethod,
                                                                                                                                 m_QuadMethod);
 
-          beagle::pricer_ptr_t pControlFreeBoundarySABRPricer = Pricer::formClosedFormFreeBoundarySABREuropeanOptionPricer(m_Forward,
-                                                                                                                           m_Discounting,
+          beagle::pricer_ptr_t pControlFreeBoundarySABRPricer = Pricer::formClosedFormFreeBoundarySABREuropeanOptionPricer(forwardCurve(),
+                                                                                                                           discountCurve(),
                                                                                                                            beagle::math::RealFunction::createConstantFunction(effectiveAlpha),
                                                                                                                            beagle::math::RealFunction::createConstantFunction(beagle::util::epsilon()),
                                                                                                                            m_Rho,
@@ -82,8 +81,8 @@ namespace beagle
         }
         beagle::pricer_ptr_t updateModelParameters( const beagle::real_function_ptr_coll_t& params ) const override
         {
-          return Pricer::formClosedFormNormalImprovedFreeBoundarySABREuropeanOptionPricer(m_Forward,
-                                                                                          m_Discounting,
+          return Pricer::formClosedFormNormalImprovedFreeBoundarySABREuropeanOptionPricer(forwardCurve(),
+                                                                                          discountCurve(),
                                                                                           params[0],
                                                                                           params[1],
                                                                                           params[2],
@@ -95,13 +94,7 @@ namespace beagle
         {
           return 4;
         }
-        double impliedBlackScholesVolatility(const beagle::product_ptr_t& product) const override
-        {
-          return 0.0;
-        }
       private:
-        beagle::real_function_ptr_t m_Forward;
-        beagle::real_function_ptr_t m_Discounting;
         beagle::real_function_ptr_t m_Alpha;
         beagle::real_function_ptr_t m_Beta;
         beagle::real_function_ptr_t m_Rho;
@@ -119,8 +112,7 @@ namespace beagle
                                                              const beagle::real_function_ptr_t& nu,
                                                              bool useApproximateKernel,
                                                              const beagle::integration_method_ptr_t& quadMethod) :
-          m_Forward(forward),
-          m_Discounting(discounting),
+          ClosedFormEuropeanOptionPricer(forward, discounting),
           m_Alpha(alpha),
           m_Rho(rho),
           m_Nu(nu),
@@ -140,8 +132,8 @@ namespace beagle
 
           double expiry = pO->expiry();
           double strike = pO->strike();
-          double forward = m_Forward->value(expiry);
-          double discounting = m_Discounting->value(expiry);
+          double forward = forwardCurve()->value(expiry);
+          double discounting = discountCurve()->value(expiry);
           const double& pi = beagle::util::pi();
 
           double alpha = m_Alpha->value(expiry);
@@ -177,8 +169,8 @@ namespace beagle
         }
         beagle::pricer_ptr_t updateModelParameters( const beagle::real_function_ptr_coll_t& params ) const override
         {
-          return Pricer::formClosedFormNormalFreeBoundarySABREuropeanOptionPricer(m_Forward,
-                                                                                  m_Discounting,
+          return Pricer::formClosedFormNormalFreeBoundarySABREuropeanOptionPricer(forwardCurve(),
+                                                                                  discountCurve(),
                                                                                   params[0],
                                                                                   params[1],
                                                                                   params[2],
@@ -188,10 +180,6 @@ namespace beagle
         int numberOfParameters( void ) const override
         {
           return 3;
-        }
-        double impliedBlackScholesVolatility(const beagle::product_ptr_t& product) const override
-        {
-          return 0.0;
         }
       private:
         double kernel( double t, double s ) const
@@ -237,8 +225,6 @@ namespace beagle
           }
         }
       private:
-        beagle::real_function_ptr_t m_Forward;
-        beagle::real_function_ptr_t m_Discounting;
         beagle::real_function_ptr_t m_Alpha;
         beagle::real_function_ptr_t m_Rho;
         beagle::real_function_ptr_t m_Nu;

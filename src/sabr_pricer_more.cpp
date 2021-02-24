@@ -24,8 +24,7 @@ namespace beagle
                                                                 const beagle::real_function_ptr_t& nu,
                                                                 bool useApproximateKernel,
                                                                 const beagle::integration_method_ptr_t& quadMethod) :
-          m_Forward(forward),
-          m_Discounting(discounting),
+          ClosedFormEuropeanOptionPricer(forward, discounting),
           m_Alpha(alpha),
           m_Beta(beta),
           m_Rho(rho),
@@ -41,10 +40,6 @@ namespace beagle
         beagle::real_function_ptr_coll_t modelParameters( void ) const override
         {
           return {m_Alpha, m_Beta, m_Rho, m_Nu};
-        }
-        double impliedBlackScholesVolatility(const beagle::product_ptr_t& product) const override
-        {
-          return 0.0;
         }
       public:
         double effectiveZeroCorrelationAlpha(double strike,
@@ -214,14 +209,6 @@ namespace beagle
           }
         }
       protected:
-        const beagle::real_function_ptr_t& forwardCurve(void) const
-        {
-          return m_Forward;
-        }
-        const beagle::real_function_ptr_t& discountCurve(void) const
-        {
-          return m_Discounting;
-        }
         bool kernelMethod(void) const
         {
           return m_KernelMethod;
@@ -234,8 +221,6 @@ namespace beagle
         virtual double doEffectiveStrike(double strike,
                                          double forward)  const = 0;
       private:
-        beagle::real_function_ptr_t m_Forward;
-        beagle::real_function_ptr_t m_Discounting;
         beagle::real_function_ptr_t m_Alpha;
         beagle::real_function_ptr_t m_Beta;
         beagle::real_function_ptr_t m_Rho;

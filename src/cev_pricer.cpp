@@ -18,8 +18,7 @@ namespace beagle
                                                const beagle::real_function_ptr_t& beta,
                                                const beagle::real_function_ptr_t& sigma,
                                                const beagle::integration_method_ptr_t& quadMethod) :
-          m_Forward(forward),
-          m_Discounting(discounting),
+          ClosedFormEuropeanOptionPricer(forward, discounting),
           m_Beta(beta),
           m_Sigma(sigma),
           m_QuadMethod(quadMethod)
@@ -37,8 +36,8 @@ namespace beagle
 
           double expiry = pO->expiry();
           double strike = pO->strike();
-          double forward = m_Forward->value(expiry);
-          double discounting = m_Discounting->value(expiry);
+          double forward = forwardCurve()->value(expiry);
+          double discounting = discountCurve()->value(expiry);
           double beta = m_Beta->value(expiry);
           double sigma = m_Sigma->value(expiry);
           util::checkCEVParameters(beta, sigma, false);
@@ -83,25 +82,19 @@ namespace beagle
         {
           return 2;
         }
-        double impliedBlackScholesVolatility(const beagle::product_ptr_t& product) const override
-        {
-          return 0.0;
-        }
         beagle::real_function_ptr_coll_t modelParameters(void) const override
         {
           return {m_Beta, m_Sigma};
         }
         beagle::pricer_ptr_t updateModelParameters(const beagle::real_function_ptr_coll_t& params) const override
         {
-          return Pricer::formClosedFormExactCEVEuropeanOptionPricer(m_Forward,
-                                                                    m_Discounting,
+          return Pricer::formClosedFormExactCEVEuropeanOptionPricer(forwardCurve(),
+                                                                    discountCurve(),
                                                                     params[0],
                                                                     params[1],
                                                                     m_QuadMethod);
         }
       private:
-        beagle::real_function_ptr_t m_Forward;
-        beagle::real_function_ptr_t m_Discounting;
         beagle::real_function_ptr_t m_Beta;
         beagle::real_function_ptr_t m_Sigma;
         beagle::integration_method_ptr_t m_QuadMethod;
@@ -114,8 +107,7 @@ namespace beagle
                                                       const beagle::real_function_ptr_t& beta,
                                                       const beagle::real_function_ptr_t& sigma,
                                                       const beagle::integration_method_ptr_t& quadMethod) :
-          m_Forward(forward),
-          m_Discounting(discounting),
+          ClosedFormEuropeanOptionPricer(forward, discounting),
           m_Beta(beta),
           m_Sigma(sigma),
           m_QuadMethod(quadMethod)
@@ -133,8 +125,8 @@ namespace beagle
 
           double expiry = pO->expiry();
           double strike = pO->strike();
-          double forward = m_Forward->value(expiry);
-          double discouting = m_Discounting->value(expiry);
+          double forward = forwardCurve()->value(expiry);
+          double discouting = discountCurve()->value(expiry);
           double beta = m_Beta->value(expiry);
           double sigma = m_Sigma->value(expiry);
           util::checkCEVParameters(beta, sigma, true);
@@ -186,25 +178,19 @@ namespace beagle
         {
           return 2;
         }
-        double impliedBlackScholesVolatility(const beagle::product_ptr_t& product) const override
-        {
-          return 0.0;
-        }
         beagle::real_function_ptr_coll_t modelParameters(void) const override
         {
           return {m_Beta, m_Sigma};
         }
         beagle::pricer_ptr_t updateModelParameters(const beagle::real_function_ptr_coll_t& params) const override
         {
-          return Pricer::formClosedFormFreeBoundaryCEVEuropeanOptionPricer(m_Forward,
-                                                                           m_Discounting,
+          return Pricer::formClosedFormFreeBoundaryCEVEuropeanOptionPricer(forwardCurve(),
+                                                                           discountCurve(),
                                                                            params[0],
                                                                            params[1],
                                                                            m_QuadMethod);
         }
       private:
-        beagle::real_function_ptr_t m_Forward;
-        beagle::real_function_ptr_t m_Discounting;
         beagle::real_function_ptr_t m_Beta;
         beagle::real_function_ptr_t m_Sigma;
         beagle::integration_method_ptr_t m_QuadMethod;
