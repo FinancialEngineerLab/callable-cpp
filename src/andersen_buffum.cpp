@@ -72,10 +72,11 @@ namespace beagle
                                                                     beagle::valuation::OneDimFiniteDifferenceSettings(365, 750, 4.5) );
 
           outA << beagle::util::impliedBlackVolatility(odbpop->value(euroOption),
-                                                      strike,
-                                                      strike,
-                                                      expiry,
-                                                      discounting ) << ", ";
+                                                       strike,
+                                                       expiry,
+                                                       payoff,
+                                                       strike,
+                                                       discounting->value(expiry)) << ", ";
         }
 
         outA << "]\n";
@@ -117,10 +118,11 @@ namespace beagle
                                                                     beagle::valuation::OneDimFiniteDifferenceSettings(365, 750, 4.5) );
 
           outB << beagle::util::impliedBlackVolatility(odbpop->value(euroOption),
-                                                      strike,
-                                                      strike,
-                                                      expiry,
-                                                      discounting ) << ", ";
+                                                       strike,
+                                                       expiry,
+                                                       payoff,
+                                                       strike,
+                                                       discounting->value(expiry)) << ", ";
         }
 
         outB << "]\n";
@@ -184,10 +186,11 @@ namespace beagle
                                                                     beagle::valuation::OneDimFiniteDifferenceSettings(365, 750, 4.5) );
 
           outA << beagle::util::impliedBlackVolatility(odbpop->value(euroOption),
-                                                      strike,
-                                                      forward->value(expiry),
-                                                      expiry,
-                                                      discounting ) << ", ";
+                                                       strike,
+                                                       expiry,
+                                                       payoff,
+                                                       strike,
+                                                       discounting->value(expiry)) << ", ";
         }
 
         outA << "]\n";
@@ -228,10 +231,11 @@ namespace beagle
                                                                     beagle::valuation::OneDimFiniteDifferenceSettings(365, 750, 4.5) );
 
           outB << beagle::util::impliedBlackVolatility(odbpop->value(euroOption),
-                                                      strike,
-                                                      forward->value(expiry),
-                                                      expiry,
-                                                      discounting ) << ", ";
+                                                       strike,
+                                                       expiry,
+                                                       payoff,
+                                                       forward->value(expiry),
+                                                       discounting->value(expiry)) << ", ";
         }
 
         outB << "]\n";
@@ -295,10 +299,11 @@ namespace beagle
                                                                     beagle::valuation::OneDimFiniteDifferenceSettings(365, 750, 4.5) );
 
           outA << beagle::util::impliedBlackVolatility(odbpop->value(euroOption),
-                                                      strike,
-                                                      forward->value(expiry),
-                                                      expiry,
-                                                      discounting ) << ", ";
+                                                       strike,
+                                                       expiry,
+                                                       payoff,
+                                                       forward->value(expiry),
+                                                       discounting->value(expiry)) << ", ";
         }
 
         outA << "]\n";
@@ -1031,7 +1036,7 @@ namespace beagle
                                                                                                         strike,
                                                                                                         beagle::product::option::Payoff::call() );
               std::cout << "    " << odfpeop->value(euroOption)
-                        << "    " << df * beagle::util::bsCall(strike, spot, expiry, volatilities[i][j]);
+                        << "    " << df * beagle::util::bsValue(strike, spot, expiry, volatilities[i][j], beagle::product::option::Payoff::call());
             }
 
             std::cout << "\n\n" << curves.second->value(expiry, spot);

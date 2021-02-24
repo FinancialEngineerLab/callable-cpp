@@ -77,9 +77,13 @@ namespace beagle
 
       double expiry = pO->expiry();
       double strike = pO->strike();
-      double forward = m_Forward->value(expiry);
       double price = value(product);
-      return beagle::util::impliedBlackVolatility(price, strike, forward, expiry, m_Discounting);
+      return beagle::util::impliedBlackVolatility(price,
+                                                  pO->strike(),
+                                                  pO->expiry(),
+                                                  pO->payoff(),
+                                                  m_Forward->value(expiry),
+                                                  m_Discounting->value(expiry));
     }
 
     const beagle::real_function_ptr_t& ClosedFormEuropeanOptionPricer::forwardCurve(void) const

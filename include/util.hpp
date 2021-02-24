@@ -16,10 +16,11 @@ namespace beagle
 
     double cumulativeStandardNormal( double arg );
 
-    double bsCall( double strike,
-                   double forward,
-                   double expiry,
-                   double vol );
+    double bsValue( double strike,
+                    double forward,
+                    double expiry,
+                    double vol,
+                    const beagle::payoff_ptr_t& payoff );
 
     double bsVega( double strike,
                    double forward,
@@ -28,9 +29,10 @@ namespace beagle
 
     double impliedBlackVolatility( double price,
                                    double strike,
-                                   double forward,
                                    double expiry,
-                                   const beagle::real_function_ptr_t& discounting );
+                                   const beagle::payoff_ptr_t& payoff,
+                                   double forward,
+                                   double discounting );
 
     void tridiagonalSolve( beagle::dbl_vec_t& rhs,
                            beagle::dbl_vec_t& diag,

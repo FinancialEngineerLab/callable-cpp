@@ -63,7 +63,7 @@ namespace beagle
             m_Strikes = smile.first;
             const auto& vols = smile.second;
             for (beagle::dbl_vec_t::size_type i=0; i<m_Strikes.size(); ++i)
-              m_Targets.emplace_back(df * beagle::util::bsCall(m_Strikes[i], fwd, m_End, vols[i]));
+              m_Targets.emplace_back(df * beagle::util::bsValue(m_Strikes[i], fwd, m_End, vols[i], beagle::product::option::Payoff::call()));
 
             double spread = std::get<2>(quote);
             m_Targets.emplace_back(df * std::exp(-spread * m_End));

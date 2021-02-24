@@ -1,5 +1,6 @@
 #include "util.hpp"
 #include "real_function.hpp"
+#include "payoff.hpp"
 #include <Eigen/Dense>
 
 namespace beagle
@@ -34,17 +35,19 @@ namespace beagle
       return .5 * ( 1. + std::erf( arg / rootTwo() ) );
     }
 
-    double bsCall( double strike,
-                   double forward,
-                   double expiry,
-                   double vol )
+    double bsValue( double strike,
+                    double forward,
+                    double expiry,
+                    double vol,
+                    const beagle::payoff_ptr_t& payoff )
     {
       double moneyness = std::log( forward / strike );
       double totalDev = vol * std::sqrt( expiry );
       double dOne = moneyness / totalDev + .5 * totalDev;
       double dTwo = dOne - totalDev;
 
-      return forward * cumulativeStandardNormal( dOne ) - strike * cumulativeStandardNormal( dTwo );
+      double omega = payoff->isCall() ? 1. : -1.;
+      return omega * (forward * cumulativeStandardNormal( omega * dOne ) - strike * cumulativeStandardNormal( omega * dTwo ));
     }
 
     double bsVega( double strike,
@@ -58,17 +61,18 @@ namespace beagle
 
       return forward * standardNormal( dOne ) * std::sqrt( expiry );
     }
-    
+
     double impliedBlackVolatility( double price,
                                    double strike,
-                                   double forward,
                                    double expiry,
-                                   const beagle::real_function_ptr_t& discounting )
+                                   const beagle::payoff_ptr_t& payoff,
+                                   double forward,
+                                   double discounting )
     {
-      double target = price / discounting->value(expiry);
+      double target = price / discounting;
 
       double result = .5;
-      double value = util::bsCall( strike, forward, expiry, result );
+      double value = util::bsValue( strike, forward, expiry, result, payoff );
 
       double tol = 1e-8;
       int maxIter = 100;
@@ -76,10 +80,10 @@ namespace beagle
 
       while ( std::fabs( value - target ) > tol && count < maxIter )
       {
-        result -= ( util::bsCall( strike, forward, expiry, result ) - target ) / util::bsVega( strike, forward, expiry, result );
+        result -= ( util::bsValue( strike, forward, expiry, result, payoff ) - target ) / util::bsVega( strike, forward, expiry, result );
         if (result < 0.)
           result *= -1.;
-        value = util::bsCall( strike, forward, expiry, result );
+        value = util::bsValue( strike, forward, expiry, result, payoff );
         ++count;
       }
 

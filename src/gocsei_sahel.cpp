@@ -414,9 +414,10 @@ namespace beagle
                   << price << "\t"
                   << beagle::util::impliedBlackVolatility(price,
                                                           strike,
-                                                          forward->value(expiry),
                                                           expiry,
-                                                          discounting ) << "\t"
+                                                          payoff,
+                                                          forward->value(expiry),
+                                                          discounting->value(expiry)) << "\t"
                   << bondPrice << "\t"
                   << -std::log(bondPrice) / expiry - r << "\n";
 
@@ -433,9 +434,10 @@ namespace beagle
                   << price << "\t"
                   << beagle::util::impliedBlackVolatility(price,
                                                           strike,
-                                                          forward->value(expiry),
                                                           expiry,
-                                                          discounting ) << "\t"
+                                                          payoff,
+                                                          forward->value(expiry),
+                                                          discounting->value(expiry)) << "\t"
                   << bondPrice << "\t"
                   << -std::log(bondPrice) / expiry - r << "\n\n";
 

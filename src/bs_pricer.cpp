@@ -46,12 +46,7 @@ namespace beagle
           calculateAdjustedSpotAndStrike( expiry, spot, strike, adjustedSpot, adjustedStrike );
 
           double discounting = m_Discounting->value( expiry );
-          double result = beagle::util::bsCall( adjustedStrike, adjustedSpot * factor, expiry, m_Volatility ) * discounting;
-
-          if (pO->payoff()->isCall())
-            return result;
-          else
-            return result - (adjustedSpot * factor - adjustedStrike) * discounting;
+          return beagle::util::bsValue(adjustedStrike, adjustedSpot * factor, expiry, m_Volatility, pO->payoff()) * discounting;
         }
       private:
         void calculateAdjustedSpotAndStrike( double expiry,

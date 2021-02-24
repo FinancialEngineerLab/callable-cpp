@@ -37,15 +37,11 @@ namespace beagle
 
           double expiry = pO->expiry();
           double strike = pO->strike();
-          double forward = forwardCurve()->value(expiry);
-          double discouting = discountCurve()->value(expiry);
-
-          double result = beagle::util::bsCall(strike, forward, expiry, impliedBlackScholesVolatility(product));
           const auto& payoff = pO->payoff();
-          if (payoff->isPut())
-            result -= (forward - strike);
+          double forward = forwardCurve()->value(expiry);
+          double discounting = discountCurve()->value(expiry);
 
-          return result * discouting;
+          return beagle::util::bsValue(strike, forward, expiry, impliedBlackScholesVolatility(product), payoff) * discounting;
         }
         virtual int numberOfParameters(void) const override
         {
@@ -156,15 +152,11 @@ namespace beagle
 
           double expiry = pO->expiry();
           double strike = pO->strike();
-          double forward = forwardCurve()->value(expiry);
-          double discouting = discountCurve()->value(expiry);
-
-          double result = beagle::util::bsCall(strike + m_Shift, forward + m_Shift, expiry, impliedBlackScholesVolatility(product));
           const auto& payoff = pO->payoff();
-          if (payoff->isPut())
-            result -= (forward - strike);
+          double forward = forwardCurve()->value(expiry);
+          double discounting = discountCurve()->value(expiry);
 
-          return result * discouting;
+          return beagle::util::bsValue(strike + m_Shift, forward + m_Shift, expiry, impliedBlackScholesVolatility(product), payoff) * discounting;
         }
         virtual int numberOfParameters(void) const override
         {
