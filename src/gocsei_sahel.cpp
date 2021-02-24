@@ -94,7 +94,7 @@ namespace beagle
         std::cout << "American option price (FD-B) is: " << odbpop->value( amerOption ) << std::endl;
         std::cout << "European option price (FD-F) is: " << odfpeop->value( euroOption ) << std::endl;
 
-        std::cout << "\nEnd of Test 1\n";
+        std::cout << "\nEnd of Test 1\n\n";
       }
       catch (const std::string& what)
       {
@@ -274,7 +274,7 @@ namespace beagle
         //out << "]";
       }
 
-      std::cout << "\nEnd of Test 2\n";
+      std::cout << "\nEnd of Test 2\n\n";
     }
 
     void test_cev_finite_difference( void )
@@ -340,7 +340,7 @@ namespace beagle
         std::cout << "American option price (FD-B) is: " << odbpop2->value( amerOption ) << std::endl;
         std::cout << "European option price (FD-F) is: " << odfpeop2->value( euroOption ) << std::endl;
 
-        std::cout << "\nEnd of Test 3\n";
+        std::cout << "\nEnd of Test 3\n\n";
       }
       catch (const std::string& what)
       {
@@ -443,7 +443,7 @@ namespace beagle
 
       }
 
-      std::cout << "\nEnd of Test 5\n";
+      std::cout << "\nEnd of Test 5\n\n";
     }
 
     void test_bond_pricer( void )
@@ -513,7 +513,7 @@ namespace beagle
       beagle::product_ptr_t zcb = beagle::product::bond::Bond::createZeroCouponBond(5.);
       std::cout << "The bond price is: " << odbpbp->value(zcb) << "\n";
 
-      std::cout << "\nEnd of Test 6\n";
+      std::cout << "\nEnd of Test 6\n\n";
     }
 
     void test_discontinuous_forward_curve( void )
@@ -546,7 +546,7 @@ namespace beagle
       }
       std::cout << "\n";
 
-      std::cout << "\nEnd of Test 8\n";
+      std::cout << "\nEnd of Test 8\n\n";
     }
 
     void test_natural_cubic_spline( void )
@@ -575,7 +575,7 @@ namespace beagle
       }
       std::cout << "]\n";
 
-      std::cout << "\nEnd of Test 9\n";
+      std::cout << "\nEnd of Test 9\n\n";
     }
   }
 }
