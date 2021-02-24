@@ -42,13 +42,15 @@ namespace beagle
       beagle::real_function_ptr_t rho = beagle::math::RealFunction::createConstantFunction(c);
       beagle::real_function_ptr_t nu = beagle::math::RealFunction::createConstantFunction(d);
 
-      beagle::pricer_ptr_t sabr = beagle::valuation::Pricer::formClosedFormSABREuropeanOptionPricer(forward,
-                                                                                                    discounting,
-                                                                                                    alpha,
-                                                                                                    beta,
-                                                                                                    rho,
-                                                                                                    nu);
-      printf("%.9f\n", sabr->value(euroOption));
+      beagle::pricer_ptr_t pricer = beagle::valuation::Pricer::formClosedFormSABREuropeanOptionPricer(forward,
+                                                                                                      discounting,
+                                                                                                      alpha,
+                                                                                                      beta,
+                                                                                                      rho,
+                                                                                                      nu);
+      printf("The option price is:          %.9f\n", pricer->value(euroOption));
+      auto pIV = dynamic_cast<beagle::valuation::mixins::ClosedFormEuroOption*>(pricer.get());
+      printf("The implied BS volatility is: %.9f\n", pIV->impliedBlackScholesVolatility(euroOption));
     }
 
     void test_shifted_sabr( void )
@@ -82,14 +84,16 @@ namespace beagle
       beagle::real_function_ptr_t rho = beagle::math::RealFunction::createConstantFunction(c);
       beagle::real_function_ptr_t nu = beagle::math::RealFunction::createConstantFunction(d);
 
-      beagle::pricer_ptr_t sabr = beagle::valuation::Pricer::formClosedFormShiftedSABREuropeanOptionPricer(forward,
+      beagle::pricer_ptr_t pricer = beagle::valuation::Pricer::formClosedFormShiftedSABREuropeanOptionPricer(forward,
                                                                                                            discounting,
                                                                                                            alpha,
                                                                                                            beta,
                                                                                                            rho,
                                                                                                            nu,
                                                                                                            shift);
-      printf("%.9f\n", sabr->value(euroOption));
+      printf("The option price is:          %.9f\n", pricer->value(euroOption));
+      auto pIV = dynamic_cast<beagle::valuation::mixins::ClosedFormEuroOption*>(pricer.get());
+      printf("The implied BS volatility is: %.9f\n", pIV->impliedBlackScholesVolatility(euroOption));
     }
 
     void test_cev(void)
@@ -119,12 +123,14 @@ namespace beagle
       beagle::real_function_ptr_t nu = beagle::math::RealFunction::createConstantFunction(d);
       beagle::integration_method_ptr_t quad = beagle::math::IntegrationMethod::midPointIntegrationMethod(500);
 
-      beagle::pricer_ptr_t cev = beagle::valuation::Pricer::formClosedFormExactCEVEuropeanOptionPricer(forward,
+      beagle::pricer_ptr_t pricer = beagle::valuation::Pricer::formClosedFormExactCEVEuropeanOptionPricer(forward,
                                                                                                        discounting,
                                                                                                        beta,
                                                                                                        nu,
                                                                                                        quad);
-      printf("%.9f\n", cev->value(euroOption));
+      printf("The option price is:          %.9f\n", pricer->value(euroOption));
+      auto pIV = dynamic_cast<beagle::valuation::mixins::ClosedFormEuroOption*>(pricer.get());
+      printf("The implied BS volatility is: %.9f\n", pIV->impliedBlackScholesVolatility(euroOption));
     }
 
     void test_free_boundary_cev( void )
@@ -154,12 +160,14 @@ namespace beagle
       beagle::real_function_ptr_t nu = beagle::math::RealFunction::createConstantFunction(d);
       beagle::integration_method_ptr_t quad = beagle::math::IntegrationMethod::midPointIntegrationMethod(500);
 
-      beagle::pricer_ptr_t cev = beagle::valuation::Pricer::formClosedFormFreeBoundaryCEVEuropeanOptionPricer(forward,
+      beagle::pricer_ptr_t pricer = beagle::valuation::Pricer::formClosedFormFreeBoundaryCEVEuropeanOptionPricer(forward,
                                                                                                               discounting,
                                                                                                               beta,
                                                                                                               nu,
                                                                                                               quad);
-      printf("%.9f\n", cev->value(euroOption));
+      printf("The option price is:          %.9f\n", pricer->value(euroOption));
+      auto pIV = dynamic_cast<beagle::valuation::mixins::ClosedFormEuroOption*>(pricer.get());
+      printf("The implied BS volatility is: %.9f\n", pIV->impliedBlackScholesVolatility(euroOption));
     }
 
     void test_exact_sabr(void)
@@ -193,7 +201,7 @@ namespace beagle
       beagle::real_function_ptr_t nu = beagle::math::RealFunction::createConstantFunction(d);
       beagle::integration_method_ptr_t quad = beagle::math::IntegrationMethod::midPointIntegrationMethod(500);
 
-      beagle::pricer_ptr_t sabr = beagle::valuation::Pricer::formClosedFormExactSABREuropeanOptionPricer(forward,
+      beagle::pricer_ptr_t pricer = beagle::valuation::Pricer::formClosedFormExactSABREuropeanOptionPricer(forward,
                                                                                                          discounting,
                                                                                                          alpha,
                                                                                                          beta,
@@ -201,7 +209,9 @@ namespace beagle
                                                                                                          nu,
                                                                                                          true,
                                                                                                          quad);
-      printf("%.9f\n", sabr->value(euroOption));
+      printf("The option price is:          %.9f\n", pricer->value(euroOption));
+      auto pIV = dynamic_cast<beagle::valuation::mixins::ClosedFormEuroOption*>(pricer.get());
+      printf("The implied BS volatility is: %.9f\n", pIV->impliedBlackScholesVolatility(euroOption));
     }
 
     void test_free_boundary_sabr(void)
@@ -235,7 +245,7 @@ namespace beagle
       beagle::real_function_ptr_t nu = beagle::math::RealFunction::createConstantFunction(d);
       beagle::integration_method_ptr_t quad = beagle::math::IntegrationMethod::midPointIntegrationMethod(500);
 
-      beagle::pricer_ptr_t sabr = beagle::valuation::Pricer::formClosedFormFreeBoundarySABREuropeanOptionPricer(forward,
+      beagle::pricer_ptr_t pricer = beagle::valuation::Pricer::formClosedFormFreeBoundarySABREuropeanOptionPricer(forward,
                                                                                                                 discounting,
                                                                                                                 alpha,
                                                                                                                 beta,
@@ -243,7 +253,9 @@ namespace beagle
                                                                                                                 nu,
                                                                                                                 true,
                                                                                                                 quad);
-      printf("%.9f\n", sabr->value(euroOption));
+      printf("The option price is:          %.9f\n", pricer->value(euroOption));
+      auto pIV = dynamic_cast<beagle::valuation::mixins::ClosedFormEuroOption*>(pricer.get());
+      printf("The implied BS volatility is: %.9f\n", pIV->impliedBlackScholesVolatility(euroOption));
     }
 
     void test_normal_free_boundary_sabr(void)
@@ -277,14 +289,16 @@ namespace beagle
       beagle::real_function_ptr_t nu = beagle::math::RealFunction::createConstantFunction(d);
       beagle::integration_method_ptr_t quad = beagle::math::IntegrationMethod::midPointIntegrationMethod(500);
 
-      beagle::pricer_ptr_t sabr = beagle::valuation::Pricer::formClosedFormNormalFreeBoundarySABREuropeanOptionPricer(forward,
+      beagle::pricer_ptr_t pricer = beagle::valuation::Pricer::formClosedFormNormalFreeBoundarySABREuropeanOptionPricer(forward,
                                                                                                                       discounting,
                                                                                                                       alpha,
                                                                                                                       rho,
                                                                                                                       nu,
                                                                                                                       true,
                                                                                                                       quad);
-      printf("%.9f\n", sabr->value(euroOption));
+      printf("The option price is:          %.9f\n", pricer->value(euroOption));
+      auto pIV = dynamic_cast<beagle::valuation::mixins::ClosedFormEuroOption*>(pricer.get());
+      printf("The implied BS volatility is: %.9f\n", pIV->impliedBlackScholesVolatility(euroOption));
     }
 
     void test_normal_enhanced_free_boundary_sabr(void)
@@ -318,7 +332,7 @@ namespace beagle
       beagle::real_function_ptr_t nu = beagle::math::RealFunction::createConstantFunction(d);
       beagle::integration_method_ptr_t quad = beagle::math::IntegrationMethod::midPointIntegrationMethod(500);
 
-      beagle::pricer_ptr_t sabr = beagle::valuation::Pricer::formClosedFormNormalImprovedFreeBoundarySABREuropeanOptionPricer(forward,
+      beagle::pricer_ptr_t pricer = beagle::valuation::Pricer::formClosedFormNormalImprovedFreeBoundarySABREuropeanOptionPricer(forward,
                                                                                                                               discounting,
                                                                                                                               alpha,
                                                                                                                               beta,
@@ -326,7 +340,9 @@ namespace beagle
                                                                                                                               nu,
                                                                                                                               true,
                                                                                                                               quad);
-      printf("%.9f\n", sabr->value(euroOption));
+      printf("The option price is:          %.9f\n", pricer->value(euroOption));
+      auto pIV = dynamic_cast<beagle::valuation::mixins::ClosedFormEuroOption*>(pricer.get());
+      printf("The implied BS volatility is: %.9f\n", pIV->impliedBlackScholesVolatility(euroOption));
     }
   }
 }
