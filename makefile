@@ -9,15 +9,17 @@ OBJ_DIR  := $(BUILD)/objects
 APP_DIR  := $(BUILD)/apps
 TEST_DIR := $(BUILD)/tests
 TARGET   := program
-TEST_ALL := run_tests
+TESTS    := run_tests
 INCLUDE  := -Iinclude/ -IEigen/
 SRC      :=                      \
    $(wildcard src/*.cpp test/*.cpp)         \
 
 OBJECTS  := $(SRC:%.cpp=$(OBJ_DIR)/%.o)
 
+test: build $(TEST_DIR)/$(TESTS)
+
 all: build $(APP_DIR)/$(TARGET) \
-	   build $(TEST_DIR)/$(TEST_ALL)
+	   build $(TEST_DIR)/$(TESTS)
 
 $(OBJ_DIR)/%.o: %.cpp
 	@mkdir -p $(@D)
@@ -27,9 +29,9 @@ $(APP_DIR)/$(TARGET): $(OBJECTS)
 	@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) -o $(APP_DIR)/$(TARGET) $^ $(LDFLAGS)
 
-$(TEST_DIR)/$(TEST_ALL): $(OBJECTS)
+$(TEST_DIR)/$(TESTS): $(OBJECTS)
 	@mkdir -p $(@D)
-	$(CXX) $(CXXFLAGS) -o $(TEST_DIR)/$(TEST_ALL) $^ $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) -o $(TEST_DIR)/$(TESTS) $^ $(LDFLAGS)
 
 .PHONY: all build clean debug release
 
@@ -47,3 +49,4 @@ release: all
 clean:
 	-@rm -rvf $(OBJ_DIR)/*
 	-@rm -rvf $(APP_DIR)/*
+	-@rm -rvf $(TEST_DIR)/*
