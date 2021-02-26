@@ -9,7 +9,7 @@ namespace beagle
     {
       struct MidPointIntegrationMethod : public IntegrationMethod
       {
-        MidPointIntegrationMethod(int numSteps) :
+        explicit MidPointIntegrationMethod(int numSteps) :
           m_NumSteps( numSteps )
         { }
       public:
@@ -37,7 +37,7 @@ namespace beagle
 
       struct TrapezoidIntegrationMethod : public IntegrationMethod
       {
-        TrapezoidIntegrationMethod( int numSteps) :
+        explicit TrapezoidIntegrationMethod( int numSteps) :
           m_NumSteps( numSteps )
         { }
       public:

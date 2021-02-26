@@ -48,7 +48,7 @@ namespace beagle
 
       struct LowerBoundCalibrationConstraintImpl : public CalibrationBoundConstraint
       {
-        explicit LowerBoundCalibrationConstraintImpl( const double lowerBound ) :
+        explicit LowerBoundCalibrationConstraintImpl(double lowerBound) :
           m_LowerBound( lowerBound )
         { }
       public:
@@ -79,7 +79,7 @@ namespace beagle
 
       struct UpperBoundCalibrationConstraintImpl : public CalibrationBoundConstraint
       {
-        explicit UpperBoundCalibrationConstraintImpl( const double upperBound ) :
+        explicit UpperBoundCalibrationConstraintImpl(double upperBound) :
           m_UpperBound( upperBound )
         { }
       public:

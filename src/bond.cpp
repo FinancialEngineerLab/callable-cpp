@@ -10,7 +10,7 @@ namespace beagle
       {
         struct ZeroCouponBond : public Bond
         {
-          ZeroCouponBond(double expiry)
+          explicit ZeroCouponBond(double expiry)
           {
             m_Couponflows.clear();
             m_Notionalflows.clear();
