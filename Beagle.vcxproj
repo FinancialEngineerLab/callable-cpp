@@ -109,6 +109,7 @@
   <ItemGroup>
     <ClCompile Include="src\andersen_buffum.cpp" />
     <ClCompile Include="src\backward_pde_pricer.cpp" />
+    <ClCompile Include="src\beagle.cpp" />
     <ClCompile Include="src\bond.cpp" />
     <ClCompile Include="src\bs_pricer.cpp" />
     <ClCompile Include="src\calibration_adapter.cpp" />
@@ -130,12 +131,10 @@
     <ClCompile Include="src\product.cpp" />
     <ClCompile Include="src\real_2d_function.cpp" />
     <ClCompile Include="src\real_function.cpp" />
-    <ClCompile Include="src\sabr.cpp" />
     <ClCompile Include="src\sabr_pricer.cpp" />
     <ClCompile Include="src\sabr_pricer_more.cpp" />
     <ClCompile Include="src\sabr_pricer_normal.cpp" />
     <ClCompile Include="src\solver.cpp" />
-    <ClCompile Include="src\test.cpp" />
     <ClCompile Include="src\util.cpp" />
   </ItemGroup>
   <ItemGroup>
