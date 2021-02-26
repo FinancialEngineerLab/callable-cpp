@@ -38,10 +38,10 @@ namespace beagle
       beagle::integration_method_ptr_t quad = beagle::math::IntegrationMethod::midPointIntegrationMethod(500);
 
       beagle::pricer_ptr_t pricer = beagle::valuation::Pricer::formClosedFormExactCEVEuropeanOptionPricer(forward,
-                                                                                                       discounting,
-                                                                                                       beta,
-                                                                                                       nu,
-                                                                                                       quad);
+                                                                                                          discounting,
+                                                                                                          beta,
+                                                                                                          nu,
+                                                                                                          quad);
 
       printf("\n************************************************************************************\n");
       printf("Valuation results for the exact CEV model:\n");

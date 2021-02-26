@@ -11,61 +11,50 @@ namespace beagle
 {
   namespace test
   {
-    TEST(test_cev, ClosedFormValuation)
+    TEST(test_cev_finite_difference, ClosedFormValuation)
     {
-      beagle::discrete_dividend_schedule_t dividends;
-      // dividends.emplace_back( 0.5, 6.0 );
-      // dividends.emplace_back( 1.5, 6.5 );
-      // dividends.emplace_back( 2.5, 7.0 );
-      // dividends.emplace_back( 3.5, 7.5 );
-      // dividends.emplace_back( 4.5, 8.0 );
-      // dividends.emplace_back( 5.5, 8.0 );
-      // dividends.emplace_back( 6.5, 8.0 );
+      double spot = 50.;
+      double r = .04;
+      double q = .02;
+
+      double b = .25;
+      double d = .3;
 
       double expiry = 1.;
-      double strike = 100.;
+      double strike = 50.;
       beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::put();
-      beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption( expiry,
-                                                                                                strike,
-                                                                                                payoff );
+      beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption(expiry,
+                                                                                               strike,
+                                                                                               payoff);
       beagle::product_ptr_t amerOption = beagle::product::option::Option::createAmericanOption( expiry,
                                                                                                 strike,
                                                                                                 payoff );
 
-      double spot = 100.;
-      double rate = .01;
-
+      // put option valuation with discounting, funding, and volatility
       beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
-                                                [=](double arg) { return 1;});
+                                                [=](double arg) { return std::exp(-r * arg);});
       beagle::real_function_ptr_t forward = beagle::math::RealFunction::createContinuousForwardAssetPriceFunction(
-                                                spot, discounting);
-
-      // CEV modeling
-      double alpha = .3;
-      double beta = .5;
-      beagle::real_function_ptr_t localVolFunction = beagle::math::RealFunction::createUnaryFunction(
-                                                                  [alpha, beta](double x) { return alpha * std::pow(x, beta - 1.); } );
-      beagle::real_2d_function_ptr_t localVolSurface =
-                beagle::math::RealTwoDimFunction::createPiecewiseConstantRightFunction( beagle::dbl_vec_t(1U, 1.),
-                                                                                        beagle::real_function_ptr_coll_t(1U, localVolFunction) );
+                                                spot,
+                                                beagle::math::RealFunction::createUnaryFunction(
+                                                [=](double arg) { return std::exp(-(r - q) * arg);}));
 
       try
       {
         beagle::real_2d_function_ptr_t cev = beagle::math::RealTwoDimFunction::createBinaryFunction(
-                                                    [=](double time, double price){ return alpha * std::pow(price, beta - 1.); } );
+                                                    [=](double time, double price){ return d * std::pow(price, b - 1.); } );
         beagle::pricer_ptr_t odbpop2  = beagle::valuation::Pricer::formOneDimBackwardPDEOptionPricer(
                                                                   forward,
                                                                   discounting,
-                                                                  beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(rate),
+                                                                  beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0.),
                                                                   cev,
-                                                                  beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(rate),
+                                                                  beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0.),
                                                                   beagle::valuation::OneDimFiniteDifferenceSettings(500, 1001, 7.5) );
         beagle::pricer_ptr_t odfpeop2 = beagle::valuation::Pricer::formOneDimForwardPDEArrowDebreuPricer(
                                                                   forward,
                                                                   discounting,
-                                                                  beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(rate),
+                                                                  beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0.),
                                                                   cev,
-                                                                  beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(rate),
+                                                                  beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0.),
                                                                   beagle::valuation::OneDimFiniteDifferenceSettings(500, 1001, 7.5) );
 
         printf("\n************************************************************************************\n");
