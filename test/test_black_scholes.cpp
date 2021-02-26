@@ -80,10 +80,12 @@ namespace beagle
                                                                   beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(vol),
                                                                   settings );
 
+        printf("\n************************************************************************************\n");
         std::cout << "European option price (CF)   is: " << bscfeop->value( euroOption ) << std::endl;
         std::cout << "European option price (FD-B) is: " << odbpop->value( euroOption ) << std::endl;
         std::cout << "American option price (FD-B) is: " << odbpop->value( amerOption ) << std::endl;
         std::cout << "European option price (FD-F) is: " << odfpeop->value( euroOption ) << std::endl;
+        printf("************************************************************************************\n\n");
       }
       catch (const std::string& what)
       {

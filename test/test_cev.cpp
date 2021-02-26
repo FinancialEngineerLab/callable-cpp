@@ -68,9 +68,11 @@ namespace beagle
                                                                   beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(rate),
                                                                   beagle::valuation::OneDimFiniteDifferenceSettings(500, 1001, 7.5) );
 
+        printf("\n************************************************************************************\n");
         std::cout << "European option price (FD-B) is: " << odbpop2->value( euroOption ) << std::endl;
         std::cout << "American option price (FD-B) is: " << odbpop2->value( amerOption ) << std::endl;
         std::cout << "European option price (FD-F) is: " << odfpeop2->value( euroOption ) << std::endl;
+        printf("************************************************************************************\n\n");
       }
       catch (const std::string& what)
       {

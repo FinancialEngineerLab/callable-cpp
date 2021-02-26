@@ -43,7 +43,7 @@ namespace beagle
                                                                                                        nu,
                                                                                                        quad);
 
-      printf("************************************************************************************\n");
+      printf("\n************************************************************************************\n");
       printf("Valuation results for the exact CEV model:\n");
       printf("The option price is:          %.9f\n", pricer->value(euroOption));
       auto pIV = dynamic_cast<beagle::valuation::mixins::ClosedFormEuroOption*>(pricer.get());
