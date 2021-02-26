@@ -3,7 +3,7 @@ GOOGLE_TEST_INCLUDE = /usr/src/gtest/include
 
 CXX       := -c++
 CXXFLAGS := -O2 -I $(GOOGLE_TEST_INCLUDE) # -pedantic-errors -Wall -Wextra -Werror
-LDFLAGS  := -L/usr/lib/ -l$(GOOGLE_TEST_LIB) -lpthread
+LDFLAGS  := -l$(GOOGLE_TEST_LIB) -lpthread
 BUILD    := ./build
 OBJ_DIR  := $(BUILD)/objects
 APP_DIR  := $(BUILD)/apps
