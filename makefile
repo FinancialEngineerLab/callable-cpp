@@ -1,37 +1,41 @@
-GOOGLE_TEST_LIB = gtest
-GOOGLE_TEST_INCLUDE = /usr/src/gtest/include
+CXX            := -c++
+CXXFLAGS       := -O2 # -pedantic-errors -Wall -Wextra -Werror
+LDFLAGS        := -lgtest -lpthread
+INCLUDE        := -Iinclude/ -IEigen/ -I/usr/src/gtest/include
 
-CXX       := -c++
-CXXFLAGS := -O2 -I $(GOOGLE_TEST_INCLUDE) # -pedantic-errors -Wall -Wextra -Werror
-LDFLAGS  := -l$(GOOGLE_TEST_LIB) -lpthread
-BUILD    := ./build
-OBJ_DIR  := $(BUILD)/objects
-APP_DIR  := $(BUILD)/apps
-TEST_DIR := $(BUILD)/tests
-TARGET   := program
-TESTS    := run_tests
-INCLUDE  := -Iinclude/ -IEigen/
-SRC      :=                      \
-   $(wildcard src/*.cpp test/*.cpp)         \
+BUILD          := ./build
+OBJ_DIR        := $(BUILD)/objects
+APP_DIR        := $(BUILD)/apps
+TEST_DIR       := $(BUILD)/tests
+TARGET         := program
+TEST_TARGET    := run_tests
 
-OBJECTS  := $(SRC:%.cpp=$(OBJ_DIR)/%.o)
+MAIN_CPP_NAME  := test.cpp
+SRC_DIR        := src
+SRC            := $(wildcard $(SRC_DIR)/*.cpp)
+NON_MAIN_SRC   := $(filter-out $(SRC_DIR)/$(MAIN_CPP_NAME), $(SRC))
+OBJS           := $(SRC:%.cpp=$(OBJ_DIR)/%.o)
 
-test: build $(TEST_DIR)/$(TESTS)
+TEST_SRC_DIR   := test
+TEST_DIR_SRC   := $(wildcard $(TEST_SRC_DIR)/*.cpp)
+TEST_SRC       := $(wildcard $(NON_MAIN_SRC) $(TEST_DIR_SRC)/*.cpp)
+TEST_OBJS      := $(TEST_SRC:%.cpp=$(OBJ_DIR)/%.o)
 
-all: build $(APP_DIR)/$(TARGET) \
-	   build $(TEST_DIR)/$(TESTS)
+
+all: build $(APP_DIR)/$(TARGET)       \
+		 build $(TEST_DIR)/$(TEST_TARGET)
 
 $(OBJ_DIR)/%.o: %.cpp
 	@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) $(INCLUDE) -c $< -o $@ $(LDFLAGS)
 
-$(APP_DIR)/$(TARGET): $(OBJECTS)
+$(APP_DIR)/$(TARGET): $(OBJS)
 	@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) -o $(APP_DIR)/$(TARGET) $^ $(LDFLAGS)
 
-$(TEST_DIR)/$(TESTS): $(OBJECTS)
+$(TEST_DIR)/$(TEST_TARGET): $(TEST_OBJS)
 	@mkdir -p $(@D)
-	$(CXX) $(CXXFLAGS) -o $(TEST_DIR)/$(TESTS) $^ $(LDFLAGS)
+	$(CXX) $(CXXFLAGS) -o $(TEST_DIR)/$(TEST_TARGET) $^ $(LDFLAGS)
 
 .PHONY: all build clean debug release
 
