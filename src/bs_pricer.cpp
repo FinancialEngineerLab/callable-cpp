@@ -19,7 +19,6 @@ namespace beagle
           m_Discounting( discounting ),
           m_Volatility( volatility )
         { }
-        virtual ~BlackScholesClosedFormEuropeanOptionPricer( void ) = default;
       public:
         virtual double value( const beagle::product_ptr_t& product ) const override
         {

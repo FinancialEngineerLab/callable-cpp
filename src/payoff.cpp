@@ -10,7 +10,6 @@ namespace beagle
       {
         struct CallPayoff : public Payoff
         {
-          virtual ~CallPayoff( void ) = default;
         public:
           virtual double intrinsicValue( double spot,
                                          double strike ) const override
@@ -33,7 +32,6 @@ namespace beagle
 
         struct PutPayoff : public Payoff
         {
-          virtual ~PutPayoff( void ) = default;
         public:
           virtual double intrinsicValue( double spot,
                                          double strike ) const override
@@ -56,7 +54,6 @@ namespace beagle
 
         struct DigitalCallPayoff : public Payoff
         {
-          virtual ~DigitalCallPayoff( void ) = default;
         public:
           virtual double intrinsicValue( double spot,
                                          double strike ) const override
@@ -79,7 +76,6 @@ namespace beagle
 
         struct DigitalPutPayoff : public Payoff
         {
-          virtual ~DigitalPutPayoff( void ) = default;
         public:
           virtual double intrinsicValue( double spot,
                                          double strike ) const override

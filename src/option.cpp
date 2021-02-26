@@ -16,7 +16,6 @@ namespace beagle
                           const beagle::payoff_ptr_t& payoff ) :
             Option( expiry, strike, payoff )
           { }
-          virtual ~EuropeanOption( void ) = default;
         public:
           virtual const std::string& name(void) const override
           {
@@ -33,7 +32,6 @@ namespace beagle
                           const beagle::payoff_ptr_t& payoff ) :
             Option( expiry, strike, payoff )
           { }
-          virtual ~AmericanOption( void ) = default;
         public:
           virtual const std::string& name(void) const override
           {

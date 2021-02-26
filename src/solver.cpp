@@ -23,7 +23,6 @@ namespace beagle
           m_Rate(rate),
           m_Source(source)
         { }
-        virtual ~OneDimParabolicValuationPDESolver(void) = default;
       public:
         virtual void evolve(double end,
                             double timeStep,
@@ -84,7 +83,6 @@ namespace beagle
           m_Diffusion(diffusion),
           m_Rate(rate)
         { }
-        virtual ~OneDimFokkerPlanckPDESolver(void) = default;
       public:
         virtual void evolve(double end,
                             double timeStep,
@@ -148,7 +146,6 @@ namespace beagle
           m_Convection(convection),
           m_Diffusion(diffusion)
         { }
-        virtual ~DupirePDESolver(void) = default;
       public:
         virtual void evolve(double end,
                             double timeStep,

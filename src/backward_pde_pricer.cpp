@@ -33,7 +33,6 @@ namespace beagle
                                    beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0.0),
                                    settings)
         { }
-        virtual ~OneDimBackwardPDEOptionPricer( void ) = default;
       public:
         virtual double value(const beagle::product_ptr_t& product) const
         {
@@ -189,7 +188,7 @@ namespace beagle
                              moneynesses.cend(),
                              spots.begin(),
                              [=](double moneyness)
-                             { 
+                             {
                                return policy->exDividendStockPrice(cumForward * moneyness * (1. - jt->first),
                                                                    jt->second);
                              } );
@@ -225,7 +224,6 @@ namespace beagle
                                    recovery,
                                    settings)
         { }
-        virtual ~OneDimBackwardPDEBondPricer( void ) = default;
       public:
         virtual double value(const beagle::product_ptr_t& product) const
         {
@@ -276,7 +274,7 @@ namespace beagle
             couponTimes.push_back(expiry);
             couponAmounts.push_back(0.0);
           }
-          
+
           double termForward = forwardCurve()->value(expiry);
           double termDF = discountCurve()->value(expiry);
 
@@ -323,7 +321,7 @@ namespace beagle
                            prices.begin(),
                            [=](double price)
                            { return price + startDF * couponAmounts[numCouponflows-j]; });
-            
+
             // Perform the backward induction
             int numTimes = static_cast<int>((start - end) * finiteDifferenceSettings().numberOfTimeSteps());
             double timeStep = (end - start) / numTimes;
@@ -372,14 +370,14 @@ namespace beagle
             if (callSchedule.size() > 1U)
               throw(std::string("Multiple call period is not supported currently!"));
           }
-          
+
           auto pPut = dynamic_cast<beagle::product::bond::mixins::Puttable*>(product.get());
           if (pPut)
           {
             putSchedule = pPut->putSchedule();
             isPuttable = true;
           }
-          
+
           auto pConv = dynamic_cast<beagle::product::bond::mixins::Convertible*>(product.get());
           if (pConv)
           {
@@ -447,7 +445,7 @@ namespace beagle
               }
             }
           }
-          
+
           if (isConvertible)
           {
             for (int k=0; k<sz; ++k)
@@ -475,7 +473,7 @@ namespace beagle
                                                                     rate,
                                                                     settings );
     }
-    
+
     beagle::pricer_ptr_t
     Pricer::formOneDimBackwardPDEBondPricer(const beagle::real_function_ptr_t& forward,
                                             const beagle::real_function_ptr_t& discounting,

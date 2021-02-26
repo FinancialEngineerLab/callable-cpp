@@ -65,7 +65,6 @@ namespace beagle
             //   std::cout << m_Targets[i] << "\t";
             // std::cout << "\n";
           }
-          virtual ~LocalVolatilityCalibrationAdapter( void ) = default;
         public:
           dbl_vec_t values( const dbl_vec_t& parameters ) const override
           {
@@ -94,7 +93,7 @@ namespace beagle
                            [=](double logMoneyness)
                            { return fwd * std::exp(logMoneyness); });
             beagle::real_function_ptr_t func = m_Settings.interpolationMethod()->formFunction(strikes, prices);
-            
+
             beagle::dbl_vec_t results;
             for (beagle::dbl_vec_t::size_type j=0; j<m_Strikes.size(); ++j)
             {
@@ -130,7 +129,7 @@ namespace beagle
                 result[i][j] = ( forwardResult[i] - backwardResult[i] ) * .5 / bump;
               }
             }
-            
+
             //// output parameters
             //std::cout << "\nFor this iteration, the calibrated parameters are: \n";
             //for (beagle::dbl_vec_t::size_type i=0; i<parameters.size(); ++i)
@@ -192,7 +191,7 @@ namespace beagle
         // Now perform calibration by bootstrapping
         beagle::dbl_vec_t expiries;
         beagle::real_function_ptr_coll_t localVolFuncs;
-        
+
         beagle::real_function_ptr_t localVol
                   = beagle::math::RealFunction::createLinearWithFlatExtrapolationInterpolatedFunction(volSmiles.front().second.first,
                                                                                                       volSmiles.front().second.second);

@@ -16,7 +16,6 @@ namespace beagle
             m_Notionalflows.clear();
             m_Notionalflows.emplace_back(expiry, standardFaceValue());
           }
-          virtual ~ZeroCouponBond( void ) = default;
         public:
           virtual const std::string& name(void) const override
           {
@@ -56,7 +55,6 @@ namespace beagle
 
             m_Notionalflows.emplace_back(expiry, standardFaceValue());
           }
-          virtual ~FixedCouponBond( void ) = default;
         public:
           virtual const std::string& name(void) const override
           {
@@ -90,7 +88,6 @@ namespace beagle
             m_CallSchedule(callSchedule),
             m_PutSchedule(putSchedule)
           { }
-          virtual ~ConvertibleBond( void ) = default;
         public:
           virtual const std::string& name(void) const override
           {

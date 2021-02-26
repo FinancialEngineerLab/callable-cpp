@@ -8,7 +8,7 @@ namespace beagle
   {
     struct Product
     {
-      virtual ~Product(void);
+      virtual ~Product(void) = default;
     public:
       virtual const std::string& name(void) const = 0;
     };
@@ -17,7 +17,7 @@ namespace beagle
     {
       struct Option
       {
-        virtual ~Option(void);
+        virtual ~Option(void) = default;
       public:
         virtual double strike(void) const=0;
         virtual double expiry(void) const=0;
@@ -26,7 +26,7 @@ namespace beagle
 
       struct Bond
       {
-        virtual ~Bond(void);
+        virtual ~Bond(void) = default;
       public:
         virtual double standardFaceValue(void) const;
         virtual const beagle::coupon_flows_t& couponFlows(void) const=0;

@@ -31,7 +31,6 @@ namespace beagle
         explicit ConstantFunction( double constant ) :
           m_Const( constant )
         { }
-        virtual ~ConstantFunction( void ) = default;
       public:
         virtual double value( double arg ) const override
         {
@@ -48,7 +47,6 @@ namespace beagle
           m_F( f ),
           m_G( g )
         { }
-        virtual ~CompositeFunction( void ) = default;
       public:
         virtual double value( double arg ) const override
         {
@@ -64,7 +62,6 @@ namespace beagle
         explicit UnaryFunction(const beagle::real_func_t& func) :
           m_Func(func)
         { }
-        virtual ~UnaryFunction(void) = default;
       public:
         virtual double value(double arg) const override
         {
@@ -80,7 +77,6 @@ namespace beagle
                                                          const beagle::dbl_vec_t& yValues ) :
           InterpolatedFunction( xValues, yValues )
         { }
-        virtual ~LinearWithFlatExtrapolationInterpolatedFunction( void ) = default;
       public:
         virtual double value( double arg ) const override
         {
@@ -122,7 +118,7 @@ namespace beagle
           beagle::dbl_vec_t upper(sz-2, 0.);
           beagle::dbl_vec_t lower(sz-2, 0.);
           beagle::dbl_vec_t rhs(sz-2, 0.);
-          
+
           for (int i=0; i<sz-2; ++i)
           {
             double h1 = xValues[i+1] - xValues[i];
@@ -141,7 +137,6 @@ namespace beagle
                     rhs.cend(),
                     m_SecondDerivs.begin() + 1U);
         }
-        virtual ~NaturalCubicSplineWithFlatExtrapolationInterpolatedFunction( void ) = default;
       public:
         virtual double value( double arg ) const override
         {
@@ -188,7 +183,7 @@ namespace beagle
           }
         }
       private:
-        beagle::dbl_vec_t m_SecondDerivs; 
+        beagle::dbl_vec_t m_SecondDerivs;
       };
 
       struct PiecewiseConstantRightInterpolatedFunction : public InterpolatedFunction
@@ -197,7 +192,6 @@ namespace beagle
                                                     const beagle::dbl_vec_t& yValues ) :
           InterpolatedFunction(xValues, yValues)
         { }
-        virtual ~PiecewiseConstantRightInterpolatedFunction( void ) = default;
       public:
         virtual double value( double arg ) const override
         {
@@ -228,7 +222,6 @@ namespace beagle
           m_Spot(spot),
           m_Funding(funding)
         { }
-        virtual ~ContinuousForwardAssetPriceFunction( void ) = default;
       public:
         virtual double value( double arg ) const override
         {
@@ -283,7 +276,6 @@ namespace beagle
             m_Forwards.emplace_back(pair);
           }
         }
-        virtual ~GeneralForwardAssetPriceFunction( void ) = default;
       public:
         virtual double value( double arg ) const override
         {

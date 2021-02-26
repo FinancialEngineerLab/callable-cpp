@@ -33,7 +33,6 @@ namespace beagle
                                    beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(.0),
                                    settings)
         { }
-        virtual ~OneDimForwardPDEArrowDebreuPricer( void ) = default;
       public:
         virtual double value(const beagle::product_ptr_t& product) const override
         {
@@ -54,7 +53,7 @@ namespace beagle
           beagle::dbl_vec_t densities;
           formInitialCondition(expiry, stateVars, densities);
           evolve(0., expiry, stateVars, densities);
- 
+
           double result(.0);
           int numStateVars = stateVars.size();
           double stateVarStep = (stateVars.back() - stateVars.front()) / (numStateVars - 1);
@@ -131,7 +130,6 @@ namespace beagle
                                    beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(.0),
                                    settings)
         { }
-        virtual ~OneDimForwardPDEEuroOptionPricer( void ) = default;
       public:
         virtual double value(const beagle::product_ptr_t& product) const override
         {
@@ -151,7 +149,7 @@ namespace beagle
           beagle::dbl_vec_t stateVars;
           beagle::dbl_vec_t prices;
           formInitialCondition(expiry, payoff, stateVars, prices);
-          
+
           // Store exponential of state variables for speed
           beagle::dbl_vec_t moneynesses(stateVars);
           std::transform(stateVars.cbegin(),
@@ -159,7 +157,7 @@ namespace beagle
                          moneynesses.begin(),
                          [=](double logMoneyness)
                          { return std::exp(logMoneyness); });
-          
+
           // Check dividends and use ex-dividend dates in forward induction
           beagle::dbl_vec_t dates;
           std::vector<beagle::two_dbl_t> dividends;
@@ -227,7 +225,7 @@ namespace beagle
                              { return cumForward * moneyness; });
 
               beagle::real_function_ptr_t results = finiteDifferenceSettings().interpolationMethod()->formFunction( strikes, prices );
-              
+
               std::transform( moneynesses.begin(),
                               moneynesses.end(),
                               strikes.begin(),

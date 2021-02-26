@@ -12,7 +12,6 @@ namespace beagle
       struct Bond : public Product,
                     public beagle::product::mixins::Bond
       {
-        virtual ~Bond(void) = default;
       public:
         virtual const std::string& name(void) const=0;
       public:

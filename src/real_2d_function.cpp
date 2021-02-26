@@ -12,7 +12,6 @@ namespace beagle
         explicit BinaryFunction(const beagle::real_2d_func_t& func) :
           m_Func(func)
         { }
-        virtual ~BinaryFunction(void) = default;
       public:
         virtual double value(double argX,
                              double argY) const override
@@ -28,7 +27,6 @@ namespace beagle
         explicit TwoDimConstantFunction( double constant ) :
           m_Const( constant )
         { }
-        virtual ~TwoDimConstantFunction( void ) = default;
       public:
         virtual double value( double argX,
                               double argY ) const override
@@ -46,7 +44,6 @@ namespace beagle
           m_Params( params ),
           m_Funcs( funcs )
         { }
-        virtual ~PiecewiseConstantRightFunction( void ) = default;
       public:
         virtual double value( double argX,
                               double argY ) const override

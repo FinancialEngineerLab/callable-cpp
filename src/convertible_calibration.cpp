@@ -70,7 +70,6 @@ namespace beagle
 
             // std::cout << m_Targets[0] << "    " << m_Targets[1] << std::endl << std::endl;
           }
-          virtual ~AndersenBuffumCalibrationAdapter( void ) = default;
         public:
           dbl_vec_t values( const dbl_vec_t& parameters ) const override
           {

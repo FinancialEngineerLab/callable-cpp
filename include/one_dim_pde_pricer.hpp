@@ -16,7 +16,6 @@ namespace beagle
                                const beagle::real_2d_function_ptr_t& rate,
                                const beagle::real_2d_function_ptr_t& recovery,
                                const beagle::valuation::OneDimFiniteDifferenceSettings& settings);
-      virtual ~OneDimParabolicPDEPricer( void ) = default;
     protected:
       const beagle::real_function_ptr_t& forwardCurve( void ) const;
       const beagle::real_function_ptr_t& discountCurve( void ) const;

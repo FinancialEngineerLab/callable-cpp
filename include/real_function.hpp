@@ -70,7 +70,6 @@ namespace beagle
       {
         InterpolatedFunction( const beagle::dbl_vec_t& xValues,
                               const beagle::dbl_vec_t& yValues );
-        virtual ~InterpolatedFunction( void ) = default;
       public:
         virtual double value( double arg ) const = 0;
         virtual const beagle::dbl_vec_t& xParameters( void ) const override;

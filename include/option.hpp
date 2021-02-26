@@ -15,7 +15,6 @@ namespace beagle
         Option(double expiry,
                double strike,
                const beagle::payoff_ptr_t& payoff);
-        virtual ~Option(void) = default;
       public:
         virtual const std::string& name(void) const = 0;
       public:

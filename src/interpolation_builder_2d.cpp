@@ -14,7 +14,6 @@ namespace beagle
           m_InterpX( interpX ),
           m_InterpY( interpY )
         { }
-        virtual ~TwoOneDimInterpolationBuilder( void ) = default;
       public:
         virtual beagle::real_2d_function_ptr_t formTwoDimFunction() const override
         {
