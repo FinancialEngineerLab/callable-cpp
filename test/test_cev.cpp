@@ -23,7 +23,7 @@ namespace beagle
 
       double expiry = 1.;
       double strike = 50.;
-      beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::put();
+      const beagle::payoff_ptr_t& payoff = beagle::product::option::Payoff::put();
       beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption(expiry,
                                                                                                strike,
                                                                                                payoff);
@@ -43,6 +43,7 @@ namespace beagle
       {
         beagle::real_2d_function_ptr_t cev = beagle::math::RealTwoDimFunction::createBinaryFunction(
                                                     [=](double time, double price){ return d * std::pow(price, b - 1.); } );
+      printf("All good here.\n");
         beagle::pricer_ptr_t odbpop2  = beagle::valuation::Pricer::formOneDimBackwardPDEOptionPricer(
                                                                   forward,
                                                                   discounting,
@@ -50,6 +51,7 @@ namespace beagle
                                                                   cev,
                                                                   beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0.),
                                                                   beagle::valuation::OneDimFiniteDifferenceSettings(500, 1001, 7.5) );
+      printf("All good here.\n");
         beagle::pricer_ptr_t odfpeop2 = beagle::valuation::Pricer::formOneDimForwardPDEArrowDebreuPricer(
                                                                   forward,
                                                                   discounting,
@@ -81,7 +83,7 @@ namespace beagle
 
       double expiry = 1.;
       double strike = 50.;
-      beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::put();
+      const beagle::payoff_ptr_t& payoff = beagle::product::option::Payoff::put();
       beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption(expiry,
                                                                                                strike,
                                                                                                payoff);
@@ -122,7 +124,7 @@ namespace beagle
 
       double expiry = 1.;
       double strike = 50.;
-      beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::put();
+      const beagle::payoff_ptr_t& payoff = beagle::product::option::Payoff::put();
       beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption(expiry,
                                                                                                strike,
                                                                                                payoff);

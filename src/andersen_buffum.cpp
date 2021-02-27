@@ -24,7 +24,7 @@ namespace beagle
       double sigma = .3;
 
       // Call option valuation with discounting, funding, and volatility
-      beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::call();
+      const beagle::payoff_ptr_t& payoff = beagle::product::option::Payoff::call();
       beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
                                                 [=](double arg) { return std::exp(-r * arg);});
       beagle::real_function_ptr_t forward = beagle::math::RealFunction::createContinuousForwardAssetPriceFunction(
