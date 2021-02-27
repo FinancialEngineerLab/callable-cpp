@@ -348,22 +348,6 @@ namespace beagle
       }
     }
 
-    void test_tridiagonal_solver(void)
-    {
-      std::cout << "\nStart of Test 4:\n\n";
-
-      beagle::dbl_vec_t diag{ -2.6, -2.6, -2.6, -2.6 };
-      beagle::dbl_vec_t upper{ 1., 1., 1., 1. };
-      beagle::dbl_vec_t lower{ 1., 1., 1., 1. };
-      beagle::dbl_vec_t rhs{ -240., 0., 0., -150. };
-
-      beagle::util::tridiagonalSolve(rhs, diag, upper, lower);
-      for (auto result : rhs)
-        std::cout << result << "\n";
-
-      std::cout << "\nEnd of Test 4:\n\n";
-    }
-
     void test_implied_vol_credit_spread( void )
     {
       std::cout << "\nStart of Test 5:\n\n";
@@ -547,35 +531,6 @@ namespace beagle
       std::cout << "\n";
 
       std::cout << "\nEnd of Test 8\n\n";
-    }
-
-    void test_natural_cubic_spline( void )
-    {
-      std::cout << "\nStart of Test 9:\n\n";
-
-      beagle::dbl_vec_t xValues{1., 2., 3., 4., 5.};
-      beagle::dbl_vec_t yValues{0., 1., 0., 1., 0.};
-
-      beagle::interp_builder_ptr_t spline = beagle::math::InterpolationBuilder::naturalCubicSpline();
-      beagle::real_function_ptr_t func = spline->formFunction(xValues, yValues);
-
-      beagle::dbl_vec_t xs(61U);
-      std::cout << "[";
-      for (int i=0; i<61; ++i)
-      {
-        xs[i] = i * .1;
-        std::cout << xs[i] << ", ";
-      }
-      std::cout << "]\n";
-
-      std::cout << "[";
-      for (double x : xs)
-      {
-        std::cout << func->value(x) << ", ";
-      }
-      std::cout << "]\n";
-
-      std::cout << "\nEnd of Test 9\n\n";
     }
   }
 }
