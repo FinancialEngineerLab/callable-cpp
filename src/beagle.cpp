@@ -17,7 +17,7 @@ int main( void )
   beagle::test::generateAndersenBuffumTableOneCalibratedPrice();
   beagle::test::generateAndersenBuffumTableOneNaivePrice();
 
-  // beagle::test::test_volatility_smile_credit_spread_calibration();
+  beagle::test::test_volatility_smile_credit_spread_calibration();
 
   return 0;
 }
