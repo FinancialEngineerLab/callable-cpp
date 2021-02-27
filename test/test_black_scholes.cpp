@@ -77,26 +77,36 @@ namespace beagle
                                                                 settings );
 
       beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::call();
-      for (double expiry : {5., 10., 15., 20.})
+      beagle::dbl_vec_t expiries = {5., 10., 15., 20.};
+      beagle::dbl_vec_t strikes = {50., 75., 100., 125., 150., 175., 200.};
+      beagle::dbl_mat_t prices = {{47.14, 33.85, 24.42, 17.79, 13.12,  9.79,  7.39},
+                                  {46.85, 38.21, 31.66, 26.58, 22.56, 19.34, 16.71},
+                                  {46.49, 40.49, 35.73, 31.85, 28.63, 25.91, 23.59},
+                                  {46.10, 41.76, 38.23, 35.26, 32.71, 30.50, 28.56}};
+      for (int i = 0; i < expiries.size(); ++i)
       {
-        printf("\n************************************************************************************\n");
-        printf("T = %f\n", expiry);
-        for (double strike : {50., 75., 100., 125., 150., 175., 200.})
-        {
+        double expiry = expiries[i];
 
+        // printf("\n************************************************************************************\n");
+        // printf("T = %3.0f\n", expiry);
+        for (int j = 0; j < strikes.size(); ++j)
+        {
+          double strike = strikes[j];
           beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption( expiry,
                                                                                                     strike,
                                                                                                     payoff );
-          beagle::product_ptr_t amerOption = beagle::product::option::Option::createAmericanOption( expiry,
-                                                                                                    strike,
-                                                                                                    payoff );
+          double value = bscfeop->value( euroOption );
+          EXPECT_NEAR(value / prices[i][j], 1., 5e-4);
 
-          printf("K = %f, Call price = %.8f\n", strike, bscfeop->value( euroOption ));
+          // printf("K = %3.0f, Call price = %.8f\n", strike, value);
+          // beagle::product_ptr_t amerOption = beagle::product::option::Option::createAmericanOption( expiry,
+          //                                                                                           strike,
+          //                                                                                           payoff );
           // std::cout << "European option price (FD-B) is: " << odbpop->value( euroOption ) << std::endl;
           // std::cout << "American option price (FD-B) is: " << odbpop->value( amerOption ) << std::endl;
           // std::cout << "European option price (FD-F) is: " << odfpeop->value( euroOption ) << std::endl;
         }
-        printf("************************************************************************************\n\n");
+        // printf("************************************************************************************\n\n");
       }
 
       EXPECT_EQ(0.0, 0.0);
