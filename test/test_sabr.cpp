@@ -23,7 +23,7 @@ namespace beagle
 
       double expiry = 1.;
       double strike = 50.;
-      const beagle::payoff_ptr_t& payoff = beagle::product::option::Payoff::put();
+      beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::put();
       beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption(expiry,
                                                                                                strike,
                                                                                                payoff);
@@ -69,7 +69,7 @@ namespace beagle
 
       double expiry = 1.;
       double strike = 50.;
-      const beagle::payoff_ptr_t& payoff = beagle::product::option::Payoff::put();
+      beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::put();
       beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption(expiry,
                                                                                                strike,
                                                                                                payoff);
@@ -115,7 +115,7 @@ namespace beagle
 
       double expiry = 1.;
       double strike = 50.;
-      const beagle::payoff_ptr_t& payoff = beagle::product::option::Payoff::put();
+      beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::put();
       beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption(expiry,
                                                                                                strike,
                                                                                                payoff);
@@ -163,7 +163,7 @@ namespace beagle
 
       double expiry = 1.;
       double strike = 50.;
-      const beagle::payoff_ptr_t& payoff = beagle::product::option::Payoff::put();
+      beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::put();
       beagle::product_ptr_t euroOption = beagle::product::option::Option::createEuropeanOption(expiry,
                                                                                                strike,
                                                                                                payoff);

@@ -25,7 +25,7 @@ namespace beagle
       beagle::dbl_vec_t xValues{1., 2., 3., 4., 5.};
       beagle::dbl_vec_t yValues{0., 1., 0., 1., 0.};
 
-      const beagle::interp_builder_ptr_t& spline = beagle::math::InterpolationBuilder::naturalCubicSpline();
+      beagle::interp_builder_ptr_t spline = beagle::math::InterpolationBuilder::naturalCubicSpline();
       beagle::real_function_ptr_t func = spline->formFunction(xValues, yValues);
 
       for (int i = 0; i < xValues.size(); ++i)

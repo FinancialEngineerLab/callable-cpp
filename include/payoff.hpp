@@ -18,10 +18,10 @@ namespace beagle
         virtual bool isPut( void ) const = 0;
         virtual bool isDigital( void ) const = 0;
       public:
-        static const beagle::payoff_ptr_t& call( void );
-        static const beagle::payoff_ptr_t& put( void );
-        static const beagle::payoff_ptr_t& digitalCall( void );
-        static const beagle::payoff_ptr_t& digitalPut( void );
+        static beagle::payoff_ptr_t call( void );
+        static beagle::payoff_ptr_t put( void );
+        static beagle::payoff_ptr_t digitalCall( void );
+        static beagle::payoff_ptr_t digitalPut( void );
       };
     }
   }

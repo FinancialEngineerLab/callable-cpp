@@ -34,18 +34,16 @@ namespace beagle
       return spot - dividendAmount( spot, dividend );
     }
 
-    const beagle::dividend_policy_ptr_t&
+    beagle::dividend_policy_ptr_t
     DividendPolicy::liquidator( void )
     {
-      static beagle::dividend_policy_ptr_t instance = std::make_shared<impl::LiquidatorDividendPolicy>();
-      return instance;
+      return std::make_shared<impl::LiquidatorDividendPolicy>();
     }
 
-    const beagle::dividend_policy_ptr_t&
+    beagle::dividend_policy_ptr_t
     DividendPolicy::survivor( void )
     {
-      static beagle::dividend_policy_ptr_t instance = std::make_shared<impl::SurvivorDividendPolicy>();
-      return instance;
+      return std::make_shared<impl::SurvivorDividendPolicy>();
     }
   }
 }

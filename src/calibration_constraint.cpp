@@ -145,11 +145,10 @@ namespace beagle
       };
     }
 
-    const beagle::calibration_bound_constraint_ptr_t&
+    beagle::calibration_bound_constraint_ptr_t
     CalibrationBoundConstraint::noBoundCalibrationConstraint( void )
     {
-      static beagle::calibration_bound_constraint_ptr_t instance = std::make_shared<impl::NoBoundCalibrationConstraintImpl>();
-      return instance;
+      return std::make_shared<impl::NoBoundCalibrationConstraintImpl>();
     }
 
     beagle::calibration_bound_constraint_ptr_t

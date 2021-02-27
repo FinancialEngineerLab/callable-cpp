@@ -18,7 +18,7 @@ namespace beagle
                                                  const double dOriginal ) const =0;
 
     public:
-      static const beagle::calibration_bound_constraint_ptr_t& noBoundCalibrationConstraint( void );
+      static beagle::calibration_bound_constraint_ptr_t noBoundCalibrationConstraint( void );
       static beagle::calibration_bound_constraint_ptr_t lowerBoundCalibrationConstraint( double lowerBound );
       static beagle::calibration_bound_constraint_ptr_t upperBoundCalibrationConstraint( double upperBound );
       static beagle::calibration_bound_constraint_ptr_t twoSidedBoundCalibrationConstraint( double lowerBound,
