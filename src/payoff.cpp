@@ -97,28 +97,32 @@ namespace beagle
         };
       }
 
-      beagle::payoff_ptr_t
+      const beagle::payoff_ptr_t&
       Payoff::call( void )
       {
-        return std::make_shared<impl::CallPayoff>();
+        static beagle::payoff_ptr_t instance = std::make_shared<impl::CallPayoff>();
+        return instance;
       }
 
-      beagle::payoff_ptr_t
+      const beagle::payoff_ptr_t&
       Payoff::put( void )
       {
-        return std::make_shared<impl::PutPayoff>();
+        static beagle::payoff_ptr_t instance = std::make_shared<impl::PutPayoff>();
+        return instance;
       }
 
-      beagle::payoff_ptr_t
+      const beagle::payoff_ptr_t&
       Payoff::digitalCall( void )
       {
-        return std::make_shared<impl::DigitalCallPayoff>();
+        static beagle::payoff_ptr_t instance = std::make_shared<impl::DigitalCallPayoff>();
+        return instance;
       }
 
-      beagle::payoff_ptr_t
+      const beagle::payoff_ptr_t&
       Payoff::digitalPut( void )
       {
-        return std::make_shared<impl::DigitalPutPayoff>();
+        static beagle::payoff_ptr_t instance = std::make_shared<impl::DigitalPutPayoff>();
+        return instance;
       }
     }
   }

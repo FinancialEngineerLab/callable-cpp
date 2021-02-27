@@ -38,22 +38,25 @@ namespace beagle
       };
     }
 
-    beagle::interp_builder_ptr_t
+    const beagle::interp_builder_ptr_t&
     InterpolationBuilder::linear( void )
     {
-      return std::make_shared<impl::LinearInterpolationBuilder>();
+      static beagle::interp_builder_ptr_t instance = std::make_shared<impl::LinearInterpolationBuilder>();
+      return instance;
     }
 
-    beagle::interp_builder_ptr_t
+    const beagle::interp_builder_ptr_t&
     InterpolationBuilder::naturalCubicSpline( void )
     {
-      return std::make_shared<impl::NaturalCubicSplineInterpolationBuilder>();
+      static beagle::interp_builder_ptr_t instance = std::make_shared<impl::NaturalCubicSplineInterpolationBuilder>();
+      return instance;
     }
 
-    beagle::interp_builder_ptr_t
+    const beagle::interp_builder_ptr_t&
     InterpolationBuilder::piecewiseConstantRight( void )
     {
-      return std::make_shared<impl::PiecewiseConstantRightInterpolationBuilder>();
+      static beagle::interp_builder_ptr_t instance = std::make_shared<impl::PiecewiseConstantRightInterpolationBuilder>();
+      return instance;
     }
   }
 }

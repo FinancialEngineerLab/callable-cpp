@@ -15,8 +15,8 @@ namespace beagle
       virtual double dividendAmount( double spot,
                                      double dividend ) const = 0;
     public:
-      static beagle::dividend_policy_ptr_t liquidator( void );
-      static beagle::dividend_policy_ptr_t survivor( void );
+      static const beagle::dividend_policy_ptr_t& liquidator( void );
+      static const beagle::dividend_policy_ptr_t& survivor( void );
     };
   }
 }
