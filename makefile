@@ -17,8 +17,7 @@ NON_MAIN_SRC   := $(filter-out $(SRC_DIR)/$(MAIN_CPP_NAME), $(SRC))
 OBJS           := $(SRC:%.cpp=$(OBJ_DIR)/%.o)
 
 TEST_SRC_DIR   := test
-TEST_DIR_SRC   := $(wildcard $(TEST_SRC_DIR)/*.cpp)
-TEST_SRC       := $(wildcard $(NON_MAIN_SRC) $(TEST_DIR_SRC)/*.cpp)
+TEST_SRC       := $(wildcard $(TEST_SRC_DIR)/*.cpp $(NON_MAIN_SRC))
 TEST_OBJS      := $(TEST_SRC:%.cpp=$(OBJ_DIR)/%.o)
 
 beagle: build $(MAIN_DIR)/$(TARGET)
@@ -43,12 +42,6 @@ build:
 	@mkdir -p $(MAIN_DIR)
 	@mkdir -p $(OBJ_DIR)
 	@mkdir -p $(TEST_DIR)
-
-debug: CXXFLAGS += -DDEBUG -g
-debug: all
-
-release: CXXFLAGS += -O2
-release: all
 
 clean:
 	-@rm -rvf $(OBJ_DIR)/*
