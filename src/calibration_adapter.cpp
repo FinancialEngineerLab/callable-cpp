@@ -21,6 +21,7 @@ namespace beagle
 
         return params;
       }
+
       dbl_vec_t getTransformedParameters( const dbl_vec_t& parameters,
                                           const calibration_bound_constraint_coll_t& constraints )
       {
@@ -33,17 +34,20 @@ namespace beagle
 
         return params;
       }
+
       dbl_vec_t liveValues( const calibration_adapter_ptr_t& adapter,
                             const dbl_vec_t& parameters )
       {
         return adapter->values(parameters);
       }
+
       dbl_vec_t liveValues( const calibration_adapter_ptr_t& adapter,
                             const dbl_vec_t& transformedParamters,
                             const calibration_bound_constraint_coll_t& constraints )
       {
         return adapter->values(util::getOriginalParameters(transformedParamters, constraints));
       }
+
       dbl_mat_t jacobianMatrix( const calibration_adapter_ptr_t& adapter,
                                 const dbl_vec_t& parameters )
       {

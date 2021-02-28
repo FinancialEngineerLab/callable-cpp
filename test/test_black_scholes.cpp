@@ -21,10 +21,10 @@ namespace beagle
 
       beagle::discrete_dividend_schedule_t discDivs(dividends.size());
       std::transform(dividends.cbegin(),
-                    dividends.cend(),
-                    discDivs.begin(),
-                    [=](const beagle::dividend_schedule_t::value_type& item)
-                    { return std::make_pair(std::get<0>(item), std::get<2>(item)); });
+                     dividends.cend(),
+                     discDivs.begin(),
+                     [=](const beagle::dividend_schedule_t::value_type& item)
+                     { return std::make_pair(std::get<0>(item), std::get<2>(item)); });
 
       // Model parameters
       double spot = 100.;

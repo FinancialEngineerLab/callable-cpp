@@ -57,7 +57,6 @@ namespace beagle
   using real_function_ptr_t = std::shared_ptr<math::RealFunction>;
   using real_function_ptr_coll_t = std::vector<real_function_ptr_t>;
   using real_2d_function_ptr_t = std::shared_ptr<math::RealTwoDimFunction>;
-  using interp_builder_ptr_t = std::shared_ptr<math::InterpolationBuilder>;
   using interp_builder_2d_ptr_t = std::shared_ptr<math::TwoDimInterpolationBuilder>;
   using parabolic_pde_solver_ptr_t = std::shared_ptr<math::OneDimParabolicPDESolver>;
   using boundary_condition_ptr_t = std::shared_ptr<math::BoundaryCondition>;
@@ -68,6 +67,9 @@ namespace beagle
 
   using calibration_bound_constraint_ptr_t = std::shared_ptr<calibration::CalibrationBoundConstraint>;
   using calibration_bound_constraint_coll_t = std::vector<calibration_bound_constraint_ptr_t>;
+
+  using interp_builder_ptr_t = std::shared_ptr<math::InterpolationBuilder>;
+  using interp_builder_ptr_coll_t = std::vector<interp_builder_ptr_t>;
 
   using calibration_adapter_ptr_t = std::shared_ptr<calibration::CalibrationAdapter>;
 
