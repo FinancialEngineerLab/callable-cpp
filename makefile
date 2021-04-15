@@ -1,7 +1,7 @@
 CXX            := -c++
 CXXFLAGS       := -O2 # -pedantic-errors -Wall -Wextra -Werror
 LDFLAGS        := -lgtest -lpthread
-INCLUDE        := -Iinclude/ -IEigen/ -I/usr/src/gtest/include
+INCLUDE        := -Iinclude/ -I/usr/local/include/Eigen/ -I/usr/local/include/gtest/include
 
 BUILD          := ./build
 OBJ_DIR        := $(BUILD)/objects
