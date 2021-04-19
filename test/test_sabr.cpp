@@ -77,12 +77,12 @@ namespace beagle
       beagle::volatility_smile_coll_t smiles;
       double expiry = 1.;
       beagle::dbl_vec_t strikes = {48., 49., 50., 51., 52.};
-      beagle::dbl_vec_t vols = {0.023776422, 0.020896676, 0.01822638, 0.016188335, 0.01553533};
+      beagle::dbl_vec_t vols = {0.04234373, 0.039674365, 0.03734229, 0.035509553, 0.034348862};
       smiles.emplace_back(expiry, std::make_pair(strikes, vols));
 
       expiry = 2.;
       strikes = {47., 48., 49., 50., 51., 52., 53.};
-      vols = {0.026720955, 0.023776422, 0.020896676, 0.01822638, 0.016188335, 0.01553533, 0.016359933};
+      vols = {0.633713179, 0.635912613, 0.638024955, 0.639940406, 0.641495512, 0.642504625, 0.642852427};
       smiles.emplace_back(expiry, std::make_pair(strikes, vols));
 
       // put option valuation with discounting, funding, and volatility
@@ -125,7 +125,7 @@ namespace beagle
       printf("\n************************************************************************************\n");
       auto pCF = dynamic_cast<beagle::valuation::mixins::ClosedFormEuroOption*>(pricer.get());
       beagle::pricer_ptr_t calibPricer = pCF->updateModelParameters(results);
-      beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::put();
+      beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::call();
       printf("\n\nThe calibration result is:\n");
       for (int i = 0; i < smiles.size(); ++i)
       {
