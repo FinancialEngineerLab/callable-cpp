@@ -91,7 +91,7 @@
     Also notice that, under our model setup,
     \begin{equation}
       {\rm E}_t^{\mathbb{Q}}\left[S(u)\mathbf{1}_{\{\omega S(u)\geq\omega B_T(u)\}}\right]
-       = \frac{S}{F(t,u)}\Phi\left[\omega d_+\left(\frac{S(t)}{F(t,u)B_T(u)}, \Sigma(t,u)\right)\right],
+       = \frac{S(t)}{F(t,u)}\Phi\left[\omega d_+\left(\frac{S(t)}{F(t,u)B_T(u)}, \Sigma(t,u)\right)\right],
     \end{equation}
     and
     \begin{equation}
@@ -104,7 +104,7 @@
       \label{EEP}
       &&v_A(t,S(t))\nonumber\\
       =&&v_E(t,S(t))+\omega\int_t^TP(u)\Bigg[\left(\frac{P^{\prime}(u)}{P(u)}-\frac{F^{\prime}(u)}{F(u)}\right)
-      \frac{S}{F(t,u)}\Phi\left[\omega d_+\left(\frac{S(t)}{F(t,u)B_T(u)}, \Sigma(t,u)\right)\right]\nonumber\\
+      \frac{S(t)}{F(t,u)}\Phi\left[\omega d_+\left(\frac{S(t)}{F(t,u)B_T(u)}, \Sigma(t,u)\right)\right]\nonumber\\
       &&\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad - \frac{P^{\prime}(u)}{P(u)} K
       \Phi\left[\omega d_-\left(\frac{S(t)}{F(t,u)B_T(u)}, \Sigma(t,u)\right)\right] \Bigg]du.
     \end{eqnarray}
@@ -118,15 +118,17 @@
     \begin{eqnarray}
        \label{Boundary}
        && P(t)\left(B_T(t)-K\right)\nonumber\\
-      =&& P(T)\bigg(F(T)e^{X_T(t)}\Phi\big(\omega d_+\left(X_T(t)-x^*,\Sigma(t,T)\right)\big)
-                                                      -K\Phi\big(\omega d_-\left(X_T(t)-x^*,\Sigma(t,T)\right)\big)\bigg)\nonumber\\
-       &&+\int_t^T\bigg[P^{\prime}(u)K\Phi\left(\omega d_-\left(X_T(t)-X_T(u), \Sigma(t,u)\right)\right)\nonumber\\
-                 &&\quad\quad\quad\quad\quad
-                  -\left(P(u)F(u)\right)^{\prime}e^{X_T(t)}\Phi\left(\omega d_+\left(X_T(t)-X_T(u), \Sigma(t,u)\right)\right)\bigg]du.
+      =&& P(T)\left(\frac{B_T(t)}{F(t,T)}\Phi\left[\omega d_+\left(\frac{B_T(t)}{F(t,T)K},\Sigma(t,T)\right)\right]
+                                                      -K\Phi\left[\omega d_-\left(\frac{B_T(t)}{F(t,T)K},\Sigma(t,T)\right)\right]\right)\nonumber\\
+       &&+\omega\int_t^TP(u)\Bigg[\frac{P^{\prime}(u)}{P(u)} K
+       \Phi\left[\omega d_-\left(\frac{B_T(t)}{F(t,u)B_T(u)}, \Sigma(t,u)\right)\right] \nonumber\\
+       &&\quad\quad\quad\quad\quad\quad - \left(\frac{P^{\prime}(u)}{P(u)}-\frac{F^{\prime}(u)}{F(u)}\right)
+       \frac{B_T(t)}{F(t,u)}\Phi\left[\omega d_+\left(\frac{B_T(t)}{F(t,u)B_T(u)}, \Sigma(t,u)\right)\right] \Bigg]du.
     \end{eqnarray}
     Using the relations
     \begin{equation}
-      \int_t^T\left(P(u)F(u)\right)^{\prime}du=P(T)F(T)-P(t)F(t),
+     \int_t^T \frac{P(u)}{F(u)}\left(\frac{P^{\prime}(u)}{P(u)}-\frac{F^{\prime}(u)}{F(u)}\right)
+     = \int_t^T\left(\frac{P(u)}{F(u)}\right)^{\prime}du=\frac{P(T)}{F(T)} - \frac{P(t)}{F(t)},
     \end{equation}
     and
     \begin{equation}
@@ -134,22 +136,22 @@
     \end{equation}
     the optimal exercise boundary can be determined from the following equation,
     \begin{equation}
-      e^{X_T(t)}=e^{x^*}\frac{N(X_T, \Sigma)}{D(X_T, \Sigma)},
+      B_T(t)=KF(t,T)\frac{N\left(B_T, \Sigma\right)}{D\left(B_T, \Sigma\right)},
     \end{equation}
     where the numerator $N$ and the denominator $D$ are functionals of the optimal exercise boundary,
     \begin{eqnarray}
-      N(X_T, \Sigma)&=&\Phi\big(-\omega d_-\left(X_T(t)-x^*,\Sigma(t,T)\right)\big)\nonumber\\
-      &&-\int_t^T\frac{P^{\prime}(u)}{P(T)}\Phi\big(-\omega d_-\left(X_T(t)-X_T(u),\Sigma(t,u)\right)\big)du,
+      N\left(B_T, \Sigma\right)&=&\Phi\left[-\omega d_-\left(\frac{B_T(t)}{F(t,T)K},\Sigma(t,T)\right)\right]\nonumber\\
+      &&-\int_t^T\frac{P^{\prime}(u)}{P(T)}\Phi\left[-\omega d_-\left(\frac{B_T(t)}{F(t,T)B_T(u)},\Sigma(t,u)\right)\right]du,
     \end{eqnarray}
     and
     \begin{eqnarray}
-      D(X_T, \Sigma)&=&\Phi\big(-\omega d_+\left(X_T(t)-x^*,\Sigma(t,T)\right)\big)\nonumber\\
-      &&-\int_t^T\frac{\left(P(u)F(u)\right)^{\prime}}{P(T)F(T)}\Phi\big(-\omega d_+\left(X_T(t)-X_T(u),\Sigma(t,u)\right)\big)du.
+      D\left(B_T, \Sigma\right)&=&\Phi\left[-\omega d_+\left(\frac{B_T(t)}{F(t,T)K},\Sigma(t,T)\right)\right]\nonumber\\
+      &&-\int_t^T\frac{F(T)}{P(T)}\left(\frac{P(u)}{F(u)}\right)^{\prime}\Phi\left[-\omega d_+\left(\frac{B_T(t)}{F(t,T)B_T(u)},\Sigma(t,u)\right)\right]du.
     \end{eqnarray}
 
     From the above formulation, the optimal exercise boundary can be determined by iteration. At the start of
-    each iteration, with the knowledge of the optimal exercise boundary $X_T^{(j)}(t)$ from the previous iteration,
-    a new boundary $X_T^{(j+1)}(t)$ can be found. This process can be repeated until convergence is reached.
+    each iteration, with the knowledge of the optimal exercise boundary $B_T^{(j)}(t)$ from the previous iteration,
+    a new boundary $B_T^{(j+1)}(t)$ can be found. This process can be repeated until convergence is reached.
 
 
 
