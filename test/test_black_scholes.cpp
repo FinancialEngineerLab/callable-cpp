@@ -11,6 +11,40 @@ namespace beagle
 {
   namespace test
   {
+    TEST(test_black_scholes, AmericanPricing)
+    {
+      // Model parameters
+      double spot = 45.;
+      double rate = .02;
+      double carry = .01;
+      double vol = .2;
+
+      beagle::real_function_ptr_t discounting = beagle::math::RealFunction::createUnaryFunction(
+                                                [=](double arg) { return std::exp(-rate * arg);});
+      beagle::real_function_ptr_t funding = beagle::math::RealFunction::createUnaryFunction(
+                                                [=](double arg) { return std::exp(-(rate - carry) * arg);});
+      beagle::real_function_ptr_t forward = beagle::math::RealFunction::createContinuousForwardAssetPriceFunction(
+                                                spot,
+                                                funding);
+      beagle::valuation::OneDimFiniteDifferenceSettings settings(750, 1501, 4.5);
+      beagle::pricer_ptr_t odbpop  = beagle::valuation::Pricer::formOneDimBackwardPDEOptionPricer(
+                                                                forward,
+                                                                discounting,
+                                                                beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0.),
+                                                                beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(vol),
+                                                                beagle::math::RealTwoDimFunction::createTwoDimConstantFunction(0),
+                                                                settings);
+
+      beagle::payoff_ptr_t payoff = beagle::product::option::Payoff::call();
+      double expiry = 1.;
+      double strike = 45.;
+      beagle::product_ptr_t amerOption = beagle::product::option::Option::createAmericanOption( expiry,
+                                                                                                strike,
+                                                                                                payoff );
+      double value = odbpop->value( amerOption );
+      std::cout << value << std::endl;
+    }
+
     TEST(test_black_scholes, AnnualDividends)
     {
       // Set up dividend
