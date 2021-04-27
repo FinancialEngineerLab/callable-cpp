@@ -11,7 +11,7 @@
     Consider an underlying asset following a geometric Brownian motion with time dependent but deterministic
     parameters, in the risk-neutral measure,
     \begin{equation}
-      \frac{dS(t)}{S(t)}=-\frac{F^{\prime}(t)}{F(t)}dt+\sigma(t)dW^{\mathbb{Q}}(t),
+      \frac{dS(t)}{S(t)}=-\frac{F^{\prime}(t)}{F(t)}dt+\sigma(t)dW^{\mathbb Q}(t),
     \end{equation}
     where $F(t)$, and $\sigma$ are the funding curve and the volatility, respectively. Therefore, the
     forward value of the underlying at time $T$ with spot value $S$ at time $t$ is given by $S/F(t,T)$,
@@ -35,7 +35,7 @@
     \end{equation}
     Also, the discounted European option price satisfies the following Black-Scholes equation,
     \begin{equation}
-      \frac{\partial v_E(t,S)}{\partial t}-\frac{1}{2}\sigma(t)^2S^2\frac{\partial v_E(t,S)}{\partial S}
+      \frac{\partial v_E(t,S)}{\partial t}-\frac{F^{\prime}(t)}{F(t)}S\frac{\partial v_E(t,S)}{\partial S}
          +\frac{1}{2}\sigma(t)^2S^2\frac{\partial^2 v_E(t,S)}{\partial S^2}=0.
     \end{equation}
 
@@ -60,26 +60,26 @@
     \begin{eqnarray}
       &&dv_A(t,S(t)) \nonumber\\
       =&&\mathbf{1}_{\{\omega S(t) \geq \omega B_T(t)\}}\omega\left[P^{\prime}(t)\left(S(t)-K\right)dt
-                  +P(t)S(t)\left(-\frac{F^{\prime}(t)}{F(t)}dt+\sigma(t)dW^{\mathbb{Q}}(t)\right)\right]\nonumber\\
-      +  && \mathbf{1}_{\{\omega S(t)<\omega B_T(t)\}}\bigg[\left(\frac{\partial v_E(t,S(t))}{\partial t}-\frac{1}{2}\sigma(t)^2S(t)^2\frac{\partial v_E(t,S)}{\partial S}
-               +\frac{1}{2}\sigma(t)^2S(t)^2\frac{\partial^2 v_E(t,S)}{\partial S^2}\right)dt\nonumber\\
-               &&\quad\quad\quad\quad\quad\quad\quad\quad +\sigma(t)S(t)\frac{\partial v_E(t,S)}{\partial S}dW^{\mathbb{Q}}(t)\bigg].
+                  +P(t)S(t)\left(-\frac{F^{\prime}(t)}{F(t)}dt+\sigma(t)dW^{\mathbb Q}(t)\right)\right]\nonumber\\
+      +  && \mathbf{1}_{\{\omega S(t)<\omega B_T(t)\}}\bigg[\left(\frac{\partial v_E(t,S(t))}{\partial t}-\frac{F^{\prime}(t)}{F(t)}S(t)\frac{\partial v_E(t,S(t))}{\partial S}
+               +\frac{1}{2}\sigma(t)^2S(t)^2\frac{\partial^2 v_E(t,S(t))}{\partial S^2}\right)dt\nonumber\\
+               &&\quad\quad\quad\quad\quad\quad\quad\quad +\sigma(t)S(t)\frac{\partial v_E(t,S)}{\partial S}dW^{\mathbb Q}(t)\bigg].
     \end{eqnarray}
     Notice the Black-Scholes equation for the discounted European option price, we have
     \begin{eqnarray}
       dv_A(t,S(t))&=&\mathbf{1}_{\{\omega S(t)\geq\omega B_T(t)\}}\omega P(t)
                      \left[\left(\frac{P^{\prime}(t)}{P(t)}-\frac{F^{\prime}(t)}{F(t)}\right)S(t)
                            -\frac{P^{\prime}(t)}{P(t)}K\right]dt\nonumber\\
-               && + O\left(dW^{\mathbb{Q}}(t)\right).
+               && + O\left(dW^{\mathbb Q}(t)\right).
     \end{eqnarray}
     Integrate both sides, and take the risk neutral expectation, the integration with respect to the Brownian motion
     will drop out, we are left with
     \begin{eqnarray}
-      &&{\rm E}_t^{\mathbb{Q}}\left[v_A(T,S(T))\right]-v_A(t,S(t)) \nonumber\\
+      &&{\mathbb E}_t^{\mathbb Q}\left[v_A(T,S(T))\right]-v_A(t,S(t)) \nonumber\\
       = &&\omega\int_t^T P(u)\Bigg[\left(\frac{P^{\prime}(u)}{P(u)}-\frac{F^{\prime}(u)}{F(u)}\right)
-                          {\rm E}_t^Q\left[S(u)\mathbf{1}_{\{\omega S(u)\geq\omega B_T(u)\}}\right]\nonumber\\
+                          {\mathbb E}_t^{\mathbb Q}\left[S(u)\mathbf{1}_{\{\omega S(u)\geq\omega B_T(u)\}}\right]\nonumber\\
         &&\quad\quad\quad\quad\quad\quad\quad- \frac{P^{\prime}(u)}{P(u)} K
-                          {\rm E}_t^Q\left[\mathbf{1}_{\{\omega S(u)\geq\omega B_T(u)\}}\right] \Bigg]du.
+                          {\mathbb E}_t^{\mathbb Q}\left[\mathbf{1}_{\{\omega S(u)\geq\omega B_T(u)\}}\right] \Bigg]du.
     \end{eqnarray}
     This formula is a generic result, and can be applied to any local volatility model.
 
@@ -90,12 +90,12 @@
     the risk neutral expectation of which will actually reproduce the discounted European option price, Eq. (\ref{Euro1}).
     Also notice that, under our model setup,
     \begin{equation}
-      {\rm E}_t^{\mathbb{Q}}\left[S(u)\mathbf{1}_{\{\omega S(u)\geq\omega B_T(u)\}}\right]
+      {\mathbb E}_t^{\mathbb Q}\left[S(u)\mathbf{1}_{\{\omega S(u)\geq\omega B_T(u)\}}\right]
        = \frac{S(t)}{F(t,u)}\Phi\left[\omega d_+\left(\frac{S(t)}{F(t,u)B_T(u)}, \Sigma(t,u)\right)\right],
     \end{equation}
     and
     \begin{equation}
-      {\rm E}_t^{\mathbb{Q}}\left[\mathbf{1}_{\{\omega S(u)\geq\omega B_T(u)\}}\right]
+      {\mathbb E}_t^{\mathbb Q}\left[\mathbf{1}_{\{\omega S(u)\geq\omega B_T(u)\}}\right]
        = \Phi\left[\omega d_-\left(\frac{S(t)}{F(t,u)B_T(u)}, \Sigma(t,u)\right)\right],
     \end{equation}
     then the discounted American option price can be represented as the sum of the discounted European
