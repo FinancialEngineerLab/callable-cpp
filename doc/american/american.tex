@@ -8,35 +8,29 @@
 
   \section{Model Setup}
 
-    Consider an underlying asset following a geometric Brownian motion with time dependent but deterministic
-    parameters, in the risk-neutral measure,
+    Consider an underlying asset with the dynamics described by the following local volatility process,
+    in the risk-neutral measure,
     \begin{equation}
-      \frac{dS(t)}{S(t)}=-\frac{F^{\prime}(t)}{F(t)}dt+\sigma(t)dW^{\mathbb Q}(t),
+      \frac{dS(t)}{S(t)}=-\frac{F^{\prime}(t)}{F(t)}dt+\sigma\left(t, S(t)\right)dW^{\mathbb Q}(t),
     \end{equation}
-    where $F(t)$, and $\sigma$ are the funding curve and the volatility, respectively. Therefore, the
-    forward value of the underlying at time $T$ with spot value $S$ at time $t$ is given by $S/F(t,T)$,
-    where $F(t,T)=F(T)/F(t)$.
+    where $F(t)$ and $\sigma(t, S)$ are the funding curve and the local volatility function, respectively.
+    Therefore, the forward value of the underlying at time $T$ with spot value $S$ at time $t$ is given by
+    $S/F(t,T)$, where $F(t,T)=F(T)/F(t)$.
 
-    For a European option with expiry $T$ and strike $K$, its discounted price is given by
-    \begin{eqnarray}
-      \label{Euro1}
-      v_E(t,S)&\equiv&P(t)V_E(t,S;T,K,\omega)\nonumber\\
-                         &=&\omega P(T)\bigg(\frac{S}{F(t,T)}\Phi\left[\omega d_+\left(\frac{S}{F(t,T)K},\Sigma(t,T)\right)\right]\nonumber\\
-                         &&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -K\Phi\left[\omega d_-\left(\frac{S}{F(t,T)K},\Sigma(t,T)\right)\right]\bigg),
-    \end{eqnarray}
-    where $\omega=\pm 1$ for call/put options, $\Phi(x)$ is the cumulative distribution function of the standard normal distribution,
-    $P(t)$ is the discount curve, and
+    The discounted European option price is given by the risk neutral expectation of the terminal payoff,
     \begin{equation}
-      d_{\pm}(x, v)=\frac{\log x}{v}\pm\frac{1}{2}v,
+      \label{Euro0}
+      v_E(t,S) \equiv P(t)V_E(t,S;T,K,\omega) = {\mathbb E}_t^{\mathbb Q}\left[P(T)\left(\omega[S(T)-K]\right)^+\right],
     \end{equation}
-    with
-    \begin{equation}
-      \Sigma(t,T)^2=\int_t^T\sigma(u)^2du
-    \end{equation}
-    Also, the discounted European option price satisfies the following Black-Scholes equation,
+    where $\omega=\pm 1$ for call/put options and $P(t)$ is the discount curve. The discounted option
+    price can also be solved from the associated Black-Scholes equation,
     \begin{equation}
       \frac{\partial v_E(t,S)}{\partial t}-\frac{F^{\prime}(t)}{F(t)}S\frac{\partial v_E(t,S)}{\partial S}
-         +\frac{1}{2}\sigma(t)^2S^2\frac{\partial^2 v_E(t,S)}{\partial S^2}=0.
+         +\frac{1}{2}\sigma(t,S)^2S^2\frac{\partial^2 v_E(t,S)}{\partial S^2}=0,
+    \end{equation}
+    with the terminal condition,
+    \begin{equation}
+      v_E(T,S) = P(T)\left(\omega[S-K]\right)^+.
     \end{equation}
 
 
@@ -60,10 +54,10 @@
     \begin{eqnarray}
       &&dv_A(t,S(t)) \nonumber\\
       =&&\mathbf{1}_{\{\omega S(t) \geq \omega B_T(t)\}}\omega\left[P^{\prime}(t)\left(S(t)-K\right)dt
-                  +P(t)S(t)\left(-\frac{F^{\prime}(t)}{F(t)}dt+\sigma(t)dW^{\mathbb Q}(t)\right)\right]\nonumber\\
+                  +P(t)S(t)\left(-\frac{F^{\prime}(t)}{F(t)}dt+\sigma(t,S(t))dW^{\mathbb Q}(t)\right)\right]\nonumber\\
       +  && \mathbf{1}_{\{\omega S(t)<\omega B_T(t)\}}\bigg[\left(\frac{\partial v_E(t,S(t))}{\partial t}-\frac{F^{\prime}(t)}{F(t)}S(t)\frac{\partial v_E(t,S(t))}{\partial S}
-               +\frac{1}{2}\sigma(t)^2S(t)^2\frac{\partial^2 v_E(t,S(t))}{\partial S^2}\right)dt\nonumber\\
-               &&\quad\quad\quad\quad\quad\quad\quad\quad +\sigma(t)S(t)\frac{\partial v_E(t,S)}{\partial S}dW^{\mathbb Q}(t)\bigg].
+               +\frac{1}{2}\sigma(t,S(t))^2S(t)^2\frac{\partial^2 v_E(t,S(t))}{\partial S^2}\right)dt\nonumber\\
+               &&\quad\quad\quad\quad\quad\quad\quad\quad +\sigma(t, S(t))S(t)\frac{\partial v_E(t,S)}{\partial S}dW^{\mathbb Q}(t)\bigg].
     \end{eqnarray}
     Notice the Black-Scholes equation for the discounted European option price, we have
     \begin{eqnarray}
@@ -81,14 +75,41 @@
         &&\quad\quad\quad\quad\quad\quad\quad- \frac{P^{\prime}(u)}{P(u)} K
                           {\mathbb E}_t^{\mathbb Q}\left[\mathbf{1}_{\{\omega S(u)\geq\omega B_T(u)\}}\right] \Bigg]du.
     \end{eqnarray}
-    This formula is a generic result, and can be applied to any local volatility model.
-
     At expiry, the payoff of the American option coincides with the European option,
     \begin{equation}
       v_A(T,S(T)) = v_E(T,S(T))=P(T)\left[\omega\left(S(T)-K\right)\right]^+,
     \end{equation}
-    the risk neutral expectation of which will actually reproduce the discounted European option price, Eq. (\ref{Euro1}).
-    Also notice that, under our model setup,
+    the risk neutral expectation of which will actually reproduce the discounted European option price, Eq. (\ref{Euro0}).
+    Then, the discounted American option price becomes
+    \begin{eqnarray}
+      \label{EEP0}
+      v_A(t,S(t)) &=& v_E(t,S(t))\nonumber\\
+      &+&\omega\int_t^T P(u)\Bigg[\left(\frac{P^{\prime}(u)}{P(u)}-\frac{F^{\prime}(u)}{F(u)}\right)
+      {\mathbb E}_t^{\mathbb Q}\left[S(u)\mathbf{1}_{\{\omega S(u)\geq\omega B_T(u)\}}\right]\nonumber\\
+      &&\quad\quad\quad\quad\quad\quad\quad\quad\quad\ - \frac{P^{\prime}(u)}{P(u)} K
+      {\mathbb E}_t^{\mathbb Q}\left[\mathbf{1}_{\{\omega S(u)\geq\omega B_T(u)\}}\right] \Bigg]du.
+    \end{eqnarray}
+    This is a generic result, and can be applied to any local volatility model.
+
+  \section{Application to the Black-Scholes Model}
+
+    In the following, we will consider the Black-Scholes model with time-dependent but deterministic volatility
+    function, {\it i.e.}, $\sigma(t,S(t))\equiv \sigma(t)$. The discounted European option price is given by
+    \begin{eqnarray}
+      \label{Euro1}
+      v_E(t,S)&=&\omega P(T)\bigg(\frac{S}{F(t,T)}\Phi\left[\omega d_+\left(\frac{S}{F(t,T)K},\Sigma(t,T)\right)\right]\nonumber\\
+                         &&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -K\Phi\left[\omega d_-\left(\frac{S}{F(t,T)K},\Sigma(t,T)\right)\right]\bigg),
+    \end{eqnarray}
+    where $\omega=\pm 1$ for call/put options, $\Phi(x)$ is the cumulative distribution function of the standard
+    normal distribution, and
+    \begin{equation}
+      d_{\pm}(x, v)=\frac{\log x}{v}\pm\frac{1}{2}v,
+    \end{equation}
+    with
+    \begin{equation}
+      \Sigma(t,T)^2=\int_t^T\sigma(u)^2du
+    \end{equation}
+    Also notice that, for the Black-Scholes model,
     \begin{equation}
       {\mathbb E}_t^{\mathbb Q}\left[S(u)\mathbf{1}_{\{\omega S(u)\geq\omega B_T(u)\}}\right]
        = \frac{S(t)}{F(t,u)}\Phi\left[\omega d_+\left(\frac{S(t)}{F(t,u)B_T(u)}, \Sigma(t,u)\right)\right],
@@ -108,8 +129,6 @@
       &&\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad - \frac{P^{\prime}(u)}{P(u)} K
       \Phi\left[\omega d_-\left(\frac{S(t)}{F(t,u)B_T(u)}, \Sigma(t,u)\right)\right] \Bigg]du.
     \end{eqnarray}
-
-  \section{Optimal Exercise Boundary}
 
     The above representation of the American option price requires the knowledge of the optimal
     exercise boundary, which is unknown and must be solved in tandem with the computation of the American
