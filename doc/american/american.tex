@@ -83,11 +83,11 @@
     Then, the discounted American option price becomes
     \begin{eqnarray}
       \label{EEP0}
-      v_A(t,S(t)) &=& v_E(t,S(t))\nonumber\\
-      &+&\omega\int_t^T P(u)\Bigg[\left(\frac{P^{\prime}(u)}{P(u)}-\frac{F^{\prime}(u)}{F(u)}\right)
-      {\mathbb E}_t^{\mathbb Q}\left[S(u)\mathbf{1}_{\{\omega S(u)\geq\omega B_T(u)\}}\right]\nonumber\\
-      &&\quad\quad\quad\quad\quad\quad\quad\quad\quad\ - \frac{P^{\prime}(u)}{P(u)} K
-      {\mathbb E}_t^{\mathbb Q}\left[\mathbf{1}_{\{\omega S(u)\geq\omega B_T(u)\}}\right] \Bigg]du.
+      v_A(t,S(t)) &=& v_E(t,S(t))
+      +\omega\int_t^T P(u)\Bigg[\frac{P^{\prime}(u)}{P(u)} K
+      {\mathbb E}_t^{\mathbb Q}\left[\mathbf{1}_{\{\omega S(u)\geq\omega B_T(u)\}}\right]\nonumber\\
+      &&\quad\quad\quad\quad\quad\quad\quad\quad\quad\ -\left(\frac{P^{\prime}(u)}{P(u)}-\frac{F^{\prime}(u)}{F(u)}\right)
+      {\mathbb E}_t^{\mathbb Q}\left[S(u)\mathbf{1}_{\{\omega S(u)\geq\omega B_T(u)\}}\right]\Bigg]du.
     \end{eqnarray}
     This is a generic result, and can be applied to any local volatility model.
 
@@ -98,7 +98,7 @@
     \begin{eqnarray}
       \label{Euro1}
       v_E(t,S)&=&\omega P(T)\bigg(\frac{S}{F(t,T)}\Phi\left[\omega d_+\left(\frac{S}{F(t,T)K},\Sigma(t,T)\right)\right]\nonumber\\
-                         &&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -K\Phi\left[\omega d_-\left(\frac{S}{F(t,T)K},\Sigma(t,T)\right)\right]\bigg),
+                         &&\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ -K\Phi\left[\omega d_-\left(\frac{S}{F(t,T)K},\Sigma(t,T)\right)\right]\bigg),
     \end{eqnarray}
     where $\omega=\pm 1$ for call/put options, $\Phi(x)$ is the cumulative distribution function of the standard
     normal distribution, and
@@ -123,11 +123,10 @@
     option price and the early exercise premium,
     \begin{eqnarray}
       \label{EEP}
-      &&v_A(t,S(t))\nonumber\\
-      =&&v_E(t,S(t))+\omega\int_t^TP(u)\Bigg[\left(\frac{P^{\prime}(u)}{P(u)}-\frac{F^{\prime}(u)}{F(u)}\right)
-      \frac{S(t)}{F(t,u)}\Phi\left[\omega d_+\left(\frac{S(t)}{F(t,u)B_T(u)}, \Sigma(t,u)\right)\right]\nonumber\\
-      &&\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad\quad - \frac{P^{\prime}(u)}{P(u)} K
-      \Phi\left[\omega d_-\left(\frac{S(t)}{F(t,u)B_T(u)}, \Sigma(t,u)\right)\right] \Bigg]du.
+      &&v_A(t,S(t))=v_E(t,S(t))+\omega\int_t^TP(u)\Bigg[\frac{P^{\prime}(u)}{P(u)} K
+      \Phi\left[\omega d_-\left(\frac{S(t)}{F(t,u)B_T(u)}, \Sigma(t,u)\right)\right]\nonumber\\
+      &&\quad\quad\quad\quad\quad\quad\quad -\left(\frac{P^{\prime}(u)}{P(u)}-\frac{F^{\prime}(u)}{F(u)}\right)
+      \frac{S(t)}{F(t,u)}\Phi\left[\omega d_+\left(\frac{S(t)}{F(t,u)B_T(u)}, \Sigma(t,u)\right)\right]\Bigg]du.
     \end{eqnarray}
 
     The above representation of the American option price requires the knowledge of the optimal
@@ -137,9 +136,9 @@
     \begin{eqnarray}
        \label{Boundary}
        && P(t)\left(B_T(t)-K\right)\nonumber\\
-      =&& P(T)\left(\frac{B_T(t)}{F(t,T)}\Phi\left[\omega d_+\left(\frac{B_T(t)}{F(t,T)K},\Sigma(t,T)\right)\right]
+      &=& P(T)\left(\frac{B_T(t)}{F(t,T)}\Phi\left[\omega d_+\left(\frac{B_T(t)}{F(t,T)K},\Sigma(t,T)\right)\right]
                                                       -K\Phi\left[\omega d_-\left(\frac{B_T(t)}{F(t,T)K},\Sigma(t,T)\right)\right]\right)\nonumber\\
-       &&+\omega\int_t^TP(u)\Bigg[\frac{P^{\prime}(u)}{P(u)} K
+       &+&\int_t^TP(u)\Bigg[\frac{P^{\prime}(u)}{P(u)} K
        \Phi\left[\omega d_-\left(\frac{B_T(t)}{F(t,u)B_T(u)}, \Sigma(t,u)\right)\right] \nonumber\\
        &&\quad\quad\quad\quad\quad\quad - \left(\frac{P^{\prime}(u)}{P(u)}-\frac{F^{\prime}(u)}{F(u)}\right)
        \frac{B_T(t)}{F(t,u)}\Phi\left[\omega d_+\left(\frac{B_T(t)}{F(t,u)B_T(u)}, \Sigma(t,u)\right)\right] \Bigg]du.
